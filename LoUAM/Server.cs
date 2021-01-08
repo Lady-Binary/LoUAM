@@ -69,7 +69,7 @@ namespace LoUAM
 
             using (var httpServer = new HttpServer(new HttpRequestProvider()))
             {
-                var listener = new TcpListener(IPAddress.Loopback, this.port);
+                var listener = new TcpListener(IPAddress.Any, this.port);
 
                 // Https decorator
                 httpServer.Use(new ListenerSslDecorator(new TcpListenerAdapter(listener), serverCertificate));

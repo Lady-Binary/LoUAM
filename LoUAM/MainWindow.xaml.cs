@@ -217,11 +217,11 @@ namespace LoUAM
                     if (TheServer.Players != null && currentPlayer != null)
                     {
                         TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
-                    }
-                    List<Marker> OtherMarkers = TheServer.Players.Values
+                        List<Marker> OtherMarkers = TheServer.Players.Values
                         .Where(player => player.ObjectId != currentPlayer.ObjectId)
                         .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.green, player.DisplayName, player.X, player.Y, player.Z)).ToList();
-                    MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                    }
                 }
             }
 

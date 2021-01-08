@@ -1,0 +1,50 @@
+﻿<Window x:Class="LoUAM.ControlPanel"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LoUAM"
+        mc:Ignorable="d"
+        Title="LoUAM ControlPanel" Height="450" Width="400" WindowStyle="ToolWindow" Loaded="Window_Loaded" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TabControl Grid.Row="0" Grid.ColumnSpan="2">
+            <TabItem Header="Link Controls">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0">Name</Label>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Name="MyNameTextBox" Width="200px">(your name)</TextBox>
+                    <Button Grid.Row="0" Grid.Column="2" Name="StartServer" Width="100px" Click="StartServer_Click" HorizontalAlignment="Left">Start Server</Button>
+                    <Label Grid.Row="1" Grid.Column="0">Host</Label>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Name="HostTextBox" Width="200px"></TextBox>
+                    <Button Grid.Row="1" Grid.Column="2" Name="LinkToServer" Width="100px" Click="LinkToServer_Click">Link to Server</Button>
+                    <Label Grid.Row="2" Grid.Column="0">Port</Label>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Name="PortTextBox" Width="200px" PreviewTextInput="PortTextBox_PreviewTextInput"></TextBox>
+                    <Button Grid.Row="2" Grid.Column="2" Name="BreakConnection" Width="100px" Click="BreakConnection_Click" IsEnabled="False">Break Connection</Button>
+                    <Label Grid.Row="3" Grid.Column="0">Password</Label>
+                    <Button Grid.Row="3" Grid.Column="2" Name="CopySettings" Width="100px" Click="CopySettings_Click">Copy Settings</Button>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Name="PasswordTextBox" Width="200px"></TextBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <Button Name="Close" Grid.Row="1" Grid.Column="1" Width="100px" Click="Close_Click">Close</Button>
+    </Grid>
+</Window>

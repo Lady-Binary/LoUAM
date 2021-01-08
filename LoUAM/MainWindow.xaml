@@ -1,0 +1,53 @@
+﻿<Window x:Class="LoUAM.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LoUAM"
+        mc:Ignorable="d"
+        Title="LoUAM" Height="800" Width="800" Icon="louam.ico" Loaded="Window_Loaded">
+    <Window.CommandBindings>
+        <CommandBinding Command="Close"  CanExecute="ExitCommand_CanExecute" Executed="ExitCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindow.ConnectToLoAClientCommand}" CanExecute="ConnectToLoAClientCommand_CanExecute" Executed="ConnectToLoAClientCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindow.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindow.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
+        <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindow.LinkControlsCommand}"/>
+    </Window.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0" DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Exit" Command="Close" InputGestureText="Ctrl+X" />
+            </MenuItem>
+            <MenuItem Header="_LoU">
+                <MenuItem Header="_Connect to LoA game client..." Command="{x:Static local:MainWindow.ConnectToLoAClientCommand}" />
+                <MenuItem Name="TrackPlayerMenu" Header="_Track Player" Command="{x:Static local:MainWindow.TrackPlayerCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Link">
+                <MenuItem Header="_Link Controls..." Command="{x:Static local:MainWindow.LinkControlsCommand}" InputGestureText="Ctrl+K" />
+            </MenuItem>
+        </Menu>
+        <local:Map x:Name="MainMap" Grid.Row="1"></local:Map>
+        <DockPanel Grid.Row="2" >
+            <StatusBar>
+                <Label Name="MainStatusLabel">Legends of Aria Client not connected</Label>
+            </StatusBar>
+        </DockPanel>
+        <DockPanel Grid.Row="3" >
+            <StatusBar>
+                <Label Name="LinkStatusLabel">LoUAM Link not connected</Label>
+            </StatusBar>
+        </DockPanel>
+        <DockPanel Grid.Row="1" Name="TargetAriaClientPanel" Background="White" Visibility="Hidden" >
+            <Label Content="Click the window of the Legends of Aria Client you want to connect to" VerticalAlignment="Center" HorizontalAlignment="Center" />
+        </DockPanel>
+    </Grid>
+</Window>

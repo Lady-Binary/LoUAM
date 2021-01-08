@@ -95,18 +95,9 @@ namespace LoUAM
         }
 
         #region Timers
-        private static Random rnd = new Random();
-        private static Player MockPlayer = new Player(
-                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                (ulong)rnd.Next(1, 1000000),
-                $"LadyBinary",
-                (ulong)rnd.Next(1, 1000),
-                (ulong)rnd.Next(1, 1000),
-                (ulong)rnd.Next(1, 1000));
+
         private Player GetCurrentPlayer()
         {
-            MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            return MockPlayer;
 
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return null;

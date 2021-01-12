@@ -87,7 +87,7 @@ Ultima Online is copyright of [Electronic Arts Inc](https://uo.com/).
 Legends of Aria is copyright of [Citadel Studios](https://citadelstudios.net/).  
 Legends of Ultima is copyright of [Legends of Ultima](https://www.legendsofultima.online/).  
 Lady Binary is a tribute to Lord Binary, who was very active in the UO hacking scene (see for example [UO_RICE](https://github.com/necr0potenc3/UO_RICE)).  
-LoUAM is of course inspired by the great [UO Auto-Map](http://www.easyuo.com/).  
+LoUAM is of course inspired by the great [UO Auto-Map](https://uoam.net/) developed by Belxan.
 The LOU part of LoUAM is a tribute to [Legends Of Ultima](https://www.legendsofultima.online/), whose passionate staff have dedicated so much effort in putting together a wonderful product based off of [Legends of Aria](https://www.legendsofaria.com/).  
 The Mono Injection code is based on [SharpMonoInjector](https://github.com/warbler/SharpMonoInjector), commit 73566c1.  
 

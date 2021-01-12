@@ -331,7 +331,7 @@ namespace LoUAM
         {
             var MonoModule = GetMonoModule(ProcessId);
 
-            String AssemblyPath = "LOU.dll";
+            String AssemblyPath = "LoU.dll";
 
             IntPtr handle = Native.OpenProcess(ProcessAccessRights.PROCESS_ALL_ACCESS, false, ProcessId);
 

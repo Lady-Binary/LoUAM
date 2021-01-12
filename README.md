@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/lhchmicmqqsasv9u?svg=true)](https://ci.appveyor.com/project/Lady-Binary/louam) [![Automated Release Notes by gren](https://img.shields.io/badge/%F0%9F%A4%96-release%20notes-00B2EE.svg)](https://github-tools.github.io/github-release-notes/)
+
 # LoU Auto-Map
 
 Discord server: https://discord.gg/RWAqYcV

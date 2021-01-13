@@ -303,11 +303,11 @@ namespace LoUAM
             }
         }
 
-        private double CalcTextBlockFontSize(Marker marker, TextBlock textBlock)
+        private double CalcLabelFontSize(Marker marker, TextBlock textBlock)
         {
             return 12 / scaleTransform.ScaleX;
         }
-        private (double, double) CalcTextBlockPosition(Marker marker, TextBlock textBlock)
+        private (double, double) CalcLabelPosition(Marker marker, TextBlock textBlock)
         {
             (double x, double y) = WorldXZToMapXY(marker.X, marker.Z);
 
@@ -323,8 +323,7 @@ namespace LoUAM
                 Name = "Label_" + marker.Id,
                 Text = marker.Label,
                 FontSize = 12,
-                Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFFFF")),
-                FontWeight = FontWeights.UltraBold,
+                Foreground = Brushes.Yellow,
                 Tag = marker.Type
             };
             MarkersCanvas.Children.Add(
@@ -338,12 +337,12 @@ namespace LoUAM
             if (textblock != null)
             {
                 // Refresh its size based on the scale
-                double fontSize = CalcTextBlockFontSize(marker, textblock);
+                double fontSize = CalcLabelFontSize(marker, textblock);
                 textblock.FontSize = fontSize;
                 textblock.UpdateLayout();
 
                 // Refresh its position based on the scale
-                (double labelx, double labely) = CalcTextBlockPosition(marker, textblock);
+                (double labelx, double labely) = CalcLabelPosition(marker, textblock);
                 Canvas.SetLeft(textblock, labelx);
                 Canvas.SetTop(textblock, labely);
 

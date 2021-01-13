@@ -2,265 +2,265 @@
 <places>
   <place>
     <label>Vesper</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-2216.71</lat>
     <lng>-2752.488</lng>
   </place>
   <place>
     <label>Dungeon Deception</label>
-    <icon>red</icon>
+    <icon>dungeon</icon>
     <lat>-67.51831</lat>
     <lng>-2620.286</lng>
   </place>
   <place>
     <label>Magincia</label>
-    <icon>green</icon>
+    <icon>moongate</icon>
     <lat>840.25</lat>
     <lng>2826.064</lng>
   </place>
   <place>
     <label>Teleporter to Pirate's Grotto</label>
-    <icon>grey</icon>
+    <icon>teleporter</icon>
     <lat>-1853.23</lat>
     <lng>83.33813</lng>
   </place>
   <place>
     <label>Papua</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-123.4382</lat>
     <lng>2036.576</lng>
   </place>
   <place>
     <label>Cemetery</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>-1253.022</lat>
     <lng>262.0901</lng>
   </place>
   <place>
     <label>Britain Graveyard</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>-1221.334</lat>
     <lng>716.418</lng>
   </place>
   <place>
     <label>Dungeon Corruption</label>
-    <icon>red</icon>
+    <icon>dungeon</icon>
     <lat>575.562</lat>
     <lng>623.3179</lng>
   </place>
   <place>
     <label>Magincia Farms</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>925.9937</lat>
     <lng>2710.62</lng>
   </place>
   <place>
     <label>Magincia Graveyard</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>1050.882</lat>
     <lng>2880.062</lng>
   </place>
   <place>
     <label>Nuje'lm</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-837.3501</lat>
     <lng>-2320.504</lng>
   </place>
   <place>
     <label>Minoc Quarry</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>1101.21</lat>
     <lng>-322.5779</lng>
   </place>
   <place>
     <label>Dungeon Contempt</label>
-    <icon>red</icon>
+    <icon>dungeon</icon>
     <lat>-503.6941</lat>
     <lng>2973.162</lng>
   </place>
   <place>
     <label>Grim's Cavern</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>448.8096</lat>
     <lng>910.0659</lng>
   </place>
   <place>
     <label>Nujel'm Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>-718.0542</lat>
     <lng>-2102.65</lng>
   </place>
   <place>
     <label>Britain Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>-1284.71</lat>
     <lng>945.4438</lng>
   </place>
   <place>
     <label>Fisherman's Wharf</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>98.37769</lat>
     <lng>-449.1941</lng>
   </place>
   <place>
     <label>Moonglow Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>1021.058</lat>
     <lng>206.23</lng>
   </place>
   <place>
     <label>Wind</label>
-    <icon>orange</icon>
+    <icon>dungeon</icon>
     <lat>-598.7583</lat>
     <lng>308.6399</lng>
   </place>
   <place>
     <label>Yew Graveyard</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>-410.4941</lat>
     <lng>2222.776</lng>
   </place>
   <place>
     <label>Cove</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-209.1821</lat>
     <lng>576.7681</lng>
   </place>
   <place>
     <label>Misty Caverns</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>-637.9021</lat>
     <lng>202.5061</lng>
   </place>
   <place>
     <label>Britain</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-1137.454</lat>
     <lng>867.2402</lng>
   </place>
   <place>
     <label>Misty Caverns</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>-628.5823</lat>
     <lng>465.0479</lng>
   </place>
   <place>
     <label>Yew Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>-395.5823</lat>
     <lng>2096.16</lng>
   </place>
   <place>
     <label>Dungeon Ruin</label>
-    <icon>red</icon>
+    <icon>dungeon</icon>
     <lat>-1776.806</lat>
     <lng>-1166.064</lng>
   </place>
   <place>
     <label>Teleporter to Ocllo Surrounds</label>
-    <icon>grey</icon>
+    <icon>teleporter</icon>
     <lat>-2410.566</lat>
     <lng>1559.904</lng>
   </place>
   <place>
     <label>Housing Display</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>-479.4622</lat>
     <lng>-748.9761</lng>
   </place>
   <place>
     <label>Wind</label>
-    <icon>blue</icon>
+    <icon>dungeon</icon>
     <lat>-3603.526</lat>
     <lng>-3303.64</lng>
   </place>
   <place>
     <label>Mer Beach</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>1391.994</lat>
     <lng>2155.744</lng>
   </place>
   <place>
     <label>Riverside</label>
-    <icon>orange</icon>
+    <icon>town</icon>
     <lat>-669.5901</lat>
     <lng>574.9063</lng>
   </place>
   <place>
     <label>Ocllo</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-1806.63</lat>
     <lng>3.271973</lng>
   </place>
   <place>
     <label>Nosca Grove</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>-1349.95</lat>
     <lng>2323.324</lng>
   </place>
   <place>
     <label>Old Yew</label>
-    <icon>grey</icon>
+    <icon>point_of_interest</icon>
     <lat>-373.2141</lat>
     <lng>2736.688</lng>
   </place>
   <place>
     <label>Vesper Graveyard</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>-2149.606</lat>
     <lng>-2908.896</lng>
   </place>
   <place>
     <label>Nujel'm Graveyard</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>-908.1821</lat>
     <lng>-2355.882</lng>
   </place>
   <place>
     <label>Yew</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>-473.8701</lat>
     <lng>2159.468</lng>
   </place>
   <place>
     <label>Moonglow</label>
-    <icon>green</icon>
+    <icon>town</icon>
     <lat>974.458</lat>
     <lng>301.1919</lng>
   </place>
   <place>
     <label>Vesper Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>-2112.326</lat>
     <lng>-2607.252</lng>
   </place>
   <place>
     <label>Shrine of Chaos</label>
-    <icon>grey</icon>
+    <icon>shrine</icon>
     <lat>-2371.422</lat>
     <lng>1518.94</lng>
   </place>
   <place>
     <label>Moonglow Graveyard</label>
-    <icon>grey</icon>
+    <icon>graveyard</icon>
     <lat>909.2178</lat>
     <lng>411.0498</lng>
   </place>
   <place>
     <label>Magincia Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>918.5376</lat>
     <lng>2898.682</lng>
   </place>
   <place>
     <label>Buccaneer's Den</label>
-    <icon>orange</icon>
+    <icon>town</icon>
     <lat>-2412.43</lat>
     <lng>1636.246</lng>
   </place>
   <place>
     <label>Ocllo Moongate</label>
-    <icon>blue</icon>
+    <icon>moongate</icon>
     <lat>-2056.406</lat>
     <lng>-102.8621</lng>
   </place>

@@ -5,7 +5,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace LoUAM
 {
@@ -156,61 +158,149 @@ namespace LoUAM
         #region Marker methods
         private Dictionary<MarkerType, Dictionary<string, Marker>> Markers = new Dictionary<MarkerType, Dictionary<string, Marker>>();
 
-        private const double MARKER_WIDTH = 25;
-        private const double MARKER_HEIGHT = 41;
+        private const double DEFAULT_MARKER_WIDTH = 16;
+        private const double DEFAULT_MARKER_HEIGHT = 16;
 
-        private const double MARKER_ANCHOR_X = 13;
-        private const double MARKER_ANCHOR_Y = 41;
-
-        private (double, double) CalcMarkerImageSize(Marker marker)
+        private (double, double) CalcMarkerSize(FrameworkElement element)
         {
+            if (element is Image)
+            {
+                Image image = element as Image;
+                ImageSource imageSource = image.Source;
+                return (
+                    imageSource.Width * (1 / scaleTransform.ScaleX),
+                    imageSource.Height * (1 / scaleTransform.ScaleY)
+                    );
+            }
+            if (element is Ellipse)
+            {
+                return (
+                    DEFAULT_MARKER_WIDTH * (1 / scaleTransform.ScaleX),
+                    DEFAULT_MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
+                    );
+            }
             return (
-                MARKER_WIDTH * (1 / scaleTransform.ScaleX),
-                MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
+                DEFAULT_MARKER_WIDTH * (1 / scaleTransform.ScaleX),
+                DEFAULT_MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
                 );
         }
-        private (double, double) CalcMarkerImagePosition(Marker marker)
+        private (double, double) CalcMarkerPosition(Marker marker, FrameworkElement element)
         {
             (double x, double y) = WorldXZToMapXY(marker.X, marker.Z);
 
+            if (element is Image)
+            {
+                Image image = element as Image;
+                ImageSource imageSource = image.Source;
+                return (
+                    x - ((imageSource.Width / 2) / scaleTransform.ScaleX),
+                    y - ((imageSource.Height / 2) / scaleTransform.ScaleY)
+                    );
+            }
+            if (element is Ellipse)
+            {
+                return (
+                    x - ((DEFAULT_MARKER_WIDTH / 2) / scaleTransform.ScaleX),
+                    y - ((DEFAULT_MARKER_HEIGHT / 2) / scaleTransform.ScaleY)
+                    );
+            }
             return (
-                x - (MARKER_ANCHOR_X / scaleTransform.ScaleX),
-                y - (MARKER_ANCHOR_Y / scaleTransform.ScaleY)
+                x - ((DEFAULT_MARKER_WIDTH / 2) / scaleTransform.ScaleX),
+                y - ((DEFAULT_MARKER_HEIGHT / 2) / scaleTransform.ScaleY)
                 );
         }
 
-        private void AddMarkerImage(Marker marker)
+        private Ellipse CreateBlinkingEllipse(Color color1, Color color2)
         {
-            Image NewMarker = new Image
+            ObjectAnimationUsingKeyFrames animation = new ObjectAnimationUsingKeyFrames
             {
-                Name = "Image_" + marker.Id,
-                Source = new BitmapImage(new Uri($"images/{marker.Icon.ToString()}_marker.png", UriKind.Relative)),
-                Tag = marker.Type
+                BeginTime = TimeSpan.FromSeconds(0),
+                Duration = TimeSpan.FromSeconds(2),
+                RepeatBehavior = RepeatBehavior.Forever,
+                FillBehavior = FillBehavior.HoldEnd
             };
-            NewMarker.PreviewMouseWheel += OnPreviewMouseWheel;
-            MarkersCanvas.Children.Add(
-                NewMarker
-                );
-            RefreshMarkerImage(marker, NewMarker);
+
+            DiscreteObjectKeyFrame keyFrame1 = new DiscreteObjectKeyFrame(color1, TimeSpan.FromSeconds(0));
+            animation.KeyFrames.Add(keyFrame1);
+
+            DiscreteObjectKeyFrame keyFrame2 = new DiscreteObjectKeyFrame(color2, TimeSpan.FromSeconds(1));
+            animation.KeyFrames.Add(keyFrame2);
+
+            Storyboard.SetTargetProperty(animation, new PropertyPath("(Ellipse.Fill).(SolidColorBrush.Color)"));
+
+            var storyboard = new Storyboard();
+            storyboard.Children.Add(animation);
+
+            var beginStoryboard = new BeginStoryboard();
+            beginStoryboard.Storyboard = storyboard;
+
+            var eventTrigger = new EventTrigger();
+            eventTrigger.Actions.Add(beginStoryboard);
+            eventTrigger.RoutedEvent = Ellipse.LoadedEvent;
+
+            var ellipse = new Ellipse();
+            ellipse.Fill = Brushes.Transparent;
+            ellipse.Triggers.Add(eventTrigger);
+
+            return ellipse;
         }
-        private void RefreshMarkerImage(Marker marker, Image image)
+
+        private void AddMarker(Marker marker)
         {
-            if (image != null)
+            FrameworkElement markerElement;
+
+            switch (marker.Type)
+            {
+                case MarkerType.CurrentPlayer:
+                    {
+                        Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
+                        ellipse.Name = "Marker_" + marker.Id;
+                        ellipse.Tag = marker.Type;
+
+                        markerElement = ellipse;
+                    }
+                    break;
+
+                case MarkerType.OtherPlayer:
+                    {
+                        Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
+                        ellipse.Name = "Marker_" + marker.Id;
+                        ellipse.Tag = marker.Type;
+
+                        markerElement = ellipse;
+                    }
+                    break;
+
+                default:
+                    Image image = new Image
+                    {
+                        Name = "Marker_" + marker.Id,
+                        Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)marker.Icon}.png", UriKind.Absolute)),
+                        Tag = marker.Type
+                    };
+                    image.PreviewMouseWheel += OnPreviewMouseWheel;
+                    markerElement = image;
+                    break;
+            }
+            MarkersCanvas.Children.Add(
+                markerElement
+                );
+            RefreshMarker(marker, markerElement);
+        }
+        private void RefreshMarker(Marker marker, FrameworkElement element)
+        {
+            if (element != null)
             {
                 // Refresh its size based on the scale
-                (double width, double height) = CalcMarkerImageSize(marker);
-                image.Width = width;
-                image.Height = height;
+                (double width, double height) = CalcMarkerSize(element);
+                element.Width = width;
+                element.Height = height;
 
                 // Refresh its position based on the scale
-                (double x, double y) = CalcMarkerImagePosition(marker);
-                Canvas.SetLeft(image, x);
-                Canvas.SetTop(image, y);
+                (double x, double y) = CalcMarkerPosition(marker, element);
+                Canvas.SetLeft(element, x);
+                Canvas.SetTop(element, y);
             }
-        }
-        private void RemoveMarkerImage(Image image)
-        {
-            MarkersCanvas.Children.Remove(image);
         }
 
         private double CalcTextBlockFontSize(Marker marker, TextBlock textBlock)
@@ -230,7 +320,7 @@ namespace LoUAM
         {
             TextBlock NewTextBlock = new TextBlock
             {
-                Name = "TextBlock_" + marker.Id,
+                Name = "Label_" + marker.Id,
                 Text = marker.Label,
                 FontSize = 12,
                 Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFFFFF")),
@@ -240,10 +330,11 @@ namespace LoUAM
             MarkersCanvas.Children.Add(
                 NewTextBlock
                 );
-            RefreshMarkerTextBlock(marker, NewTextBlock);
+            RefreshLabel(marker, NewTextBlock);
         }
-        private void RefreshMarkerTextBlock(Marker marker, TextBlock textblock)
+        private void RefreshLabel(Marker marker, FrameworkElement element)
         {
+            TextBlock textblock = element as TextBlock;
             if (textblock != null)
             {
                 // Refresh its size based on the scale
@@ -330,11 +421,6 @@ namespace LoUAM
             scrollViewer.ScrollToVerticalOffset(offsetY);
         }
 
-        private void RemoveMarkerTextBlock(TextBlock textblock)
-        {
-            MarkersCanvas.Children.Remove(textblock);
-        }
-
         private void RefreshMarkers(Dictionary<MarkerType, Dictionary<string, Marker>> markers)
         {
             foreach (var markerType in markers.Keys) {
@@ -343,28 +429,27 @@ namespace LoUAM
         }
         private void RefreshMarkers(MarkerType markerType, Dictionary<string, Marker> markers)
         {
-            // Get all the images of this type
-            var images = MarkersCanvas.Children.OfType<Image>().Where(i => i.Tag.ToString() == markerType.ToString()).ToDictionary(i => i.Name, i => i);
-            var textblocks = MarkersCanvas.Children.OfType<TextBlock>().Where(i => i.Tag.ToString() == markerType.ToString()).ToDictionary(i => i.Name, i => i);
+            // Get all the elements
+            var elements = MarkersCanvas.Children.OfType<FrameworkElement>().Where(i => i.Tag.ToString() == markerType.ToString()).ToDictionary(i => i.Name, i => i);
 
             foreach (var marker in markers.Values) 
             {
-                if (images.Keys.Contains("Image_" + marker.Id))
+                if (elements.Keys.Contains("Marker_" + marker.Id))
                 {
                     // Refresh existing markers
-                    RefreshMarkerImage(marker, images["Image_" + marker.Id]);
-                    images.Remove("Image_" + marker.Id);
+                    RefreshMarker(marker, elements["Marker_" + marker.Id]);
+                    elements.Remove("Marker_" + marker.Id);
                 }
                 else
                 {
                     // Add missing markers
-                    AddMarkerImage(marker);
+                    AddMarker(marker);
                 }
-                if (textblocks.Keys.Contains("TextBlock_" + marker.Id))
+                if (elements.Keys.Contains("Label_" + marker.Id))
                 {
                     // Refresh existing markers
-                    RefreshMarkerTextBlock(marker, textblocks["TextBlock_" + marker.Id]);
-                    textblocks.Remove("TextBlock_" + marker.Id);
+                    RefreshLabel(marker, elements["Label_" + marker.Id]);
+                    elements.Remove("Label_" + marker.Id);
                 }
                 else
                 {
@@ -373,14 +458,10 @@ namespace LoUAM
                 }
             }
 
-            // And remove images that are left of this type, i.e. images that have no corresponding marker anymore
-            foreach (var image in images)
+            // And remove images that are left of this type, i.e. markers and labels that have no corresponding marker anymore
+            foreach (var element in elements)
             {
-                RemoveMarkerImage(image.Value);
-            }
-            foreach (var textblock in textblocks)
-            {
-                RemoveMarkerTextBlock(textblock.Value);
+                MarkersCanvas.Children.Remove(element.Value);
             }
         }
 

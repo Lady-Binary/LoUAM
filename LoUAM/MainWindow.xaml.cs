@@ -95,9 +95,19 @@ namespace LoUAM
         }
 
         #region Timers
+        //private static Random rnd = new Random();
+        //private static Player MockPlayer = new Player(
+        //        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+        //        (ulong)rnd.Next(1, 1000000),
+        //        $"LadyBinary",
+        //        (ulong)rnd.Next(1, 1000),
+        //        (ulong)rnd.Next(1, 1000),
+        //        (ulong)rnd.Next(1, 1000));
 
         private Player GetCurrentPlayer()
         {
+            //MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            //return MockPlayer;
 
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return null;
@@ -158,7 +168,7 @@ namespace LoUAM
                 Marker currentPlayerMarker = new Marker(
                     MarkerType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
-                    MarkerIcon.blue,
+                    MarkerIcon.none,
                     currentPlayer.DisplayName,
                     currentPlayer.X,
                     currentPlayer.Y,
@@ -186,8 +196,6 @@ namespace LoUAM
             Debug.Print("this.TimerRefreshCurrentPlayer.Stop();");
             TimerRefreshCurrentPlayer.Stop();
 
-            //Debug.Print("RefreshCurrentPlayerMock()");
-            //RefreshCurrentPlayerMock();
             Debug.Print("RefreshCurrentPlayer()");
             RefreshCurrentPlayer();
 
@@ -219,7 +227,7 @@ namespace LoUAM
                         TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
                         List<Marker> OtherMarkers = TheServer.Players.Values
                         .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                        .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.green, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                        .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
                         MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                     }
                 }
@@ -268,7 +276,7 @@ namespace LoUAM
                     IEnumerable<Player> OtherPlayers = await TheClient.RetrievePlayers();
                     List<Marker> OtherMarkers = OtherPlayers
                         .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                        .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.green, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                        .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
                     MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                 }
                 catch (Exception ex)
@@ -327,16 +335,26 @@ namespace LoUAM
             return MonoModule;
         }
 
+        private static void Log(string s)
+        {
+            using (StreamWriter w = File.AppendText("c:\\log.txt"))
+            {
+                w.WriteLine(s);
+            }
+        }
         private void Inject(int ProcessId)
         {
+            Log("1");            
             var MonoModule = GetMonoModule(ProcessId);
 
             String AssemblyPath = "LoU.dll";
 
+            Log("2");
             IntPtr handle = Native.OpenProcess(ProcessAccessRights.PROCESS_ALL_ACCESS, false, ProcessId);
 
             if (handle == IntPtr.Zero)
             {
+                Log("3");
                 UpdateMainStatus(Colors.Red, "Failed to open process");
                 return;
             }
@@ -345,6 +363,7 @@ namespace LoUAM
 
             try
             {
+                Log("4");
                 file = File.ReadAllBytes(AssemblyPath);
             }
             catch (IOException)
@@ -353,12 +372,14 @@ namespace LoUAM
                 return;
             }
 
+            Log("5");
             UpdateMainStatus(Colors.Orange, $"Injecting {Path.GetFileName(AssemblyPath)}");
 
             using (Injector injector = new Injector(handle, MonoModule))
             {
                 try
                 {
+                    Log("6");
                     IntPtr asm = injector.Inject(file, "LoU", "Loader", "Load");
                     UpdateMainStatus(Colors.Green, $"Injection on {ProcessId.ToString()} successful");
                 }

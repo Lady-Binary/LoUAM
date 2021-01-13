@@ -161,7 +161,7 @@ namespace LoUAM
                     string label = labelNode.InnerText;
 
                     XmlNode iconNode = placeNode.SelectSingleNode("icon");
-                    MarkerIcon icon = Enum.TryParse<MarkerIcon>(iconNode.InnerText, true, out icon) ? icon : MarkerIcon.grey;
+                    MarkerIcon icon = Enum.TryParse<MarkerIcon>(iconNode.InnerText, true, out icon) ? icon : MarkerIcon.none;
 
                     XmlNode latNode = placeNode.SelectSingleNode("lat");
                     float lat = float.TryParse(latNode.InnerText, out lat) ? lat : 0;

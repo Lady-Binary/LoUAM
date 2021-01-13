@@ -316,7 +316,7 @@ namespace LoUAM
                 y
                 );
         }
-        private void AddMarkerTextBlock(Marker marker)
+        private void AddLabel(Marker marker)
         {
             TextBlock NewTextBlock = new TextBlock
             {
@@ -445,16 +445,19 @@ namespace LoUAM
                     // Add missing markers
                     AddMarker(marker);
                 }
-                if (elements.Keys.Contains("Label_" + marker.Id))
+                if (marker.Type != MarkerType.CurrentPlayer)
                 {
-                    // Refresh existing markers
-                    RefreshLabel(marker, elements["Label_" + marker.Id]);
-                    elements.Remove("Label_" + marker.Id);
-                }
-                else
-                {
-                    // Add missing markers
-                    AddMarkerTextBlock(marker);
+                    if (elements.Keys.Contains("Label_" + marker.Id))
+                    {
+                        // Refresh existing markers
+                        RefreshLabel(marker, elements["Label_" + marker.Id]);
+                        elements.Remove("Label_" + marker.Id);
+                    }
+                    else
+                    {
+                        // Add missing markers
+                        AddLabel(marker);
+                    }
                 }
             }
 

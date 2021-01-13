@@ -185,15 +185,6 @@
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\blue_marker.png" />
-    <Resource Include="Images\green_marker.png" />
-    <Resource Include="Images\grey_marker.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\orange_marker.png" />
-    <Resource Include="Images\red_marker.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\0.png" />
     <Resource Include="Images\1.png" />
     <Resource Include="Images\10.png" />

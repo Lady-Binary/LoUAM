@@ -157,19 +157,19 @@ namespace LoUAM
             {
                 try
                 {
-                    XmlNode labelNode = placeNode.SelectSingleNode("label");
-                    string label = labelNode.InnerText;
+                    XmlNode nameNode = placeNode.SelectSingleNode("name");
+                    string name = nameNode.InnerText;
 
-                    XmlNode iconNode = placeNode.SelectSingleNode("icon");
-                    MarkerIcon icon = Enum.TryParse<MarkerIcon>(iconNode.InnerText, true, out icon) ? icon : MarkerIcon.none;
+                    XmlNode typeNode = placeNode.SelectSingleNode("type");
+                    MarkerIcon type = Enum.TryParse<MarkerIcon>(typeNode.InnerText, true, out type) ? type : MarkerIcon.none;
 
-                    XmlNode latNode = placeNode.SelectSingleNode("lat");
-                    float lat = float.TryParse(latNode.InnerText, out lat) ? lat : 0;
+                    XmlNode zNode = placeNode.SelectSingleNode("z");
+                    float z = float.TryParse(zNode.InnerText, out z) ? z : 0;
 
-                    XmlNode lngNode = placeNode.SelectSingleNode("lng");
-                    float lng = float.TryParse(lngNode.InnerText, out lng) ? lng : 0;
+                    XmlNode xNode = placeNode.SelectSingleNode("x");
+                    float x = float.TryParse(xNode.InnerText, out x) ? x : 0;
 
-                    Marker marker = new Marker(MarkerType.Place, Guid.NewGuid().ToString("N"), icon, label, lng, 0, lat);
+                    Marker marker = new Marker(MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
 
                     Places.Add(marker);
                 }

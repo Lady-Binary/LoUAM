@@ -68,12 +68,6 @@
     <ApplicationIcon>louam.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AssetStudio">
-      <HintPath>libs\AssetStudio.dll</HintPath>
-    </Reference>
-    <Reference Include="AssetStudioUtility">
-      <HintPath>libs\AssetStudioUtility.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -173,10 +167,6 @@
     <Resource Include="icons\uo.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssetStudio.PInvoke\AssetStudio.PInvoke.csproj">
-      <Project>{40c796b5-88ce-4adc-acd6-2f4862b7f136}</Project>
-      <Name>AssetStudio.PInvoke</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LoU\LOU.csproj">
       <Project>{99e17151-042b-499d-b752-5b185ab289fa}</Project>
       <Name>LOU</Name>

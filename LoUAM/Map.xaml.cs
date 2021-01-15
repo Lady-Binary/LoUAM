@@ -547,7 +547,7 @@ namespace LoUAM
                     }
                     break;
             }
-            TileFolder = "C:\\Images"; //this is an absolute folder for now
+            TileFolder = System.AppDomain.CurrentDomain.BaseDirectory + "MapData\\"; //this is an absolute folder for now
             TileName = $"Grid_x{x}_z{z}_{subtile}";
             TilePath = TileFolder + "\\" + TileName + ".png";
             if (File.Exists(TilePath))

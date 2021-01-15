@@ -161,9 +161,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\map.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="icons\uo.ico" />
   </ItemGroup>
   <ItemGroup>

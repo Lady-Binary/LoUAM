@@ -358,61 +358,38 @@ namespace LoUAM
             }
         }
 
-        private (double, double) WorldXZToMapXY(float X, float Z)
+        // These are taken from the prefabs tiles, but they're a bit off
+        // Each tile is made of 4 subtiles, and the subtiles order is:
+        // first tile is NE, second tile is SE, third tile is NW, fourth tile is SW
+        // Not sure yet where the anchors of these is, and their size
+        // Anchor is presumably at the center of the tile, and the tile is 256x256
+        const double WORLD_SW_LAT = -2432.0D - 128D; // Grid x-6 z-5
+        const double WORLD_SW_LNG = -2944.0D - 128D; // Grid x-6 z-5
+        const double WORLD_NE_LAT = 2432.991D + 128D; // Grid x5 z4
+        const double WORLD_NE_LNG = 2985.61D + 128D; // Grid x5 z4
+
+        const double MAP_SW_LAT = (float)TILE_HEIGHT * 10 * 2;
+        const double MAP_SW_LNG = 0;
+        const double MAP_NE_LAT = 0;
+        const double MAP_NE_LNG = (float)TILE_WIDTH * 12 * 2;
+
+        const double LAT_SCALE = (WORLD_NE_LAT - WORLD_SW_LAT) / (MAP_NE_LAT - MAP_SW_LAT);
+        const double LNG_SCALE = (WORLD_NE_LNG - WORLD_SW_LNG) / (MAP_NE_LNG - MAP_SW_LNG);
+
+        private (double, double) WorldXZToMapXY(double X, double Z)
         {
-            // Bounds taken from: https://legendsofaria.gamepedia.com/Interactive_Map
-            //
-            // var bounds = [[-3968.87, -3741.21], [3487.13, 3706.79]];
-            //
-            // Our map is 800x800
-            //
-            //float WORLD_SW_LAT = -3968.87f;
-            //float WORLD_SW_LNG = -3741.21f;
-            //float WORLD_NE_LAT = 3487.13f;
-            //float WORLD_NE_LNG = 3706.79f;
-            //
-            float WORLD_SW_LAT = 384 - (512 * 5) - 256;
-            float WORLD_SW_LNG = 384 - (512 * 6) - 256;
-            float WORLD_NE_LAT = 384 + (512 * 4) + 256;
-            float WORLD_NE_LNG = 384 + (512 * 5) + 256;
+            double MAP_X = (X - WORLD_SW_LNG) / LNG_SCALE + MAP_SW_LNG;
+            double MAP_Y = (Z - WORLD_SW_LAT) / LAT_SCALE + MAP_SW_LAT;
 
-            float MAP_SW_LAT = (float)TILE_HEIGHT * 10 * 2;
-            float MAP_SW_LNG = 0;
-            float MAP_NE_LAT = 0;
-            float MAP_NE_LNG = (float)TILE_WIDTH * 12 * 2;
+            return (MAP_X, MAP_Y);
+        }
 
-            float MAP_LAT_TRANSFORM = -1; // real world y asis and image y axis are inverted
-            float MAP_LNG_TRANSFORM = 1;
+        private (double, double) MapXYToWorldXZ(double X, double Y)
+        {
+            double WORLD_X = (X - MAP_SW_LNG) * LNG_SCALE + WORLD_SW_LNG;
+            double WORLD_Y = (Y - MAP_SW_LAT) * LAT_SCALE + WORLD_SW_LAT;
 
-            float MAP_LAT_FACTOR = (WORLD_NE_LAT - WORLD_SW_LAT) / (MAP_NE_LAT - MAP_SW_LAT) * MAP_LAT_TRANSFORM;
-            float MAP_LNG_FACTOR = (WORLD_NE_LNG - WORLD_SW_LNG) / (MAP_NE_LNG - MAP_SW_LNG) * MAP_LNG_TRANSFORM;
-
-            float mapLat =
-                MAP_LAT_TRANSFORM == 1
-                ?
-                (Z - WORLD_SW_LAT) / MAP_LAT_FACTOR
-                :
-                MAP_LAT_TRANSFORM == -1
-                ?
-                (WORLD_NE_LAT - Z) / MAP_LAT_FACTOR
-                :
-                0;
-
-            float mapLng =
-                MAP_LNG_TRANSFORM == 1
-                ?
-                (X - WORLD_SW_LNG) / MAP_LNG_FACTOR
-                :
-                MAP_LNG_TRANSFORM == -1
-                ?
-                (WORLD_NE_LNG - X) / MAP_LNG_FACTOR
-                :
-                0;
-
-            return (
-                mapLng,
-                mapLat
-                );
+            return (WORLD_X, WORLD_Y);
         }
 
         public void Center(float X, float Z)
@@ -511,6 +488,27 @@ namespace LoUAM
         }
 
         #endregion
+        private BitmapSource CreateBitmapSource(int width, int height, System.Windows.Media.Color color)
+        {
+            int stride = width / 8;
+            byte[] pixels = new byte[height * stride];
+
+            List<System.Windows.Media.Color> colors = new List<System.Windows.Media.Color>();
+            colors.Add(color);
+            BitmapPalette myPalette = new BitmapPalette(colors);
+
+            BitmapSource image = BitmapSource.Create(
+                width,
+                height,
+                96,
+                96,
+                PixelFormats.Indexed1,
+                myPalette,
+                pixels,
+                stride);
+
+            return image;
+        }
 
         private Image CreateSubTile(int x, int z, int subtile)
         {
@@ -554,6 +552,9 @@ namespace LoUAM
             {
                 var uriSource = new Uri(TilePath, UriKind.Absolute);
                 SubTileImage.Source = new BitmapImage(uriSource);
+            } else
+            {
+                SubTileImage.Source = CreateBitmapSource(TILE_WIDTH, TILE_HEIGHT, Colors.Black);
             }
             SubTileImage.Name = TileName.Replace('-','_');
             SubTileImage.Width = TILE_WIDTH;
@@ -594,6 +595,16 @@ namespace LoUAM
                     TilesGrid.Children.Add(SubTilesGrid);
                 }
             }
+        }
+
+        private void TilesGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point posMap = e.GetPosition(TilesGrid);
+
+            (double worldX, double worldZ) = MapXYToWorldXZ((float)posMap.X, (float)posMap.Y);
+
+            MouseWindowCoordsLabel.Content = $"Mouse window coords: {posMap.X:0.00},{posMap.Y:0.00}";
+            MouseWorldCoordsLabel.Content = $"Mouse world coords: {worldX:0.00},{worldZ:0.00}";
         }
     }
 }

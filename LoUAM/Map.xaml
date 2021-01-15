@@ -25,7 +25,7 @@
                         </TransformGroup>
                     </Grid.LayoutTransform>
                     <Viewbox Name="MapViewBox" Grid.Column="0" Grid.Row="0">
-                        <Grid Name="TilesGrid">
+                        <Grid Name="TilesGrid" MouseMove="TilesGrid_MouseMove" PreviewMouseMove="TilesGrid_MouseMove">
                         </Grid>
                     </Viewbox>
                     <Canvas Name="MarkersCanvas" Grid.Column="0" Grid.Row="0">
@@ -33,5 +33,11 @@
                 </Grid>
             </ScrollViewer>
         </Grid>
+        <Canvas>
+            <Label Name="MapCenterWorldCoordsLabel" Canvas.Left="10" Canvas.Top="10" Foreground="Yellow">Map center world coords: </Label>
+            <Label Name="MouseWorldCoordsLabel" Canvas.Left="10" Canvas.Bottom="10" Foreground="Yellow">Mouse world coords:</Label>
+            <Label Name="MapCenterWindowCoordsLabel" Canvas.Right="10" Canvas.Top="10" Foreground="Yellow">Map center window coords:</Label>
+            <Label Name="MouseWindowCoordsLabel" Canvas.Right="10" Canvas.Bottom="10" Foreground="Yellow">Mouse window coords:</Label>
+        </Canvas>
     </Grid>
 </UserControl>

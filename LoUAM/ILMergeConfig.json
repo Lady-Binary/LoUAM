@@ -1,7 +1,7 @@
 {
   "General": {
     "InputAssemblies": [
-      "SharpMonoInjector.dll"
+        "SharpMonoInjector.dll"
     ]
   }
 }

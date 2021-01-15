@@ -262,3 +262,6 @@ __pycache__/
 
 # DO NOT commit libs
 LOU/libs/*.dll
+
+# Commit the asset studio libs
+!LoUAM/libs/x64

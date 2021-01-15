@@ -13,6 +13,8 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AssetStudio;
+using Microsoft.Win32;
 
 namespace LoUAM
 {
@@ -52,6 +54,8 @@ namespace LoUAM
         {
             MainWindow.TheMainWindow = this;
 
+            assetsManager = new AssetsManager();
+
             TimerRefreshCurrentPlayer = new DispatcherTimer();
             TimerRefreshCurrentPlayer.Tick += TimerRefreshCurrentPlayer_Tick;
             TimerRefreshCurrentPlayer.Interval = new TimeSpan(0, 0, 0, 0, 100);
@@ -76,7 +80,7 @@ namespace LoUAM
             MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
         }
 
-        private void UpdateMainStatus(Color color, string message)
+        private void UpdateMainStatus(System.Windows.Media.Color color, string message)
         {
             if (MainStatusLabel.Content.ToString() != message)
             {
@@ -85,7 +89,7 @@ namespace LoUAM
             }
         }
 
-        private void UpdateLinkStatus(Color color, string message)
+        private void UpdateLinkStatus(System.Windows.Media.Color color, string message)
         {
             if (LinkStatusLabel.Content.ToString() != message)
             {
@@ -156,7 +160,7 @@ namespace LoUAM
 
         public void RefreshCurrentPlayer()
         {
-            Debug.Print("RefreshCurrentPlayer");
+            //Debug.Print("RefreshCurrentPlayer");
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -191,15 +195,15 @@ namespace LoUAM
         }
         private void TimerRefreshCurrentPlayer_Tick(object sender, EventArgs e)
         {
-            Debug.Print("TimerRefreshCurrentPlayer_Tick()");
+            //Debug.Print("TimerRefreshCurrentPlayer_Tick()");
 
-            Debug.Print("this.TimerRefreshCurrentPlayer.Stop();");
+            //Debug.Print("this.TimerRefreshCurrentPlayer.Stop();");
             TimerRefreshCurrentPlayer.Stop();
 
-            Debug.Print("RefreshCurrentPlayer()");
+            //Debug.Print("RefreshCurrentPlayer()");
             RefreshCurrentPlayer();
 
-            Debug.Print("TimerRefreshCurrentPlayer.Start();");
+            //Debug.Print("TimerRefreshCurrentPlayer.Start();");
             TimerRefreshCurrentPlayer.Start();
         }
 
@@ -289,15 +293,15 @@ namespace LoUAM
         }
         private async void TimerUpdateServer_TickAsync(object sender, EventArgs e)
         {
-            Debug.Print("UpdateServer_Tick()");
+            //Debug.Print("UpdateServer_Tick()");
 
-            Debug.Print("TimerUpdateServer.Stop();");
+            //Debug.Print("TimerUpdateServer.Stop();");
             TimerUpdateServer.Stop();
 
-            Debug.Print("UpdateServer()");
+            //Debug.Print("UpdateServer()");
             await UpdateServerAsync();
 
-            Debug.Print("TimerUpdateServer.Start();");
+            //Debug.Print("TimerUpdateServer.Start();");
             TimerUpdateServer.Start();
         }
         #endregion
@@ -399,10 +403,15 @@ namespace LoUAM
         private static RoutedCommand connectToLoAClientCommand = new RoutedCommand();
         public static RoutedCommand ConnectToLoAClientCommand { get => connectToLoAClientCommand; set => connectToLoAClientCommand = value; }
 
+        private static RoutedCommand generateMapCommand = new RoutedCommand();
+        public static RoutedCommand GenerateMapCommand { get => generateMapCommand; set => generateMapCommand = value; }
+
         private static RoutedCommand trackPlayerCommand = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get => trackPlayerCommand; set => trackPlayerCommand = value; }
 
         private static RoutedCommand linkControlsCommand = new RoutedCommand();
+        private AssetsManager assetsManager;
+
         public static RoutedCommand LinkControlsCommand { get => linkControlsCommand; set => linkControlsCommand = value; }
 
         private void ExitCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -558,6 +567,60 @@ namespace LoUAM
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.SaveSettings();
         }
+
+        private void GenerateMapCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void GenerateMapCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                FileName = "resources.assets*",
+                Filter = "Unity Assets Files|*.assets"
+            };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                Debug.WriteLine(openFileDialog.FileName);
+                assetsManager.LoadFiles(openFileDialog.FileNames);
+                Debug.WriteLine("Loaded");
+                BuildAssetData();
+            }
+        }
+
+        private string BuildAssetData()
+        {
+            foreach (var assetsFile in assetsManager.assetsFileList)
+            {
+                foreach (var asset in assetsFile.Objects)
+                {
+
+                    if (asset.type == ClassIDType.Texture2D)
+                    {
+
+                        Texture2D TextureAsset = (Texture2D)asset;
+                        if (TextureAsset.m_Name.StartsWith("Grid_"))
+                        {
+                            string status = "Exporting: " + TextureAsset.m_Name;
+                            if (Exporter.ExportTexture2D(TextureAsset))
+                            {
+                                Debug.WriteLine("Exported: " + TextureAsset.m_Name);
+                            }
+                            else
+                            {
+                                Debug.WriteLine("Export failed for: " + TextureAsset.m_Name);
+                            }
+                        }
+
+                    }
+                }
+            }
+            Debug.WriteLine("Done");
+            return "done";
+        }
+
         #endregion Commands
     }
 }

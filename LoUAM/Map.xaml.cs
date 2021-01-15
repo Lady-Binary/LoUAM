@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,6 +17,9 @@ namespace LoUAM
     /// </summary>
     public partial class Map : UserControl
     {
+        private const int TILE_WIDTH = 32;
+        private const int TILE_HEIGHT = 32;
+
         public Map()
         {
             InitializeComponent();
@@ -362,15 +366,20 @@ namespace LoUAM
             //
             // Our map is 800x800
             //
-            float WORLD_SW_LAT = -3968.87f;
-            float WORLD_SW_LNG = -3741.21f;
-            float WORLD_NE_LAT = 3487.13f;
-            float WORLD_NE_LNG = 3706.79f;
+            //float WORLD_SW_LAT = -3968.87f;
+            //float WORLD_SW_LNG = -3741.21f;
+            //float WORLD_NE_LAT = 3487.13f;
+            //float WORLD_NE_LNG = 3706.79f;
+            //
+            float WORLD_SW_LAT = 384 - (512 * 5) - 256;
+            float WORLD_SW_LNG = 384 - (512 * 6) - 256;
+            float WORLD_NE_LAT = 384 + (512 * 4) + 256;
+            float WORLD_NE_LNG = 384 + (512 * 5) + 256;
 
-            float MAP_SW_LAT = (float)this.MapViewBox.ActualHeight;
+            float MAP_SW_LAT = (float)TILE_HEIGHT * 10 * 2;
             float MAP_SW_LNG = 0;
             float MAP_NE_LAT = 0;
-            float MAP_NE_LNG = (float)this.MapViewBox.ActualWidth;
+            float MAP_NE_LNG = (float)TILE_WIDTH * 12 * 2;
 
             float MAP_LAT_TRANSFORM = -1; // real world y asis and image y axis are inverted
             float MAP_LNG_TRANSFORM = 1;
@@ -502,5 +511,89 @@ namespace LoUAM
         }
 
         #endregion
+
+        private Image CreateSubTile(int x, int z, int subtile)
+        {
+            Image SubTileImage;
+            string TileFolder;
+            string TileName;
+            string TilePath;
+
+            SubTileImage = new Image();
+            switch (subtile)
+            {
+                case 0:
+                    {
+                        SubTileImage.SetValue(Grid.RowProperty, 0);
+                        SubTileImage.SetValue(Grid.ColumnProperty, 1);
+                    }
+                    break;
+                case 1:
+                    {
+                        SubTileImage.SetValue(Grid.RowProperty, 1);
+                        SubTileImage.SetValue(Grid.ColumnProperty, 1);
+                    }
+                    break;
+                case 2:
+                    {
+                        SubTileImage.SetValue(Grid.RowProperty, 0);
+                        SubTileImage.SetValue(Grid.ColumnProperty, 0);
+                    }
+                    break;
+                case 3:
+                    {
+                        SubTileImage.SetValue(Grid.RowProperty, 1);
+                        SubTileImage.SetValue(Grid.ColumnProperty, 0);
+                    }
+                    break;
+            }
+            TileFolder = "C:\\Images"; //this is an absolute folder for now
+            TileName = $"Grid_x{x}_z{z}_{subtile}";
+            TilePath = TileFolder + "\\" + TileName + ".png";
+            if (File.Exists(TilePath))
+            {
+                var uriSource = new Uri(TilePath, UriKind.Absolute);
+                SubTileImage.Source = new BitmapImage(uriSource);
+            }
+            SubTileImage.Name = TileName.Replace('-','_');
+            SubTileImage.Width = TILE_WIDTH;
+            SubTileImage.Height = TILE_HEIGHT;
+
+            return SubTileImage;
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int x = -6; x < 6; x++)
+            {
+                TilesGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            }
+            for (int z = -5; z < 5; z++)
+            {
+                TilesGrid.RowDefinitions.Add(new RowDefinition());
+            }
+
+            for (int x = -6; x < 6; x++)
+            {
+                for (int z = -5; z < 5; z++)
+                {
+                    Grid SubTilesGrid = new Grid();
+                    SubTilesGrid.SetValue(Grid.RowProperty, 9 - (z + 5));
+                    SubTilesGrid.SetValue(Grid.ColumnProperty, x + 6);
+
+                    SubTilesGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                    SubTilesGrid.ColumnDefinitions.Add(new ColumnDefinition());
+                    SubTilesGrid.RowDefinitions.Add(new RowDefinition());
+                    SubTilesGrid.RowDefinitions.Add(new RowDefinition());
+
+                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 0));
+                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 1));
+                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 2));
+                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 3));
+
+                    TilesGrid.Children.Add(SubTilesGrid);
+                }
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-using LoU;
+﻿using LoU;
 using System;
 using System.Diagnostics;
 using System.Windows;
@@ -13,8 +13,6 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using AssetStudio;
-using Microsoft.Win32;
 
 namespace LoUAM
 {

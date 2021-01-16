@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -188,7 +188,6 @@ namespace LoUAM
                 {
                     IEnumerable<Player> players;
                     players = JsonConvert.DeserializeObject<IEnumerable<Player>>(json);
-                    System.Diagnostics.Debug.WriteLine(players.ToString());
                     return players;
                 }
 

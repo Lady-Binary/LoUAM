@@ -1,4 +1,4 @@
-﻿using LoU;
+using LoU;
 using System;
 using System.Diagnostics;
 using System.Windows;

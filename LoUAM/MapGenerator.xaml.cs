@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections.Generic;
@@ -127,7 +127,6 @@ namespace LoUAM
             string GameDirectoryDefault = "";
             foreach(string DefaultDirectory in DefaultDirectories)
             {
-                Debug.WriteLine(DefaultDirectory);
                 if (Directory.Exists(DefaultDirectory))
                 {
                     GameDirectoryDefault = DefaultDirectory;
@@ -135,7 +134,8 @@ namespace LoUAM
             }
 
             GameDirectory = (string)LoUAMKey.GetValue("GameDirectory", GameDirectoryDefault);
-            MapGenerated = bool.TryParse(LoUAMKey.GetValue("MapGenerated", true).ToString(), out bool mgb) ? mgb : false;
+            MapGenerated = bool.TryParse(LoUAMKey.GetValue("MapGenerated", false).ToString(), out bool mgb) ? mgb : false;
+            Debug.WriteLine("MapGenerated: " + MapGenerated);
         }
 
         public static void SaveSettings()
@@ -148,6 +148,14 @@ namespace LoUAM
                 LoUAMKey = SoftwareKey.CreateSubKey("LoUAM", true);
             }
 
+            RegistryKey LoUKey = SoftwareKey.OpenSubKey("LoU", true);
+            if (LoUKey == null)
+            {
+                LoUKey = SoftwareKey.CreateSubKey("LoU", true);
+            }
+
+            ((App)Application.Current).GameDirectory = GameDirectory;
+            LoUKey.SetValue("GameDirectory", GameDirectory);
             LoUAMKey.SetValue("GameDirectory", GameDirectory);
             LoUAMKey.SetValue("MapGenerated", MapGenerated);
         }

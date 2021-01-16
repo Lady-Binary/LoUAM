@@ -303,5 +303,15 @@
   <Target Name="AfterBuild">
     <Copy SourceFiles="$(SolutionDir)AssetStudio\AssetStudioFBXNative\bin\x64\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)\x64\" ContinueOnError="true" />
     <Copy SourceFiles="$(SolutionDir)AssetStudio\Texture2DDecoderNative\bin\x64\$(Configuration)\Texture2DDecoderNative.dll" DestinationFolder="$(TargetDir)\x64\" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\Assembly-CSharp.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\Assembly-CSharp-firstpass.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\CoreUtil.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\MessageCore.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\protobuf-net.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\CoreModule.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\InputLegacyModule.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\InputModule.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\PhysicsModule.dll" ContinueOnError="true" />
+    <Delete Files="$(TargetDir)\UnityEngine.UI.dll" ContinueOnError="true" />
   </Target>
 </Project>

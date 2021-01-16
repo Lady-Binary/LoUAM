@@ -10,12 +10,11 @@
         <CommandBinding Command="Close"  CanExecute="ExitCommand_CanExecute" Executed="ExitCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindow.ConnectToLoAClientCommand}" CanExecute="ConnectToLoAClientCommand_CanExecute" Executed="ConnectToLoAClientCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindow.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
-        <CommandBinding Command="{x:Static local:MainWindow.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
-        <CommandBinding Command="{x:Static local:MainWindow.GenerateMapCommand}" CanExecute="GenerateMapCommand_CanExecute" Executed="GenerateMapCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindow.ControlPanelCommand}" CanExecute="ControlPanelCommand_CanExecute" Executed="ControlPanelCommand_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
-        <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindow.LinkControlsCommand}"/>
+        <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindow.ControlPanelCommand}"/>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -29,12 +28,11 @@
                 <MenuItem Header="_Exit" Command="Close" InputGestureText="Ctrl+X" />
             </MenuItem>
             <MenuItem Header="_LoU">
-                <MenuItem Header="_Generate Map Files"  Command="{x:Static local:MainWindow.GenerateMapCommand}" />
                 <MenuItem Header="_Connect to LoA game client..." Command="{x:Static local:MainWindow.ConnectToLoAClientCommand}" />
                 <MenuItem Name="TrackPlayerMenu" Header="_Track Player" Command="{x:Static local:MainWindow.TrackPlayerCommand}" />
             </MenuItem>
             <MenuItem Header="_Link">
-                <MenuItem Header="_Link Controls..." Command="{x:Static local:MainWindow.LinkControlsCommand}" InputGestureText="Ctrl+K" />
+                <MenuItem Header="_Link Controls..." Command="{x:Static local:MainWindow.ControlPanelCommand}" InputGestureText="Ctrl+K" />
             </MenuItem>
         </Menu>
         <local:Map x:Name="MainMap" Grid.Row="1"></local:Map>

@@ -16,7 +16,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TabControl Grid.Row="0" Grid.ColumnSpan="2">
-            <TabItem Header="Link Controls">
+            <!--<TabItem Header="Map" HorizontalAlignment="Left" Height="19.96" VerticalAlignment="Top" Width="53.9733333333333">
+            </TabItem>-->
+            <TabItem Header="Link">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"></RowDefinition>

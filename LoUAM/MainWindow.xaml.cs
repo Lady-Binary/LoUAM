@@ -54,8 +54,6 @@ namespace LoUAM
         {
             MainWindow.TheMainWindow = this;
 
-            assetsManager = new AssetsManager();
-
             TimerRefreshCurrentPlayer = new DispatcherTimer();
             TimerRefreshCurrentPlayer.Tick += TimerRefreshCurrentPlayer_Tick;
             TimerRefreshCurrentPlayer.Interval = new TimeSpan(0, 0, 0, 0, 100);
@@ -75,6 +73,18 @@ namespace LoUAM
         {
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
+            MapGenerator.LoadSettings();
+            if (!Directory.Exists("./MapData"))
+            {
+                MapGenerator.MapGenerated = false;
+                MapGenerator.SaveSettings();
+            }
+            if (!MapGenerator.MapGenerated)
+            {
+                MapGenerator mapGenerator = new MapGenerator();
+                mapGenerator.Owner = this;
+                mapGenerator.ShowDialog();
+            }
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.LoadPlaces();
             MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
@@ -403,16 +413,11 @@ namespace LoUAM
         private static RoutedCommand connectToLoAClientCommand = new RoutedCommand();
         public static RoutedCommand ConnectToLoAClientCommand { get => connectToLoAClientCommand; set => connectToLoAClientCommand = value; }
 
-        private static RoutedCommand generateMapCommand = new RoutedCommand();
-        public static RoutedCommand GenerateMapCommand { get => generateMapCommand; set => generateMapCommand = value; }
-
         private static RoutedCommand trackPlayerCommand = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get => trackPlayerCommand; set => trackPlayerCommand = value; }
 
-        private static RoutedCommand linkControlsCommand = new RoutedCommand();
-        private AssetsManager assetsManager;
-
-        public static RoutedCommand LinkControlsCommand { get => linkControlsCommand; set => linkControlsCommand = value; }
+        private static RoutedCommand controlPanelCommand = new RoutedCommand();
+        public static RoutedCommand ControlPanelCommand { get => controlPanelCommand; set => controlPanelCommand = value; }
 
         private void ExitCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -546,11 +551,11 @@ namespace LoUAM
             MouseHook.HookStart();
         }
 
-        private void LinkControlsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void ControlPanelCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
         }
-        private void LinkControlsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void ControlPanelCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             ControlPanel controlPanel = new ControlPanel();
             controlPanel.Owner = this;
@@ -566,59 +571,6 @@ namespace LoUAM
             ControlPanel.TrackPlayer = !TrackPlayerMenu.IsChecked;
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.SaveSettings();
-        }
-
-        private void GenerateMapCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = true;
-        }
-
-        private void GenerateMapCommand_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                FileName = "resources.assets*",
-                Filter = "Unity Assets Files|*.assets"
-            };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                Debug.WriteLine(openFileDialog.FileName);
-                assetsManager.LoadFiles(openFileDialog.FileNames);
-                Debug.WriteLine("Loaded");
-                BuildAssetData();
-            }
-        }
-
-        private string BuildAssetData()
-        {
-            foreach (var assetsFile in assetsManager.assetsFileList)
-            {
-                foreach (var asset in assetsFile.Objects)
-                {
-
-                    if (asset.type == ClassIDType.Texture2D)
-                    {
-
-                        Texture2D TextureAsset = (Texture2D)asset;
-                        if (TextureAsset.m_Name.StartsWith("Grid_"))
-                        {
-                            string status = "Exporting: " + TextureAsset.m_Name;
-                            if (Exporter.ExportTexture2D(TextureAsset))
-                            {
-                                Debug.WriteLine("Exported: " + TextureAsset.m_Name);
-                            }
-                            else
-                            {
-                                Debug.WriteLine("Export failed for: " + TextureAsset.m_Name);
-                            }
-                        }
-
-                    }
-                }
-            }
-            Debug.WriteLine("Done");
-            return "done";
         }
 
         #endregion Commands

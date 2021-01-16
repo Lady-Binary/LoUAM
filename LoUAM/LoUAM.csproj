@@ -290,9 +290,7 @@
   </Target>
   <Import Project="..\packages\ILMerge.MSBuild.Task.1.0.7\build\ILMerge.MSBuild.Task.targets" Condition="Exists('..\packages\ILMerge.MSBuild.Task.1.0.7\build\ILMerge.MSBuild.Task.targets')" />
   <Target Name="AfterBuild">
-    <Copy SourceFiles="$(SolutionDir)AssetStudio\AssetStudioFBXNative\bin\Win32\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
-    <Copy SourceFiles="$(SolutionDir)AssetStudio\AssetStudioFBXNative\bin\x64\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
-    <Copy SourceFiles="$(SolutionDir)AssetStudio\Texture2DDecoderNative\bin\Win32\$(Configuration)\Texture2DDecoderNative.dll" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
-    <Copy SourceFiles="$(SolutionDir)AssetStudio\Texture2DDecoderNative\bin\x64\$(Configuration)\Texture2DDecoderNative.dll" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
+    <Copy SourceFiles="$(SolutionDir)AssetStudio\AssetStudioFBXNative\bin\x64\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)\x64\" ContinueOnError="true" />
+    <Copy SourceFiles="$(SolutionDir)AssetStudio\Texture2DDecoderNative\bin\x64\$(Configuration)\Texture2DDecoderNative.dll" DestinationFolder="$(TargetDir)\x64\" ContinueOnError="true" />
   </Target>
 </Project>

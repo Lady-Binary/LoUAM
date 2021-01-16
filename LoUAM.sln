@@ -20,6 +20,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudio.PInvoke", "AssetStudio\AssetStudio.PInvoke\AssetStudio.PInvoke.csproj", "{40C796B5-88CE-4ADC-ACD6-2F4862B7F136}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetStudioFBXWrapper", "AssetStudio\AssetStudioFBXWrapper\AssetStudioFBXWrapper.csproj", "{BD76E63F-1517-47FA-8233-33E853A3ACEE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027} = {11EA25A3-ED68-40EE-A9D0-7FDE3B583027}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetStudioFBXNative", "AssetStudio\AssetStudioFBXNative\AssetStudioFBXNative.vcxproj", "{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +142,16 @@ Global
 		{BD76E63F-1517-47FA-8233-33E853A3ACEE}.Release|x64.Build.0 = Release|x64
 		{BD76E63F-1517-47FA-8233-33E853A3ACEE}.Release|x86.ActiveCfg = Release|Any CPU
 		{BD76E63F-1517-47FA-8233-33E853A3ACEE}.Release|x86.Build.0 = Release|Any CPU
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x64.ActiveCfg = Debug|x64
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x64.Build.0 = Debug|x64
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x86.ActiveCfg = Debug|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Debug|x86.Build.0 = Debug|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|Any CPU.ActiveCfg = Release|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x64.ActiveCfg = Release|x64
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x64.Build.0 = Release|x64
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x86.ActiveCfg = Release|Win32
+		{11EA25A3-ED68-40EE-A9D0-7FDE3B583027}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

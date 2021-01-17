@@ -18,8 +18,8 @@ namespace LoUAM
     /// </summary>
     public partial class Map : UserControl
     {
-        private const int TILE_WIDTH = 32;
-        private const int TILE_HEIGHT = 32;
+        private const int TILE_WIDTH = 256;
+        private const int TILE_HEIGHT = 256;
 
         public Map()
         {
@@ -77,11 +77,11 @@ namespace LoUAM
 
             if (e.Delta > 0)
             {
-                slider.Value += 1;
+                slider.Value += 0.1;
             }
             if (e.Delta < 0)
             {
-                slider.Value -= 1;
+                slider.Value -= 0.1;
             }
 
             e.Handled = true;
@@ -144,8 +144,8 @@ namespace LoUAM
                     double dXInTargetPixels = targetNow.Value.X - targetBefore.Value.X;
                     double dYInTargetPixels = targetNow.Value.Y - targetBefore.Value.Y;
 
-                    double multiplicatorX = e.ExtentWidth / MapGrid.Width;
-                    double multiplicatorY = e.ExtentHeight / MapGrid.Height;
+                    double multiplicatorX = e.ExtentWidth / MapGrid.ActualWidth;
+                    double multiplicatorY = e.ExtentHeight / MapGrid.ActualHeight;
 
                     double newOffsetX = scrollViewer.HorizontalOffset -
                                         dXInTargetPixels * multiplicatorX;
@@ -167,33 +167,26 @@ namespace LoUAM
 
         private void RefreshMapTilesQuality()
         {
+            return;
             int zoom = (int) slider.Value;
 
             // Set a resolution between 32 and 1024 depending on zoom level
-            int dersiredResoltion = GetRequiredResolution((int)slider.Minimum, (int)slider.Maximum, 16, 1024, zoom);
+            int dersiredResoltion = Map.GetRequiredResolution((int)slider.Minimum, (int)slider.Maximum, 16, 1024, zoom);
 
-            foreach (Grid gridItem in TilesGrid.Children)
+            foreach (MapImage mapImage in TilesCanvas.Children)
             {
                 // Check if the current grid item is visible within the scroll viewer
-      
-                Point PositionInScrollviewer = gridItem.TranslatePoint(new Point(0, 0), scrollViewer);
+
+                Point PositionInScrollviewer = mapImage.TranslatePoint(new Point(0, 0), scrollViewer);
                 if (
                     PositionInScrollviewer.X >= -(TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
                     PositionInScrollviewer.X <= scrollViewer.ViewportWidth + (TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
                     PositionInScrollviewer.Y >= -(TILE_HEIGHT * 2 * scaleTransform.ScaleY) &&
-                    PositionInScrollviewer.Y <= scrollViewer.ViewportHeight + (TILE_HEIGHT *2 * scaleTransform.ScaleY)
-                )
-                {
-                    foreach (MapImage mapImage in gridItem.Children)
-                    {
-                        if (!mapImage.IsBlank)
-                        {
-                            mapImage.Source = GetScaledImage(mapImage.TilePath, dersiredResoltion);
-                        }
-                    }
+                    PositionInScrollviewer.Y <= scrollViewer.ViewportHeight + (TILE_HEIGHT * 2 * scaleTransform.ScaleY)
+                ) {
+                    //mapImage.UpdateResolution(dersiredResoltion);
                 }
             }
-
         }
 
         public static int GetRequiredResolution(int SliderMin, int SliderMax, int MinRes, int MaxRes, int SliderValue)
@@ -237,7 +230,7 @@ namespace LoUAM
         }
         private (double, double) CalcMarkerPosition(Marker marker, FrameworkElement element)
         {
-            (double x, double y) = WorldXZToMapXY(marker.X, marker.Z);
+            (double x, double y) = (marker.X, marker.Z);
 
             if (element is Image)
             {
@@ -350,7 +343,7 @@ namespace LoUAM
                 // Refresh its position based on the scale
                 (double x, double y) = CalcMarkerPosition(marker, element);
                 Canvas.SetLeft(element, x);
-                Canvas.SetTop(element, y);
+                Canvas.SetBottom(element, y);
             }
         }
 
@@ -360,7 +353,7 @@ namespace LoUAM
         }
         private (double, double) CalcLabelPosition(Marker marker, TextBlock textBlock)
         {
-            (double x, double y) = WorldXZToMapXY(marker.X, marker.Z);
+            (double x, double y) = (marker.X, marker.Z);
 
             return (
                 x - (textBlock.ActualWidth / 2),
@@ -395,7 +388,7 @@ namespace LoUAM
                 // Refresh its position based on the scale
                 (double labelx, double labely) = CalcLabelPosition(marker, textblock);
                 Canvas.SetLeft(textblock, labelx);
-                Canvas.SetTop(textblock, labely);
+                Canvas.SetBottom(textblock, labely);
 
                 // Refresh its text if needed
                 if (textblock.Text != marker.Label)
@@ -405,43 +398,9 @@ namespace LoUAM
             }
         }
 
-        // These are taken from the prefabs tiles, but they're a bit off
-        // Each tile is made of 4 subtiles, and the subtiles order is:
-        // first tile is NE, second tile is SE, third tile is NW, fourth tile is SW
-        // Not sure yet where the anchors of these is, and their size
-        // Anchor is presumably at the center of the tile, and the tile is 256x256
-        const double WORLD_SW_LAT = -2432.0D - 128D; // Grid x-6 z-5
-        const double WORLD_SW_LNG = -2944.0D - 128D; // Grid x-6 z-5
-        const double WORLD_NE_LAT = 2432.991D + 128D; // Grid x5 z4
-        const double WORLD_NE_LNG = 2985.61D + 128D; // Grid x5 z4
-
-        const double MAP_SW_LAT = (float)TILE_HEIGHT * 10 * 2;
-        const double MAP_SW_LNG = 0;
-        const double MAP_NE_LAT = 0;
-        const double MAP_NE_LNG = (float)TILE_WIDTH * 12 * 2;
-
-        const double LAT_SCALE = (WORLD_NE_LAT - WORLD_SW_LAT) / (MAP_NE_LAT - MAP_SW_LAT);
-        const double LNG_SCALE = (WORLD_NE_LNG - WORLD_SW_LNG) / (MAP_NE_LNG - MAP_SW_LNG);
-
-        private (double, double) WorldXZToMapXY(double X, double Z)
-        {
-            double MAP_X = (X - WORLD_SW_LNG) / LNG_SCALE + MAP_SW_LNG;
-            double MAP_Y = (Z - WORLD_SW_LAT) / LAT_SCALE + MAP_SW_LAT;
-
-            return (MAP_X, MAP_Y);
-        }
-
-        private (double, double) MapXYToWorldXZ(double X, double Y)
-        {
-            double WORLD_X = (X - MAP_SW_LNG) * LNG_SCALE + WORLD_SW_LNG;
-            double WORLD_Y = (Y - MAP_SW_LAT) * LAT_SCALE + WORLD_SW_LAT;
-
-            return (WORLD_X, WORLD_Y);
-        }
-
         public void Center(float X, float Z)
         {
-            (double mapX, double mapY) = WorldXZToMapXY(X, Z);
+            (double mapX, double mapY) = (X, Z);
 
             mapX = mapX * scaleTransform.ScaleX;
             mapY = mapY * scaleTransform.ScaleY;
@@ -535,79 +494,15 @@ namespace LoUAM
         }
 
         #endregion
-        private BitmapSource CreateBitmapSource(int width, int height, System.Windows.Media.Color color)
-        {
-            int stride = width / 8;
-            byte[] pixels = new byte[height * stride];
-
-            List<System.Windows.Media.Color> colors = new List<System.Windows.Media.Color>();
-            colors.Add(color);
-            BitmapPalette myPalette = new BitmapPalette(colors);
-
-            BitmapSource image = BitmapSource.Create(
-                width,
-                height,
-                96,
-                96,
-                PixelFormats.Indexed1,
-                myPalette,
-                pixels,
-                stride);
-
-            return image;
-        }
-
-        private Image CreateSubTile(int x, int z, int subtile)
+        private Image CreateSubTile(string TileName)
         {
             MapImage SubTileImage;
             string TileFolder;
-            string TileName;
             string TilePath;
 
-            SubTileImage = new MapImage();
-            switch (subtile)
-            {
-                case 0:
-                    {
-                        SubTileImage.SetValue(Grid.RowProperty, 0);
-                        SubTileImage.SetValue(Grid.ColumnProperty, 1);
-                    }
-                    break;
-                case 1:
-                    {
-                        SubTileImage.SetValue(Grid.RowProperty, 1);
-                        SubTileImage.SetValue(Grid.ColumnProperty, 1);
-                    }
-                    break;
-                case 2:
-                    {
-                        SubTileImage.SetValue(Grid.RowProperty, 0);
-                        SubTileImage.SetValue(Grid.ColumnProperty, 0);
-                    }
-                    break;
-                case 3:
-                    {
-                        SubTileImage.SetValue(Grid.RowProperty, 1);
-                        SubTileImage.SetValue(Grid.ColumnProperty, 0);
-                    }
-                    break;
-            }
             TileFolder = Path.GetFullPath(@".\MapData");
-            TileName = $"Grid_x{x}_z{z}_{subtile}";
             TilePath = TileFolder + "\\" + TileName + ".jpg";
-
-            if (File.Exists(TilePath))
-            {
-                var uriSource = TilePath;
-                SubTileImage.Source = GetScaledImage(uriSource, 16);
-                SubTileImage.IsBlank = false;
-                SubTileImage.TilePath = TilePath;
-            }
-            else
-            {
-                SubTileImage.Source = CreateBitmapSource(TILE_WIDTH, TILE_HEIGHT, Colors.Black);
-                SubTileImage.IsBlank = true;
-            }
+            SubTileImage = new MapImage(TilePath, "");
 
             SubTileImage.Name = TileName.Replace('-', '_');
             SubTileImage.Width = TILE_WIDTH;
@@ -616,61 +511,25 @@ namespace LoUAM
             return SubTileImage;
         }
 
-        private BitmapImage GetScaledImage(string uriSource, int Resolution)
-        {
-            Image img = new Image();
-
-            var buffer = File.ReadAllBytes(uriSource);
-            MemoryStream ms = new MemoryStream(buffer);
-            BitmapImage src = new BitmapImage();
-            src.BeginInit();
-            src.StreamSource = ms;
-            src.DecodePixelHeight = Resolution;
-            src.DecodePixelWidth = Resolution;
-            src.EndInit();
-
-            return src;
-        }
-
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            for (int x = -6; x < 6; x++)
+            string[] mapTiles = Directory.GetFiles("./MapData/", "*.jpg");
+
+            foreach (string mapTile in mapTiles)
             {
-                TilesGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            }
-            for (int z = -5; z < 5; z++)
-            {
-                TilesGrid.RowDefinitions.Add(new RowDefinition());
+                string fileName = Path.GetFileNameWithoutExtension(mapTile);
+                var SubTile = CreateSubTile(fileName);
+                TilesCanvas.Children.Add(SubTile);
             }
 
-            for (int x = -6; x < 6; x++)
-            {
-                for (int z = -5; z < 5; z++)
-                {
-                    Grid SubTilesGrid = new Grid();
-                    SubTilesGrid.SetValue(Grid.RowProperty, 9 - (z + 5));
-                    SubTilesGrid.SetValue(Grid.ColumnProperty, x + 6);
-
-                    SubTilesGrid.ColumnDefinitions.Add(new ColumnDefinition());
-                    SubTilesGrid.ColumnDefinitions.Add(new ColumnDefinition());
-                    SubTilesGrid.RowDefinitions.Add(new RowDefinition());
-                    SubTilesGrid.RowDefinitions.Add(new RowDefinition());
-
-                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 0));
-                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 1));
-                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 2));
-                    SubTilesGrid.Children.Add(CreateSubTile(x, z, 3));
-
-                    TilesGrid.Children.Add(SubTilesGrid);
-                }
-            }
+            slider.Value = 0.2;
         }
 
         private void TilesGrid_MouseMove(object sender, MouseEventArgs e)
         {
-            Point posMap = e.GetPosition(TilesGrid);
+            Point posMap = e.GetPosition(TilesCanvas);
 
-            (double worldX, double worldZ) = MapXYToWorldXZ((float)posMap.X, (float)posMap.Y);
+            (double worldX, double worldZ) = ((float)posMap.X, (float)posMap.Y);
 
             MouseWindowCoordsLabel.Content = $"Mouse window coords: {posMap.X:0.00},{posMap.Y:0.00}";
             MouseWorldCoordsLabel.Content = $"Mouse world coords: {worldX:0.00},{worldZ:0.00}";

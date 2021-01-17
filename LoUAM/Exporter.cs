@@ -1,7 +1,6 @@
 ﻿using System.Drawing.Imaging;
 using System.IO;
 using AssetStudio;
-using System.Reflection;
 
 namespace LoUAM
 {
@@ -18,16 +17,37 @@ namespace LoUAM
             var bitmap = Converter.ConvertToBitmap(true);
             if (bitmap == null)
                 return false;
-            ImageFormat format = ImageFormat.Png;
+            //ImageFormat format = ImageFormat.Png;
 
-            var exportFullName = Path.Combine(exportPathName,  asset.m_Name + ".png");
+            var exportFullName = Path.Combine(exportPathName,  asset.m_Name + ".jpg");
             if (ExportFileExists(exportFullName))
                 return false;
 
-            bitmap.Save(exportFullName, format);
+            ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+            Encoder myEncoder = Encoder.Quality;
+            EncoderParameters myEncoderParameters = new EncoderParameters(1);
+            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 50L);
+
+            myEncoderParameters.Param[0] = myEncoderParameter;
+
+            bitmap.Save(exportFullName, jpgEncoder, myEncoderParameters);
             bitmap.Dispose();
             return true;
+        }
 
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+
+            return null;
         }
 
         private static bool ExportFileExists(string filename)

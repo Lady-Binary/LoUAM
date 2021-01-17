@@ -545,13 +545,13 @@ namespace LoUAM
                     }
                     break;
             }
-            TileFolder = System.AppDomain.CurrentDomain.BaseDirectory + "MapData\\"; //this is an absolute folder for now
+            TileFolder = System.IO.Path.GetFullPath(@".\MapData");
             TileName = $"Grid_x{x}_z{z}_{subtile}";
-            TilePath = TileFolder + "\\" + TileName + ".png";
+            TilePath = TileFolder + "\\" + TileName + ".jpg";
             if (File.Exists(TilePath))
             {
-                var uriSource = new Uri(TilePath, UriKind.Absolute);
-                SubTileImage.Source = new BitmapImage(uriSource);
+                var uriSource = TilePath;
+                SubTileImage.Source = GetScaledImage(uriSource);
             } else
             {
                 SubTileImage.Source = CreateBitmapSource(TILE_WIDTH, TILE_HEIGHT, Colors.Black);
@@ -561,6 +561,21 @@ namespace LoUAM
             SubTileImage.Height = TILE_HEIGHT;
 
             return SubTileImage;
+        }
+
+        private BitmapImage GetScaledImage(string uriSource)
+        {
+            Image img = new Image();
+
+            var buffer = File.ReadAllBytes(uriSource);
+            MemoryStream ms = new MemoryStream(buffer);
+            BitmapImage src = new BitmapImage();
+            src.BeginInit();
+            src.StreamSource = ms;
+            src.DecodePixelHeight = 512;
+            src.DecodePixelWidth = 512;
+            src.EndInit();
+            return src;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)

@@ -6,7 +6,6 @@ using System.IO;
 using System.Windows;
 using AssetStudio;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
 
 namespace LoUAM
@@ -69,6 +68,8 @@ namespace LoUAM
                 }
             }
             assetsManager.Clear();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

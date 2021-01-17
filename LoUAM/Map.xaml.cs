@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace LoUAM
 {
@@ -545,7 +546,7 @@ namespace LoUAM
                     }
                     break;
             }
-            TileFolder = System.IO.Path.GetFullPath(@".\MapData");
+            TileFolder = Path.GetFullPath(@".\MapData");
             TileName = $"Grid_x{x}_z{z}_{subtile}";
             TilePath = TileFolder + "\\" + TileName + ".jpg";
             if (File.Exists(TilePath))

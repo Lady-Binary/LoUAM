@@ -54,6 +54,8 @@ namespace LoUAM
 
                 scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - dX);
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - dY);
+
+                RefreshMapTilesQuality();
             }
         }
 
@@ -105,6 +107,8 @@ namespace LoUAM
             var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
                                              scrollViewer.ViewportHeight / 2);
             lastCenterPositionOnTarget = scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
+
+            RefreshMapTilesQuality();
         }
 
         void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -157,7 +161,49 @@ namespace LoUAM
                     scrollViewer.ScrollToVerticalOffset(newOffsetY);
                 }
             }
+            RefreshMapTilesQuality();
         }
+
+
+        private void RefreshMapTilesQuality()
+        {
+            int zoom = (int) slider.Value;
+
+            // Set a resolution between 32 and 1024 depending on zoom level
+            int dersiredResoltion = GetRequiredResolution((int)slider.Minimum, (int)slider.Maximum, 16, 1024, zoom);
+
+            foreach (Grid gridItem in TilesGrid.Children)
+            {
+                // Check if the current grid item is visible within the scroll viewer
+      
+                Point PositionInScrollviewer = gridItem.TranslatePoint(new Point(0, 0), scrollViewer);
+                if (
+                    PositionInScrollviewer.X >= -(TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
+                    PositionInScrollviewer.X <= scrollViewer.ViewportWidth + (TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
+                    PositionInScrollviewer.Y >= -(TILE_HEIGHT * 2 * scaleTransform.ScaleY) &&
+                    PositionInScrollviewer.Y <= scrollViewer.ViewportHeight + (TILE_HEIGHT *2 * scaleTransform.ScaleY)
+                )
+                {
+                    foreach (MapImage mapImage in gridItem.Children)
+                    {
+                        if (!mapImage.IsBlank)
+                        {
+                            mapImage.Source = GetScaledImage(mapImage.TilePath, dersiredResoltion);
+                        }
+                    }
+                }
+            }
+
+        }
+
+        public static int GetRequiredResolution(int SliderMin, int SliderMax, int MinRes, int MaxRes, int SliderValue)
+        {
+            double scale = (double)(MaxRes - MinRes) / (SliderMax - SliderMin);
+            int resolution = (int)(MinRes + ((SliderValue - SliderMin) * scale));
+            //return (resolution + 31) / 32 * 32;
+            return resolution;
+        }
+
         #endregion
 
         #region Marker methods
@@ -513,12 +559,12 @@ namespace LoUAM
 
         private Image CreateSubTile(int x, int z, int subtile)
         {
-            Image SubTileImage;
+            MapImage SubTileImage;
             string TileFolder;
             string TileName;
             string TilePath;
 
-            SubTileImage = new Image();
+            SubTileImage = new MapImage();
             switch (subtile)
             {
                 case 0:
@@ -549,22 +595,28 @@ namespace LoUAM
             TileFolder = Path.GetFullPath(@".\MapData");
             TileName = $"Grid_x{x}_z{z}_{subtile}";
             TilePath = TileFolder + "\\" + TileName + ".jpg";
+
             if (File.Exists(TilePath))
             {
                 var uriSource = TilePath;
-                SubTileImage.Source = GetScaledImage(uriSource);
-            } else
+                SubTileImage.Source = GetScaledImage(uriSource, 16);
+                SubTileImage.IsBlank = false;
+                SubTileImage.TilePath = TilePath;
+            }
+            else
             {
                 SubTileImage.Source = CreateBitmapSource(TILE_WIDTH, TILE_HEIGHT, Colors.Black);
+                SubTileImage.IsBlank = true;
             }
-            SubTileImage.Name = TileName.Replace('-','_');
+
+            SubTileImage.Name = TileName.Replace('-', '_');
             SubTileImage.Width = TILE_WIDTH;
             SubTileImage.Height = TILE_HEIGHT;
 
             return SubTileImage;
         }
 
-        private BitmapImage GetScaledImage(string uriSource)
+        private BitmapImage GetScaledImage(string uriSource, int Resolution)
         {
             Image img = new Image();
 
@@ -573,9 +625,10 @@ namespace LoUAM
             BitmapImage src = new BitmapImage();
             src.BeginInit();
             src.StreamSource = ms;
-            src.DecodePixelHeight = 512;
-            src.DecodePixelWidth = 512;
+            src.DecodePixelHeight = Resolution;
+            src.DecodePixelWidth = Resolution;
             src.EndInit();
+
             return src;
         }
 

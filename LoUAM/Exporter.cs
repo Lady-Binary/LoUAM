@@ -12,12 +12,9 @@ namespace LoUAM
             string exportPathName = Path.GetFullPath("./MapData/");
             Texture2DConverter Converter = new Texture2DConverter(asset);
 
-            //Assembly.Load();
-
             var bitmap = Converter.ConvertToBitmap(true);
             if (bitmap == null)
                 return false;
-            //ImageFormat format = ImageFormat.Png;
 
             var exportFullName = Path.Combine(exportPathName,  asset.m_Name + ".jpg");
             if (ExportFileExists(exportFullName))

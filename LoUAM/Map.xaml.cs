@@ -300,6 +300,7 @@ namespace LoUAM
                         Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
                         ellipse.Name = "Marker_" + marker.Id;
                         ellipse.Tag = marker.Type;
+                        ellipse.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
 
                         markerElement = ellipse;
                     }
@@ -310,6 +311,7 @@ namespace LoUAM
                         Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
                         ellipse.Name = "Marker_" + marker.Id;
                         ellipse.Tag = marker.Type;
+                        ellipse.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
 
                         markerElement = ellipse;
                     }
@@ -320,7 +322,8 @@ namespace LoUAM
                     {
                         Name = "Marker_" + marker.Id,
                         Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)marker.Icon}.png", UriKind.Absolute)),
-                        Tag = marker.Type
+                        Tag = marker.Type,
+                        LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform
                     };
                     image.PreviewMouseWheel += OnPreviewMouseWheel;
                     markerElement = image;
@@ -343,7 +346,7 @@ namespace LoUAM
                 // Refresh its position based on the scale
                 (double x, double y) = CalcMarkerPosition(marker, element);
                 Canvas.SetLeft(element, x);
-                Canvas.SetBottom(element, y);
+                Canvas.SetTop(element, y);
             }
         }
 
@@ -368,7 +371,8 @@ namespace LoUAM
                 Text = marker.Label,
                 FontSize = 12,
                 Foreground = Brushes.Yellow,
-                Tag = marker.Type
+                Tag = marker.Type,
+                LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform
             };
             MarkersCanvas.Children.Add(
                 NewTextBlock
@@ -388,7 +392,7 @@ namespace LoUAM
                 // Refresh its position based on the scale
                 (double labelx, double labely) = CalcLabelPosition(marker, textblock);
                 Canvas.SetLeft(textblock, labelx);
-                Canvas.SetBottom(textblock, labely);
+                Canvas.SetTop(textblock, labely);
 
                 // Refresh its text if needed
                 if (textblock.Text != marker.Label)
@@ -507,6 +511,7 @@ namespace LoUAM
             SubTileImage.Name = TileName.Replace('-', '_');
             SubTileImage.Width = TILE_WIDTH;
             SubTileImage.Height = TILE_HEIGHT;
+            SubTileImage.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
 
             return SubTileImage;
         }

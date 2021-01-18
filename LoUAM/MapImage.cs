@@ -209,7 +209,7 @@ namespace LoUAM
             {
                 Point3D TileCoordinates = MapImage.TilesCoords[TileName][TileIndex];
                 this.SetValue(Canvas.LeftProperty, TileCoordinates.X);
-                this.SetValue(Canvas.BottomProperty, TileCoordinates.Z);
+                this.SetValue(Canvas.TopProperty, TileCoordinates.Z);
             }
         }
     }

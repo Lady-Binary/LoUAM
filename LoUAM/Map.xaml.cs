@@ -525,7 +525,7 @@ namespace LoUAM
             slider.Value = 0.2;
         }
 
-        private void TilesGrid_MouseMove(object sender, MouseEventArgs e)
+        private void MapGrid_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             Point posMap = e.GetPosition(TilesCanvas);
 

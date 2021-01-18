@@ -13,26 +13,26 @@
             <Slider Grid.Column="0" Orientation="Vertical" 
                HorizontalAlignment="Left" Minimum="0.1" TickFrequency="0.1" Maximum="1"  IsMoveToPointEnabled="True" x:Name="slider"/>
             <ScrollViewer Name="scrollViewer" Grid.Column="1" 
-                  Background="Black"
                   VerticalScrollBarVisibility="Visible" 
-                  PreviewMouseMove="TilesGrid_MouseMove"
                   HorizontalScrollBarVisibility="Visible">
 
-                <Grid Name="MapGrid" RenderTransformOrigin="0.5,0.5">
+                <Grid Name="MapGrid" RenderTransformOrigin="0.5,0.5" Width="7000" Height="7000" Background="Black" PreviewMouseMove="MapGrid_PreviewMouseMove">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
                     <Grid.LayoutTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="scaleTransform"/>
                         </TransformGroup>
                     </Grid.LayoutTransform>
-                    <Canvas Background="Black" Name="TilesCanvas" Width="6500" Height="6000" MouseMove="TilesGrid_MouseMove" PreviewMouseMove="TilesGrid_MouseMove" Grid.Column="0" Grid.Row="0">
-                        <Canvas.RenderTransform>
-                            <TranslateTransform X="3250" Y="-3000"></TranslateTransform>
-                        </Canvas.RenderTransform>
+                    <Canvas Name="TilesCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">
                     </Canvas>
-                    <Canvas Name="MarkersCanvas" Width="6500" Height="6000" Grid.Column="0" Grid.Row="0">
-                        <Canvas.RenderTransform>
-                            <TranslateTransform X="3250" Y="-3000"></TranslateTransform>
-                        </Canvas.RenderTransform>
+                    <Canvas Name="MarkersCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">
                     </Canvas>
                 </Grid>
             </ScrollViewer>

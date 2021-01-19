@@ -11,7 +11,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Slider Grid.Column="0" Orientation="Vertical" 
-               HorizontalAlignment="Left" Minimum="0.1" TickFrequency="0.2" Maximum="10"  IsMoveToPointEnabled="True" x:Name="slider"/>
+               HorizontalAlignment="Left" Minimum="0.1" TickFrequency="1" Maximum="10"  IsMoveToPointEnabled="True" x:Name="slider"/>
             <ScrollViewer Name="scrollViewer" Grid.Column="1" 
                   VerticalScrollBarVisibility="Visible" 
                   HorizontalScrollBarVisibility="Visible">

@@ -74,11 +74,11 @@ namespace LoUAM
 
             if (e.Delta > 0)
             {
-                slider.Value += 0.1;
+                slider.Value += slider.TickFrequency;
             }
             if (e.Delta < 0)
             {
-                slider.Value -= 0.1;
+                slider.Value -= slider.TickFrequency;
             }
 
             e.Handled = true;

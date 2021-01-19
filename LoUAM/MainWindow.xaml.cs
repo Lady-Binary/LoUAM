@@ -72,12 +72,7 @@ namespace LoUAM
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
             MapGenerator.LoadSettings();
-            if (!Directory.Exists("./MapData"))
-            {
-                MapGenerator.MapGenerated = false;
-                MapGenerator.SaveSettings();
-            }
-            if (!MapGenerator.MapGenerated)
+            if (!Directory.Exists("./MapData") || Directory.GetFiles("./MapData/", "*.jpg").Count() != 416)
             {
                 MapGenerator mapGenerator = new MapGenerator();
                 mapGenerator.Owner = this;

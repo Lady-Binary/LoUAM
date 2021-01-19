@@ -13,7 +13,6 @@ namespace LoUAM
     public partial class MapGenerator : Window
     {
         public static string GameDirectory = "";
-        public static bool MapGenerated = false;
         private AssetsManager assetsManager;
 
         public static bool TrackPlayer = true;
@@ -76,8 +75,6 @@ namespace LoUAM
         {
             ProgressBar.IsIndeterminate = false;
             ProgressBar.Value = 100;
-            MapGenerated = true;
-            SaveSettings();
             Close();
         }
 
@@ -88,17 +85,6 @@ namespace LoUAM
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!MapGenerated)
-            {
-                if((MessageBoxEx.Show("You need to generate a map before you can use LoUAM\n\rDo you want to quit LoUAM?", "Quit LOUAM", MessageBoxButton.YesNo) == MessageBoxResult.Yes))
-                {
-                    Application.Current.Shutdown();
-                }
-                else
-                {
-                    e.Cancel = true;
-                }
-            }
             SaveSettings();
         }
 
@@ -127,8 +113,6 @@ namespace LoUAM
             }
 
             GameDirectory = (string)LoUAMKey.GetValue("GameDirectory", GameDirectoryDefault);
-            MapGenerated = bool.TryParse(LoUAMKey.GetValue("MapGenerated", false).ToString(), out bool mgb) ? mgb : false;
-            Debug.WriteLine("MapGenerated: " + MapGenerated);
         }
 
         public static void SaveSettings()
@@ -150,7 +134,6 @@ namespace LoUAM
             ((App)Application.Current).GameDirectory = GameDirectory;
             LoUKey.SetValue("GameDirectory", GameDirectory);
             LoUAMKey.SetValue("GameDirectory", GameDirectory);
-            LoUAMKey.SetValue("MapGenerated", MapGenerated);
         }
 
         private void GameDirectoryBrowse_Click(object sender, RoutedEventArgs e)

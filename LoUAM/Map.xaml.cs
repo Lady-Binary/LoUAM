@@ -344,12 +344,11 @@ namespace LoUAM
 
         private void MapGrid_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            Point posMap = e.GetPosition(TilesCanvas);
+            Point WorldPos = e.GetPosition(TilesCanvas);
+            MouseWorldCoordsLabel.Content = $"Mouse world coords: {WorldPos.X:0.00},{WorldPos.Y:0.00}";
 
-            (double worldX, double worldZ) = ((float)posMap.X, (float)posMap.Y);
-
-            MouseWindowCoordsLabel.Content = $"Mouse window coords: {posMap.X:0.00},{posMap.Y:0.00}";
-            MouseWorldCoordsLabel.Content = $"Mouse world coords: {worldX:0.00},{worldZ:0.00}";
+            Point WindowPos = MarkersCanvas.TranslatePoint(new Point(WorldPos.X, WorldPos.Y), OuterGrid);
+            MouseWindowCoordsLabel.Content = $"Mouse window coords: {WindowPos.X:0.00},{WindowPos.Y:0.00}";
         }
     }
 }

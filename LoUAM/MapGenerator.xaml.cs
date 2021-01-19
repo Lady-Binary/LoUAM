@@ -52,11 +52,18 @@ namespace LoUAM
                 {
                     if (asset.type == ClassIDType.Texture2D)
                     {
-
                         Texture2D TextureAsset = (Texture2D)asset;
                         if (TextureAsset.m_Name.StartsWith("Grid_"))
                         {
                             Exporter.ExportTexture2D(TextureAsset);
+                        }
+                    }
+                    else if (asset.type == ClassIDType.GameObject)
+                    {
+                        GameObject gameObject = asset as GameObject;
+                        if (gameObject.m_Name.StartsWith("Grid_"))
+                        {
+                            Exporter.ExportGameObject(gameObject.m_Name.Replace("Minimap",""),gameObject);
                         }
                     }
                     if ((int)Math.Round((double)(100 * count) / total_assets) > percentComplete)

@@ -315,10 +315,12 @@ namespace LoUAM
             MapImage SubTileImage;
             string TileFolder;
             string TilePath;
+            string TilePrefabPath;
 
             TileFolder = Path.GetFullPath(@".\MapData");
             TilePath = TileFolder + "\\" + TileName + ".jpg";
-            SubTileImage = new MapImage(TilePath, "");
+            TilePrefabPath = TileFolder + "\\" + TileName + ".transform";
+            SubTileImage = new MapImage(TilePath, TilePrefabPath);
 
             SubTileImage.Name = TileName.Replace('-', '_');
             SubTileImage.Width = TILE_WIDTH;

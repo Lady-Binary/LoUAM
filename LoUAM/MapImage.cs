@@ -10,11 +10,16 @@ namespace LoUAM
 {
     internal class MapImage : System.Windows.Controls.Image
     {
+        private ScaleTransform scaleTansform;
+        public ScaleTransform ScaleTransform { get => scaleTansform; set => scaleTansform = value; }
+
+        private TranslateTransform centerTransform;
+        public TranslateTransform TranslateTransform { get => centerTransform; set => centerTransform = value; }
+
         public string TileImagePath;
         public string TilePrefabPath;
 
-        public const int DEFAULT_TILE_RESOLUTION = 512;
-        public int Resolution = DEFAULT_TILE_RESOLUTION;
+        public int Resolution = 256;
 
         static Dictionary<string, Point3D[]> TilesCoords = new Dictionary<string, Point3D[]>()
         {
@@ -160,11 +165,42 @@ namespace LoUAM
 
         public MapImage(string TileImagePath, string TilePrefabPath)
         {
+            TransformGroup transformGroup = new TransformGroup();
+
+            // Center the tile exactly on its coordinates,
+            // and catch if/when the tile resizes so that we re-center
+            TranslateTransform = new TranslateTransform
+            {
+                X = -this.ActualWidth / 2,
+                Y = -this.ActualHeight / 2
+            };
+            transformGroup.Children.Add(TranslateTransform);
+            this.SizeChanged += MapImage_SizeChanged;
+
+            // And prepare a scale transform, can be used for example for keeping the aspect ratio
+            ScaleTransform = new ScaleTransform
+            {
+                ScaleX = 1,
+                ScaleY = 1
+            };
+            transformGroup.Children.Add(ScaleTransform);
+
+            this.RenderTransform = transformGroup;
+
+            // Show the tile image
             this.TileImagePath = TileImagePath;
             this.SetTileImage();
 
+            // And grab the position from the prefab
             this.TilePrefabPath = TilePrefabPath;
             this.SetTilePositionFromPrefab();
+        }
+
+        private void MapImage_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // Re-center the tile exactly on its coordinates
+            centerTransform.X = -this.ActualWidth / 2;
+            centerTransform.Y = -this.ActualHeight / 2;
         }
 
         private BitmapImage GetScaledImage(string uriSource, int Resolution)

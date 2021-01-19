@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Path = System.IO.Path;
 
 namespace LoUAM
@@ -202,215 +199,44 @@ namespace LoUAM
         #region Marker methods
         private Dictionary<MarkerType, Dictionary<string, Marker>> Markers = new Dictionary<MarkerType, Dictionary<string, Marker>>();
 
-        private const double DEFAULT_MARKER_WIDTH = 16;
-        private const double DEFAULT_MARKER_HEIGHT = 16;
-
-        private (double, double) CalcMarkerSize(FrameworkElement element)
-        {
-            if (element is Image)
-            {
-                Image image = element as Image;
-                ImageSource imageSource = image.Source;
-                return (
-                    imageSource.Width * (1 / scaleTransform.ScaleX),
-                    imageSource.Height * (1 / scaleTransform.ScaleY)
-                    );
-            }
-            if (element is Ellipse)
-            {
-                return (
-                    DEFAULT_MARKER_WIDTH * (1 / scaleTransform.ScaleX),
-                    DEFAULT_MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
-                    );
-            }
-            return (
-                DEFAULT_MARKER_WIDTH * (1 / scaleTransform.ScaleX),
-                DEFAULT_MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
-                );
-        }
-        private (double, double) CalcMarkerPosition(Marker marker, FrameworkElement element)
-        {
-            (double x, double y) = (marker.X, marker.Z);
-
-            if (element is Image)
-            {
-                Image image = element as Image;
-                ImageSource imageSource = image.Source;
-                return (
-                    x - ((imageSource.Width / 2) / scaleTransform.ScaleX),
-                    y - ((imageSource.Height / 2) / scaleTransform.ScaleY)
-                    );
-            }
-            if (element is Ellipse)
-            {
-                return (
-                    x - ((DEFAULT_MARKER_WIDTH / 2) / scaleTransform.ScaleX),
-                    y - ((DEFAULT_MARKER_HEIGHT / 2) / scaleTransform.ScaleY)
-                    );
-            }
-            return (
-                x - ((DEFAULT_MARKER_WIDTH / 2) / scaleTransform.ScaleX),
-                y - ((DEFAULT_MARKER_HEIGHT / 2) / scaleTransform.ScaleY)
-                );
-        }
-
-        private Ellipse CreateBlinkingEllipse(Color color1, Color color2)
-        {
-            ObjectAnimationUsingKeyFrames animation = new ObjectAnimationUsingKeyFrames
-            {
-                BeginTime = TimeSpan.FromSeconds(0),
-                Duration = TimeSpan.FromSeconds(2),
-                RepeatBehavior = RepeatBehavior.Forever,
-                FillBehavior = FillBehavior.HoldEnd
-            };
-
-            DiscreteObjectKeyFrame keyFrame1 = new DiscreteObjectKeyFrame(color1, TimeSpan.FromSeconds(0));
-            animation.KeyFrames.Add(keyFrame1);
-
-            DiscreteObjectKeyFrame keyFrame2 = new DiscreteObjectKeyFrame(color2, TimeSpan.FromSeconds(1));
-            animation.KeyFrames.Add(keyFrame2);
-
-            Storyboard.SetTargetProperty(animation, new PropertyPath("(Ellipse.Fill).(SolidColorBrush.Color)"));
-
-            var storyboard = new Storyboard();
-            storyboard.Children.Add(animation);
-
-            var beginStoryboard = new BeginStoryboard();
-            beginStoryboard.Storyboard = storyboard;
-
-            var eventTrigger = new EventTrigger();
-            eventTrigger.Actions.Add(beginStoryboard);
-            eventTrigger.RoutedEvent = Ellipse.LoadedEvent;
-
-            var ellipse = new Ellipse();
-            ellipse.Fill = Brushes.Transparent;
-            ellipse.Triggers.Add(eventTrigger);
-
-            return ellipse;
-        }
 
         private void AddMarker(Marker marker)
         {
-            FrameworkElement markerElement;
+            MapMarker mapMarker = new MapMarker(marker);
+            TransformGroup transformGroup = new TransformGroup();
+            Binding b = new Binding("scaleTransform");
+            //mapMarker.LayoutTransform = transformGroup;
+            mapMarker.SetBinding(MapMarker.LayoutTransformProperty, b);
+            mapMarker.Name = "Marker_" + marker.Id;
+            mapMarker.Tag = marker.Type;
+            mapMarker.PreviewMouseWheel += OnPreviewMouseWheel;
 
-            switch (marker.Type)
-            {
-                case MarkerType.CurrentPlayer:
-                    {
-                        Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
-                        ellipse.Name = "Marker_" + marker.Id;
-                        ellipse.Tag = marker.Type;
-                        ellipse.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
-
-                        markerElement = ellipse;
-                    }
-                    break;
-
-                case MarkerType.OtherPlayer:
-                    {
-                        Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
-                        ellipse.Name = "Marker_" + marker.Id;
-                        ellipse.Tag = marker.Type;
-                        ellipse.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
-
-                        markerElement = ellipse;
-                    }
-                    break;
-
-                default:
-                    Image image = new Image
-                    {
-                        Name = "Marker_" + marker.Id,
-                        Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)marker.Icon}.png", UriKind.Absolute)),
-                        Tag = marker.Type,
-                        LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform
-                    };
-                    image.PreviewMouseWheel += OnPreviewMouseWheel;
-                    markerElement = image;
-                    break;
-            }
             MarkersCanvas.Children.Add(
-                markerElement
+                mapMarker
                 );
-            RefreshMarker(marker, markerElement);
+            RefreshMarker(marker, mapMarker);
         }
+
         private void RefreshMarker(Marker marker, FrameworkElement element)
         {
             if (element != null)
             {
-                // Refresh its size based on the scale
-                (double width, double height) = CalcMarkerSize(element);
-                element.Width = width;
-                element.Height = height;
+                Canvas.SetLeft(element, marker.X);
+                Canvas.SetTop(element, marker.Z);
 
-                // Refresh its position based on the scale
-                (double x, double y) = CalcMarkerPosition(marker, element);
-                Canvas.SetLeft(element, x);
-                Canvas.SetTop(element, y);
-            }
-        }
-
-        private double CalcLabelFontSize(Marker marker, TextBlock textBlock)
-        {
-            return 12 / scaleTransform.ScaleX;
-        }
-        private (double, double) CalcLabelPosition(Marker marker, TextBlock textBlock)
-        {
-            (double x, double y) = (marker.X, marker.Z);
-
-            return (
-                x - (textBlock.ActualWidth / 2),
-                y
-                );
-        }
-        private void AddLabel(Marker marker)
-        {
-            TextBlock NewTextBlock = new TextBlock
-            {
-                Name = "Label_" + marker.Id,
-                Text = marker.Label,
-                FontSize = 12,
-                Foreground = Brushes.Yellow,
-                Tag = marker.Type,
-                LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform
-            };
-            MarkersCanvas.Children.Add(
-                NewTextBlock
-                );
-            RefreshLabel(marker, NewTextBlock);
-        }
-        private void RefreshLabel(Marker marker, FrameworkElement element)
-        {
-            TextBlock textblock = element as TextBlock;
-            if (textblock != null)
-            {
-                // Refresh its size based on the scale
-                double fontSize = CalcLabelFontSize(marker, textblock);
-                textblock.FontSize = fontSize;
-                textblock.UpdateLayout();
-
-                // Refresh its position based on the scale
-                (double labelx, double labely) = CalcLabelPosition(marker, textblock);
-                Canvas.SetLeft(textblock, labelx);
-                Canvas.SetTop(textblock, labely);
-
-                // Refresh its text if needed
-                if (textblock.Text != marker.Label)
-                {
-                    textblock.Text = marker.Label;
-                }
+                // scale back so that it preserves aspect ratio
+                ScaleTransform scaleTransform = (element as MapMarker).ScaleTransform;
+                scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
+                scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
             }
         }
 
         public void Center(float X, float Z)
         {
-            (double mapX, double mapY) = (X, Z);
+            Point ScrollLocation = MarkersCanvas.TranslatePoint(new Point(X, Z), MapGrid);
 
-            mapX = mapX * scaleTransform.ScaleX;
-            mapY = mapY * scaleTransform.ScaleY;
-
-            double offsetX = (mapX - (scrollViewer.ViewportWidth / 2));
-            double offsetY = (mapY - (scrollViewer.ViewportHeight / 2));
+            double offsetX = (ScrollLocation.X * scaleTransform.ScaleX - (scrollViewer.ViewportWidth / 2));
+            double offsetY = (ScrollLocation.Y * scaleTransform.ScaleY - (scrollViewer.ViewportHeight / 2));
 
             scrollViewer.ScrollToHorizontalOffset(offsetX);
             scrollViewer.ScrollToVerticalOffset(offsetY);
@@ -439,20 +265,6 @@ namespace LoUAM
                 {
                     // Add missing markers
                     AddMarker(marker);
-                }
-                if (marker.Type != MarkerType.CurrentPlayer)
-                {
-                    if (elements.Keys.Contains("Label_" + marker.Id))
-                    {
-                        // Refresh existing markers
-                        RefreshLabel(marker, elements["Label_" + marker.Id]);
-                        elements.Remove("Label_" + marker.Id);
-                    }
-                    else
-                    {
-                        // Add missing markers
-                        AddLabel(marker);
-                    }
                 }
             }
 

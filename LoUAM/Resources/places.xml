@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <places>
   <place>
     <name>Britain</name>
@@ -121,9 +121,9 @@
     <z>-851.0783</z>
   </place>
   <place>
-    <name>Waterfall Cave</name>
+    <name>Waterfall Cave Entrance</name>
     <type>point_of_interest</type>
-    <x>Entrance	130.239</x>
+    <x>130.239</x>
     <z>-653.883</z>
   </place>
   <place>

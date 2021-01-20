@@ -31,23 +31,26 @@ namespace LoUAM
 
         private void InitializeBackgroundWorker()
         {
-            backgroundWorker.DoWork += new DoWorkEventHandler(backgroundWorker_DoWork);
-            backgroundWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker_RunWorkerCompleted);
+            backgroundWorker.DoWork += new DoWorkEventHandler(BackgroundWorker_DoWork);
+            backgroundWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(BackgroundWorker_RunWorkerCompleted);
             backgroundWorker.WorkerReportsProgress = true;
         }
 
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            int percentComplete = 0;
             BackgroundWorker worker = sender as BackgroundWorker;
 
             string AssetFile = GameDirectory + "/Legends of Aria_Data/resources.assets";
             assetsManager.LoadFiles(AssetFile);
-            
+
+            int count = 0;
+            int total_assets = 0;
             foreach (var assetsFile in assetsManager.assetsFileList)
             {
-                int count = 1;
-                int total_assets = assetsFile.Objects.Count;
+                total_assets += assetsFile.Objects.Count;
+            }
+            foreach (var assetsFile in assetsManager.assetsFileList)
+            {
                 foreach (var asset in assetsFile.Objects)
                 {
                     if (asset.type == ClassIDType.Texture2D)
@@ -66,11 +69,8 @@ namespace LoUAM
                             Exporter.ExportGameObject(gameObject.m_Name.Replace("Minimap",""),gameObject);
                         }
                     }
-                    if ((int)Math.Round((double)(100 * count) / total_assets) > percentComplete)
-                    {
-                        percentComplete = (int)Math.Round((double)(100 * count) / total_assets);
-                    }
                     count++;
+                    UpdateProgress(1, count, total_assets);
                 }
             }
             assetsManager.Clear();
@@ -78,16 +78,14 @@ namespace LoUAM
             GC.WaitForPendingFinalizers();
         }
 
-        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ProgressBar.IsIndeterminate = false;
-            ProgressBar.Value = 100;
-            Close();
+            MessageBoxEx.Show(this, "Export completed. You can now close this window.", "Assets export completed");
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            GameDirctoryTextBox.Text = GameDirectory;
+            GameDirectoryTextBox.Text = GameDirectory;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -157,7 +155,7 @@ namespace LoUAM
                 }
                 else
                 {
-                    GameDirctoryTextBox.Text = Folder;
+                    GameDirectoryTextBox.Text = Folder;
                     GameDirectory = Folder;
                     SaveSettings();
                 }
@@ -170,8 +168,10 @@ namespace LoUAM
             {
                 if (backgroundWorker.IsBusy != true)
                 {
-                    ProgressBar.Visibility = Visibility.Visible;
-                    ProgressBar.IsIndeterminate = true;
+                    BrowseButton.IsEnabled = false;
+                    GenerateMapButton.IsEnabled = false;
+                    AssetsProgressBar.Visibility = Visibility.Visible;
+                    AssetsProgressBar.IsIndeterminate = true;
                     backgroundWorker.RunWorkerAsync();
                 }
             }
@@ -181,10 +181,21 @@ namespace LoUAM
             }
         }
 
-
-        private void Quit_Click(object sender, RoutedEventArgs e)
+        private delegate void UpdateProgressDelegate(double Minimum, double Value, double Maximum);
+        private void UpdateProgress(double Minimum, double Value, double Maximum)
         {
-            Application.Current.Shutdown();
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new UpdateProgressDelegate(UpdateProgress), Minimum, Value, Maximum);
+                return;
+            }
+            AssetsProgressBar.IsIndeterminate = false;
+            AssetsProgressBar.Minimum = Minimum;
+            AssetsProgressBar.Value = Value;
+            AssetsProgressBar.Maximum = Maximum;
+
+            AssetsProgressLabel.Content = $"{Value} out of {Maximum} assets processed.";
         }
+
     }
 }

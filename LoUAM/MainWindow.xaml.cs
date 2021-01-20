@@ -72,10 +72,20 @@ namespace LoUAM
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
             MapGenerator.LoadSettings();
-            if (!Directory.Exists("./MapData")
-                || Directory.GetFiles("./MapData/", "*.jpg").Count() != 416
-                || Directory.GetFiles("./MapData/", "*.transform").Count() != 416)
+
+            bool InvalidMapData = false;
+            if (!Directory.Exists("./MapData")) {
+                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer. Click OK to continue.", "Map data not found");
+                InvalidMapData = true;
+            }
+            if (Directory.Exists("./MapData")
+                && (Directory.GetFiles("./MapData/", "*.jpg").Count() != 416 ||
+                Directory.GetFiles("./MapData/", "*.transform").Count() != 416))
             {
+                MessageBoxEx.Show(this, "It appears that the map data is corrupt or some file got deleted.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer. Click OK to continue.", "Map data corrupt");
+                InvalidMapData = true;
+            }
+            if (InvalidMapData) {
                 MapGenerator mapGenerator = new MapGenerator();
                 mapGenerator.Owner = this;
                 mapGenerator.ShowDialog();

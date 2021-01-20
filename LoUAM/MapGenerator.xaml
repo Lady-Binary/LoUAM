@@ -5,9 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LoUAM"
         mc:Ignorable="d"
-        Title="LoUAM Map Generator" Height="150" Width="400" WindowStyle="ToolWindow" Loaded="Window_Loaded" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
+        Title="LoUAM Map Generator" Height="300" Width="600" WindowStyle="ToolWindow" Loaded="Window_Loaded" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
     <Grid Margin="0,10,0,0" HorizontalAlignment="Center">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -15,15 +18,22 @@
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" MinWidth="113"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Label Grid.Row="0" Grid.Column="0"  Margin="10,0,0,0">Game Directory</Label>
-        <TextBox Grid.Row="0" Grid.Column="1" Name="GameDirctoryTextBox" Grid.ColumnSpan="2" Margin="0,0,10,0" Width="160px" HorizontalAlignment="Left"/>
-        <Button Grid.Row="0" Grid.Column="2" Click="GameDirectoryBrowse_Click" Width="100px" Name="GameDirectoryBrowse" HorizontalAlignment="Left" Margin="10,0,10,0">Browse</Button>
-        <Button Grid.Row="1" Grid.Column="0" Content="Quit" Width="100px" HorizontalAlignment="Left" Margin="10,10,0,0" Click="Quit_Click"/>
-        <Button Grid.Row="1" Grid.Column="1" Content="Generate Map" Width="260px" HorizontalAlignment="Left" Margin="0,10,10,0" Click="GenerateMap_Click" Grid.ColumnSpan="2"/>
-        <ProgressBar Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="20" Margin="10,10,0,0" Grid.Row="4" VerticalAlignment="Top" Width="362" Name="ProgressBar" IsIndeterminate="False"/>
+        <Label Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="3" Margin="0,10">
+            <TextBlock>
+                Please click on the Browse button and select the folder where your Legends of Aria client is installed.<LineBreak/>
+                Click then on the Generate Map button and wait for all the map images to be exported.
+            </TextBlock>
+        </Label>
+        <Label Grid.Row="2" Grid.Column="0"  Margin="10,10">Game Directory</Label>
+        <TextBox Grid.Row="2" Grid.Column="1" Name="GameDirectoryTextBox" Margin="0,10" HorizontalAlignment="Stretch" IsReadOnly="True"/>
+        <Button Grid.Row="2" Grid.Column="2" Name="BrowseButton" Click="GameDirectoryBrowse_Click" Margin="10,10">Browse</Button>
+        <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Name="GenerateMapButton" HorizontalAlignment="Stretch" Margin="10,10" Click="GenerateMap_Click">Generate Map</Button>
+        <ProgressBar Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Height="20" Margin="10,10" HorizontalAlignment="Stretch" Name="AssetsProgressBar" IsIndeterminate="False" Visibility="Hidden"/>
+        <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="10,10" VerticalAlignment="Center" Name="AssetsProgressLabel">
+        </Label>
     </Grid>
 </Window>

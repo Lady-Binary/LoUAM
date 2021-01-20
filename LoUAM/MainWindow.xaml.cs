@@ -92,7 +92,7 @@ namespace LoUAM
             }
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.LoadPlaces();
-            MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
+            UpdatePlaces();
         }
 
         private void UpdateMainStatus(System.Windows.Media.Color color, string message)
@@ -111,6 +111,17 @@ namespace LoUAM
                 LinkStatusLabel.Foreground = new SolidColorBrush(color);
                 LinkStatusLabel.Content = message;
             }
+        }
+
+        public delegate void UpdatePlacesDelegate();
+        public void UpdatePlaces()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new UpdatePlacesDelegate(UpdatePlaces));
+                return;
+            }
+            MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
         }
 
         #region Timers
@@ -421,8 +432,11 @@ namespace LoUAM
         private static RoutedCommand trackPlayerCommand = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get => trackPlayerCommand; set => trackPlayerCommand = value; }
 
-        private static RoutedCommand controlPanelCommand = new RoutedCommand();
-        public static RoutedCommand ControlPanelCommand { get => controlPanelCommand; set => controlPanelCommand = value; }
+        private static RoutedCommand editPlacesCommand = new RoutedCommand();
+        public static RoutedCommand EditPlacesCommand { get => editPlacesCommand; set => editPlacesCommand = value; }
+
+        private static RoutedCommand linkControlsCommand = new RoutedCommand();
+        public static RoutedCommand LinkControlsCommand { get => linkControlsCommand; set => linkControlsCommand = value; }
 
         private void ExitCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -556,15 +570,28 @@ namespace LoUAM
             MouseHook.HookStart();
         }
 
-        private void ControlPanelCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void EditPlacesCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
         }
-        private void ControlPanelCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void EditPlacesCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel();
+            ControlPanel controlPanel = new ControlPanel(0);
             controlPanel.Owner = this;
             controlPanel.ShowDialog();
+            UpdatePlaces();
+        }
+
+        private void LinkControlsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void LinkControlsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel controlPanel = new ControlPanel(1);
+            controlPanel.Owner = this;
+            controlPanel.ShowDialog();
+            UpdatePlaces();
         }
 
         private void TrackPlayerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)

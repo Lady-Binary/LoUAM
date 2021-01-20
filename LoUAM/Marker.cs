@@ -99,11 +99,11 @@
         public string Id { get; set; }
         public MarkerIcon Icon { get; set; }
         public string Label { get; set; }
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Z { get; set; }
 
-        public Marker(MarkerType type, string id, MarkerIcon Icon, string label, float x, float y, float z)
+        public Marker(MarkerType type, string id, MarkerIcon Icon, string label, double x, double y, double z)
         {
             this.Type = type;
             this.Id = id;

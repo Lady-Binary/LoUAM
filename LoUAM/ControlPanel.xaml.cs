@@ -1,7 +1,8 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -30,6 +31,11 @@ namespace LoUAM
             InitializeComponent();
         }
 
+        public ControlPanel(int TabIndex) : this()
+        {
+            ControlPanelTabControl.SelectedIndex = TabIndex;
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             MyNameTextBox.Text = MyName;
@@ -48,6 +54,8 @@ namespace LoUAM
                 LinkToServer.IsEnabled = true;
                 BreakConnection.IsEnabled = false;
             }
+
+            RefreshPlaces();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -127,6 +135,19 @@ namespace LoUAM
             return (WORLD_LAT, WORLD_LNG);
         }
 
+        #region Places
+        private delegate void RefreshPlacesDelegate();
+        private void RefreshPlaces()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshPlacesDelegate(RefreshPlaces));
+                return;
+            }
+            placesListView.ItemsSource = Places.OrderBy(place => place.Label);
+        }
+
+        #endregion
         public static void LoadPlaces()
         {
             Places = new List<Marker>();
@@ -156,10 +177,10 @@ namespace LoUAM
                     MarkerIcon type = Enum.TryParse<MarkerIcon>(typeNode.InnerText, true, out type) ? type : MarkerIcon.none;
 
                     XmlNode zNode = placeNode.SelectSingleNode("z");
-                    float z = float.TryParse(zNode.InnerText, out z) ? z : 0;
+                    double z = double.TryParse(zNode.InnerText, out z) ? z : 0;
 
                     XmlNode xNode = placeNode.SelectSingleNode("x");
-                    float x = float.TryParse(xNode.InnerText, out x) ? x : 0;
+                    double x = double.TryParse(xNode.InnerText, out x) ? x : 0;
 
                     Marker marker = new Marker(MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
 
@@ -169,7 +190,63 @@ namespace LoUAM
                 {
                     Debug.Print($"Cannot load place: {ex.Message}");
                 }
+            }
+        }
 
+        public static void SavePlaces()
+        {
+            XmlDocument doc;
+            doc = new XmlDocument();
+
+            XmlDeclaration xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+            XmlElement root = doc.DocumentElement;
+            doc.InsertBefore(xmlDeclaration, root);
+
+            XmlElement placesNode = doc.CreateElement(string.Empty, "places", string.Empty);
+            doc.AppendChild(placesNode);
+
+            foreach(var Place in Places)
+            {
+                try
+                {
+                    XmlElement placeNode = doc.CreateElement(string.Empty, "place", string.Empty);
+                    placesNode.AppendChild(placeNode);
+
+                    XmlElement nameNode = doc.CreateElement(string.Empty, "name", string.Empty);
+                    XmlText nameText = doc.CreateTextNode(Place.Label);
+                    nameNode.AppendChild(nameText);
+                    placeNode.AppendChild(nameNode);
+
+                    XmlElement typeNode = doc.CreateElement(string.Empty, "type", string.Empty);
+                    XmlText typeText = doc.CreateTextNode(Place.Icon.ToString());
+                    typeNode.AppendChild(typeText);
+                    placeNode.AppendChild(typeNode);
+
+                    XmlElement xNode = doc.CreateElement(string.Empty, "x", string.Empty);
+                    XmlText xText = doc.CreateTextNode(Place.X.ToString());
+                    xNode.AppendChild(xText);
+                    placeNode.AppendChild(xNode);
+
+                    XmlElement zNode = doc.CreateElement(string.Empty, "z", string.Empty);
+                    XmlText zText = doc.CreateTextNode(Place.Z.ToString());
+                    zNode.AppendChild(zText);
+                    placeNode.AppendChild(zNode);
+
+                    placesNode.AppendChild(placeNode);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Print($"Cannot save place: {ex.Message}");
+                }
+            }
+
+            try
+            {
+                doc.Save("places.xml");
+            }
+            catch (Exception ex)
+            {
+                Debug.Print($"Cannot save place: {ex.Message}");
             }
         }
 
@@ -317,6 +394,57 @@ namespace LoUAM
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void AddPlaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            EditPlace editPlace = new EditPlace();
+            editPlace.Owner = this;
+            editPlace.ShowDialog();
+            RefreshPlaces();
+        }
+
+        private void RemovePlaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (placesListView.SelectedItem is Marker == false)
+            {
+                MessageBoxEx.Show(this, "No place selected.", "Remove place", MessageBoxButton.OK);
+                return;
+            }
+            Marker SelectedPlace = (Marker)placesListView.SelectedItem;
+
+            String message = $"Do you really want to remove the place {SelectedPlace.Label}?";
+            if (MessageBoxEx.Show(this, message, "Remove place", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                Places.Remove(Places.First(place => place.Id == SelectedPlace.Id));
+                SavePlaces();
+                RefreshPlaces();
+            }
+        }
+
+        private void EditPlaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (placesListView.SelectedItem is Marker == false)
+            {
+                MessageBoxEx.Show(this, "No place selected.", "Edit place", MessageBoxButton.OK);
+                return;
+            }
+            Marker SelectedPlace = (Marker)placesListView.SelectedItem;
+
+            EditPlace editPlace = new EditPlace(SelectedPlace.Id);
+            editPlace.Owner = this;
+            editPlace.ShowDialog();
+            RefreshPlaces();
+        }
+
+        private void MarkerPlaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxEx.Show(this, "Not implemented!", "Marker Place", MessageBoxButton.OK);
+        }
+
+        private void LocatePlaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxEx.Show(this, "Not implemented!", "Locate Place", MessageBoxButton.OK);
         }
     }
 }

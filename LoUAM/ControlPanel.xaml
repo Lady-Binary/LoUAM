@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LoUAM"
         mc:Ignorable="d"
-        Title="LoUAM ControlPanel" Height="450" Width="400" WindowStyle="ToolWindow" Loaded="Window_Loaded" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
+        Title="LoUAM ControlPanel" Height="450" Width="450" WindowStyle="ToolWindow" Loaded="Window_Loaded" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -15,10 +15,38 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TabControl Grid.Row="0" Grid.ColumnSpan="2">
-            <!--<TabItem Header="Map" HorizontalAlignment="Left" Height="19.96" VerticalAlignment="Top" Width="53.9733333333333">
-            </TabItem>-->
-            <TabItem Header="Link">
+        <TabControl Name="ControlPanelTabControl" Grid.Row="0" Grid.ColumnSpan="2">
+            <TabItem Header="Places">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                        <ColumnDefinition Width="20*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <ListView Name="placesListView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Label}" />
+                                <GridViewColumn Header="Type" Width="100" DisplayMemberBinding="{Binding Icon}" />
+                                <GridViewColumn Header="X" Width="75" DisplayMemberBinding="{Binding X}" />
+                                <GridViewColumn Header="Z" Width="75" DisplayMemberBinding="{Binding Z}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Name="AddPlaceButton" Click="AddPlaceButton_Click" Height="20" VerticalAlignment="Top" >Add..</Button>
+                    <Button Grid.Row="1" Grid.Column="1" Name="RemovePlaceButton" Click="RemovePlaceButton_Click">Remove</Button>
+                    <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Name="EditPlaceButton" Click="EditPlaceButton_Click">Edit..</Button>
+                    <Button Grid.Row="1" Grid.Column="3" HorizontalAlignment="Stretch" Name="MarkerPlaceButton" Click="MarkerPlaceButton_Click">Marker</Button>
+                    <Button Grid.Row="1" Grid.Column="4" HorizontalAlignment="Stretch" Name="LocatePlaceButton" Click="LocatePlaceButton_Click">Locate</Button>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Link Controls">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"></RowDefinition>

@@ -38,16 +38,19 @@ namespace LoUAM
         Point? lastMousePositionOnTarget;
         Point? lastDragPoint;
 
+        Point? lastMousePos;
+        Point? lastContextMenuPos;
+
         void OnMouseMove(object sender, MouseEventArgs e)
         {
+            lastMousePos = e.GetPosition(scrollViewer);
+
             if (lastDragPoint.HasValue)
             {
-                Point posNow = e.GetPosition(scrollViewer);
+                double dX = lastMousePos.Value.X - lastDragPoint.Value.X;
+                double dY = lastMousePos.Value.Y - lastDragPoint.Value.Y;
 
-                double dX = posNow.X - lastDragPoint.Value.X;
-                double dY = posNow.Y - lastDragPoint.Value.Y;
-
-                lastDragPoint = posNow;
+                lastDragPoint = lastMousePos.Value;
 
                 scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - dX);
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - dY);
@@ -231,7 +234,7 @@ namespace LoUAM
             }
         }
 
-        public void Center(float X, float Z)
+        public void Center(double X, double Z)
         {
             Point ScrollLocation = MarkersCanvas.TranslatePoint(new Point(X, Z), MapGrid);
 
@@ -352,6 +355,28 @@ namespace LoUAM
             var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
             var CenterPos = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
             MapCenterWorldCoordsLabel.Content = $"Map center world coords: {CenterPos.X:0.00},{CenterPos.Y:0.00}";
+        }
+
+        private void MoveCursorHereContextMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var Coords = scrollViewer.TranslatePoint(lastContextMenuPos.Value, TilesCanvas);
+
+            this.Center(Coords.X, Coords.Y);
+        }
+
+        private void NewPlaceContextMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var Coords = scrollViewer.TranslatePoint(lastContextMenuPos.Value, TilesCanvas);
+
+            EditPlace editPlace = new EditPlace(Coords.X, Coords.Y);
+            editPlace.Owner = Window.GetWindow(this);
+            editPlace.ShowDialog();
+            MainWindow.TheMainWindow.UpdatePlaces();
+        }
+
+        private void MapGrid_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            lastContextMenuPos = lastMousePos;
         }
     }
 }

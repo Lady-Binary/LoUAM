@@ -102,6 +102,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="EditPlace.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MapGenerator.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -119,6 +123,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Client.cs" />
+    <Compile Include="EditPlace.xaml.cs">
+      <DependentUpon>EditPlace.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MapGenerator.xaml.cs">
       <DependentUpon>MapGenerator.xaml</DependentUpon>
     </Compile>

@@ -349,8 +349,9 @@ namespace LoUAM
             Point WorldPos = e.GetPosition(TilesCanvas);
             MouseWorldCoordsLabel.Content = $"Mouse world coords: {WorldPos.X:0.00},{WorldPos.Y:0.00}";
 
-            Point WindowPos = MarkersCanvas.TranslatePoint(new Point(WorldPos.X, WorldPos.Y), OuterGrid);
-            MouseWindowCoordsLabel.Content = $"Mouse window coords: {WindowPos.X:0.00},{WindowPos.Y:0.00}";
+            var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
+            var CenterPos = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
+            MapCenterWorldCoordsLabel.Content = $"Map center world coords: {CenterPos.X:0.00},{CenterPos.Y:0.00}";
         }
     }
 }

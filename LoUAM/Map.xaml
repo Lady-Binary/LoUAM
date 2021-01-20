@@ -48,10 +48,8 @@
             </ScrollViewer>
         </Grid>
         <Canvas>
-            <Label Name="MapCenterWorldCoordsLabel" Canvas.Left="10" Canvas.Top="10" Foreground="Yellow">Map center world coords: </Label>
-            <Label Name="MouseWorldCoordsLabel" Canvas.Left="10" Canvas.Bottom="10" Foreground="Yellow">Mouse world coords:</Label>
-            <Label Name="MapCenterWindowCoordsLabel" Canvas.Right="10" Canvas.Top="10" Foreground="Yellow">Map center window coords:</Label>
-            <Label Name="MouseWindowCoordsLabel" Canvas.Right="10" Canvas.Bottom="10" Foreground="Yellow">Mouse window coords:</Label>
+            <Label Name="MapCenterWorldCoordsLabel" Canvas.Left="20" Canvas.Top="10" Foreground="Yellow">Map center world coords: </Label>
+            <Label Name="MouseWorldCoordsLabel" Canvas.Left="20" Canvas.Bottom="20" Foreground="Yellow">Mouse world coords:</Label>
         </Canvas>
     </Grid>
 </UserControl>

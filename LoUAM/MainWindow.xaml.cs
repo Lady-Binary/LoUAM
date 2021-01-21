@@ -426,24 +426,6 @@ namespace LoUAM
         #endregion Injection
 
         #region Commands
-        private static RoutedCommand connectToLoAClientCommand = new RoutedCommand();
-        public static RoutedCommand ConnectToLoAClientCommand { get => connectToLoAClientCommand; set => connectToLoAClientCommand = value; }
-
-        private static RoutedCommand trackPlayerCommand = new RoutedCommand();
-        public static RoutedCommand TrackPlayerCommand { get => trackPlayerCommand; set => trackPlayerCommand = value; }
-
-        private static RoutedCommand editPlacesCommand = new RoutedCommand();
-        public static RoutedCommand EditPlacesCommand { get => editPlacesCommand; set => editPlacesCommand = value; }
-
-        private static RoutedCommand linkControlsCommand = new RoutedCommand();
-        public static RoutedCommand LinkControlsCommand { get => linkControlsCommand; set => linkControlsCommand = value; }
-
-        private static RoutedCommand moveCursorHereCommand = new RoutedCommand();
-        public static RoutedCommand MoveCursorHereCommand { get => moveCursorHereCommand; set => moveCursorHereCommand = value; }
-
-        private static RoutedCommand newPlaceCommand = new RoutedCommand();
-        public static RoutedCommand NewPlaceCommand { get => newPlaceCommand; set => newPlaceCommand = value; }
-
         private void ExitCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -636,5 +618,15 @@ namespace LoUAM
             }
         }
         #endregion Commands
+    }
+
+    public static class MainWindowCustomCommands
+    {
+        public static RoutedCommand ConnectToLoAClientCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand EditPlacesCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();
     }
 }

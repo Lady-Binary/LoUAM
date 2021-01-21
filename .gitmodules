@@ -4,6 +4,3 @@
 [submodule "SharpMonoInjector"]
 	path = SharpMonoInjector
 	url = https://github.com/Lady-Binary/SharpMonoInjector.git
-[submodule "AssetStudio"]
-	path = AssetStudio
-	url = https://github.com/Lady-Binary/AssetStudio.git

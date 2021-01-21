@@ -16,9 +16,10 @@
         <CommandBinding Command="{x:Static local:MainWindow.NewPlaceCommand}" CanExecute="NewPlaceCommand_CanExecute" Executed="NewPlaceCommand_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
-        <KeyBinding Key="P" Modifiers="Control" Command="{x:Static local:MainWindow.EditPlacesCommand}"/>
         <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindow.LinkControlsCommand}"/>
+        <KeyBinding Key="N" Modifiers="Control" Command="{x:Static local:MainWindow.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" />
+        <KeyBinding Key="P" Modifiers="Control" Command="{x:Static local:MainWindow.EditPlacesCommand}"/>
+        <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>

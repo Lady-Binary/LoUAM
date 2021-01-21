@@ -12,6 +12,8 @@
         <CommandBinding Command="{x:Static local:MainWindow.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindow.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindow.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindow.MoveCursorHereCommand}" CanExecute="MoveCursorHereCommand_CanExecute" Executed="MoveCursorHereCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindow.NewPlaceCommand}" CanExecute="NewPlaceCommand_CanExecute" Executed="NewPlaceCommand_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
@@ -34,13 +36,21 @@
                 <MenuItem Name="TrackPlayerMenu" Header="_Track Player" Command="{x:Static local:MainWindow.TrackPlayerCommand}" />
             </MenuItem>
             <MenuItem Header="_Places">
+                <MenuItem Header="Add New Place..." Command="{x:Static local:MainWindow.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+N" />
                 <MenuItem Header="_Edit Places..." Command="{x:Static local:MainWindow.EditPlacesCommand}" InputGestureText="Ctrl+P" />
             </MenuItem>
             <MenuItem Header="_Link">
                 <MenuItem Header="_Link Controls..." Command="{x:Static local:MainWindow.LinkControlsCommand}" InputGestureText="Ctrl+K" />
             </MenuItem>
         </Menu>
-        <local:Map x:Name="MainMap" Grid.Row="1"></local:Map>
+        <local:Map x:Name="MainMap" Grid.Row="1">
+            <local:Map.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Move Cursor Here" Command="{x:Static local:MainWindow.MoveCursorHereCommand}" />
+                    <MenuItem Header="New place..." Command="{x:Static local:MainWindow.NewPlaceCommand}" CommandParameter="{Binding Path=PlacementTarget.LastMouseRightButtonUpCoords, RelativeSource={RelativeSource Mode=FindAncestor,  AncestorType={x:Type ContextMenu}}}" />
+                </ContextMenu>
+            </local:Map.ContextMenu>
+        </local:Map>
         <DockPanel Grid.Row="2" >
             <StatusBar>
                 <Label Name="MainStatusLabel">Legends of Aria Client not connected</Label>

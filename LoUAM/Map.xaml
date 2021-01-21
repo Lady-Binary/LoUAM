@@ -16,13 +16,7 @@
                   VerticalScrollBarVisibility="Visible" 
                   HorizontalScrollBarVisibility="Visible">
 
-                <Grid Name="MapGrid" RenderTransformOrigin="0.5,0.5" Width="7000" Height="7000" Background="Black" PreviewMouseMove="MapGrid_PreviewMouseMove" ContextMenuOpening="MapGrid_ContextMenuOpening">
-                    <Grid.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Move Cursor Here" Name="MoveCursorHereContextMenu" Click="MoveCursorHereContextMenu_Click"/>
-                            <MenuItem Header="New place..." Name="NewPlaceContextMenu" Click="NewPlaceContextMenu_Click"/>
-                        </ContextMenu>
-                    </Grid.ContextMenu>
+                <Grid Name="MapGrid" RenderTransformOrigin="0.5,0.5" Width="7000" Height="7000" Background="Black">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*"/>

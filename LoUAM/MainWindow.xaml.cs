@@ -438,6 +438,12 @@ namespace LoUAM
         private static RoutedCommand linkControlsCommand = new RoutedCommand();
         public static RoutedCommand LinkControlsCommand { get => linkControlsCommand; set => linkControlsCommand = value; }
 
+        private static RoutedCommand moveCursorHereCommand = new RoutedCommand();
+        public static RoutedCommand MoveCursorHereCommand { get => moveCursorHereCommand; set => moveCursorHereCommand = value; }
+
+        private static RoutedCommand newPlaceCommand = new RoutedCommand();
+        public static RoutedCommand NewPlaceCommand { get => newPlaceCommand; set => newPlaceCommand = value; }
+
         private void ExitCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -605,6 +611,30 @@ namespace LoUAM
             ControlPanel.SaveSettings();
         }
 
+        private void MoveCursorHereCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void MoveCursorHereCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            MainMap.Center(MainMap.LastMouseRightButtonUpCoords.X, MainMap.LastMouseRightButtonUpCoords.Y);
+        }
+
+        private void NewPlaceCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void NewPlaceCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Point? NewPlaceCoords = e.Parameter as Point?;
+            if (NewPlaceCoords != null)
+            {
+                EditPlace editPlace = new EditPlace(NewPlaceCoords.Value.X, NewPlaceCoords.Value.Y);
+                editPlace.Owner = this;
+                editPlace.ShowDialog();
+                UpdatePlaces();
+            }
+        }
         #endregion Commands
     }
 }

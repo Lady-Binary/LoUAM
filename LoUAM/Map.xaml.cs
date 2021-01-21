@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -13,7 +14,7 @@ namespace LoUAM
     /// <summary>
     /// Interaction logic for Map.xaml
     /// </summary>
-    public partial class Map : UserControl
+    public partial class Map : UserControl, INotifyPropertyChanged
     {
         private const int TILE_WIDTH = 256;
         private const int TILE_HEIGHT = 256;
@@ -25,6 +26,7 @@ namespace LoUAM
             scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
             scrollViewer.MouseLeftButtonUp += OnMouseLeftButtonUp;
             scrollViewer.PreviewMouseLeftButtonUp += OnMouseLeftButtonUp;
+            scrollViewer.PreviewMouseRightButtonUp += OnMouseRightButtonUp;
             scrollViewer.PreviewMouseWheel += OnPreviewMouseWheel;
 
             scrollViewer.PreviewMouseLeftButtonDown += OnMouseLeftButtonDown;
@@ -33,27 +35,75 @@ namespace LoUAM
             slider.ValueChanged += OnSliderValueChanged;
         }
 
-        #region Map movement methods
-        Point? lastCenterPositionOnTarget;
-        Point? lastMousePositionOnTarget;
-        Point? lastDragPoint;
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged(string prop)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
 
-        Point? lastMousePos;
-        Point? lastContextMenuPos;
+            if (handler != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(prop));
+            }
+        }
+
+        #region Map movement properties and methods
+        private Point _lastCenterCoords;
+        public Point LastCenterCoords
+        {
+            get { return _lastCenterCoords; }
+            set {
+                _lastCenterCoords = value;
+                MapCenterWorldCoordsLabel.Content = $"Map center world coords: {value.X:0.00},{value.Y:0.00}";
+                OnPropertyChanged("LastCenterCoords");
+            }
+        }
+
+        private Point _lastMouseMoveCoords;
+        public Point LastMouseMoveCoords
+        {
+            get { return _lastMouseMoveCoords; }
+            private set {
+                _lastMouseMoveCoords = value;
+                MouseWorldCoordsLabel.Content = $"Mouse world coords: {value.X:0.00},{value.Y:0.00}";
+                OnPropertyChanged("LastMouseMoveCoords");
+            }
+        }
+
+        private Point _lastMouseLeftButtonUpCoords;
+        public Point LastMouseLeftButtonUpCoords
+        {
+            get { return _lastMouseLeftButtonUpCoords; }
+            private set { _lastMouseLeftButtonUpCoords = value; OnPropertyChanged("LastMouseLeftButtonUpCoords"); }
+        }
+
+        private Point _lastMouseRightButtonUpCoords;
+        public Point LastMouseRightButtonUpCoords
+        {
+            get { return _lastMouseRightButtonUpCoords; }
+            private set { _lastMouseRightButtonUpCoords = value; OnPropertyChanged("LastMouseRightButtonUpCoords"); }
+        }
+
+        private Point? lastCenterPositionOnTarget;
+        private Point? lastMousePositionOnTarget;
+        private Point? lastDragPoint;
 
         void OnMouseMove(object sender, MouseEventArgs e)
         {
-            lastMousePos = e.GetPosition(scrollViewer);
+            Point posNow = e.GetPosition(scrollViewer);
+            LastMouseMoveCoords = scrollViewer.TranslatePoint(posNow, TilesCanvas);
 
             if (lastDragPoint.HasValue)
             {
-                double dX = lastMousePos.Value.X - lastDragPoint.Value.X;
-                double dY = lastMousePos.Value.Y - lastDragPoint.Value.Y;
+                double dX = posNow.X - lastDragPoint.Value.X;
+                double dY = posNow.Y - lastDragPoint.Value.Y;
 
-                lastDragPoint = lastMousePos.Value;
+                lastDragPoint = posNow;
 
                 scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - dX);
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - dY);
+
+                var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
+                LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
 
                 RefreshMapTilesQuality();
             }
@@ -89,13 +139,20 @@ namespace LoUAM
 
         void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            LastMouseLeftButtonUpCoords = LastMouseMoveCoords;
+
             scrollViewer.Cursor = Cursors.Arrow;
             scrollViewer.ReleaseMouseCapture();
             lastDragPoint = null;
         }
 
+        void OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            LastMouseRightButtonUpCoords = LastMouseMoveCoords;
+        }
+
         void OnSliderValueChanged(object sender,
-             RoutedPropertyChangedEventArgs<double> e)
+            RoutedPropertyChangedEventArgs<double> e)
         {
             // Update map scale
             scaleTransform.ScaleX = e.NewValue;
@@ -105,7 +162,7 @@ namespace LoUAM
             RefreshMarkers(this.Markers);
 
             var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
-                                             scrollViewer.ViewportHeight / 2);
+                                                scrollViewer.ViewportHeight / 2);
             lastCenterPositionOnTarget = scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
 
             RefreshMapTilesQuality();
@@ -124,6 +181,7 @@ namespace LoUAM
                     {
                         var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
                                                          scrollViewer.ViewportHeight / 2);
+
                         Point centerOfTargetNow =
                               scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
 
@@ -160,15 +218,21 @@ namespace LoUAM
                     scrollViewer.ScrollToHorizontalOffset(newOffsetX);
                     scrollViewer.ScrollToVerticalOffset(newOffsetY);
                 }
+
+                if (targetNow != null)
+                {
+                    var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
+                    LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
+                }
             }
+
             RefreshMapTilesQuality();
         }
-
 
         private void RefreshMapTilesQuality()
         {
             return;
-            int zoom = (int) slider.Value;
+            int zoom = (int)slider.Value;
 
             // Set a resolution between 32 and 1024 depending on zoom level
             int dersiredResoltion = Map.GetRequiredResolution((int)slider.Minimum, (int)slider.Maximum, 16, 1024, zoom);
@@ -183,7 +247,8 @@ namespace LoUAM
                     PositionInScrollviewer.X <= scrollViewer.ViewportWidth + (TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
                     PositionInScrollviewer.Y >= -(TILE_HEIGHT * 2 * scaleTransform.ScaleY) &&
                     PositionInScrollviewer.Y <= scrollViewer.ViewportHeight + (TILE_HEIGHT * 2 * scaleTransform.ScaleY)
-                ) {
+                )
+                {
                     //mapImage.UpdateResolution(dersiredResoltion);
                 }
             }
@@ -199,9 +264,8 @@ namespace LoUAM
 
         #endregion
 
-        #region Marker methods
+        #region Marker properties and methods
         private Dictionary<MarkerType, Dictionary<string, Marker>> Markers = new Dictionary<MarkerType, Dictionary<string, Marker>>();
-
 
         private void AddMarker(Marker marker)
         {
@@ -247,7 +311,8 @@ namespace LoUAM
 
         private void RefreshMarkers(Dictionary<MarkerType, Dictionary<string, Marker>> markers)
         {
-            foreach (var markerType in markers.Keys) {
+            foreach (var markerType in markers.Keys)
+            {
                 RefreshMarkers(markerType, markers[markerType]);
             }
         }
@@ -256,7 +321,7 @@ namespace LoUAM
             // Get all the elements
             var elements = MarkersCanvas.Children.OfType<FrameworkElement>().Where(i => i.Tag.ToString() == markerType.ToString()).ToDictionary(i => i.Name, i => i);
 
-            foreach (var marker in markers.Values) 
+            foreach (var marker in markers.Values)
             {
                 if (elements.Keys.Contains("Marker_" + marker.Id))
                 {
@@ -344,39 +409,8 @@ namespace LoUAM
                 TilesCanvas.Children.Add(SubTile);
             }
 
+            this.Center(0, 0);
             slider.Value = 0.2;
-        }
-
-        private void MapGrid_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            Point WorldPos = e.GetPosition(TilesCanvas);
-            MouseWorldCoordsLabel.Content = $"Mouse world coords: {WorldPos.X:0.00},{WorldPos.Y:0.00}";
-
-            var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
-            var CenterPos = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
-            MapCenterWorldCoordsLabel.Content = $"Map center world coords: {CenterPos.X:0.00},{CenterPos.Y:0.00}";
-        }
-
-        private void MoveCursorHereContextMenu_Click(object sender, RoutedEventArgs e)
-        {
-            var Coords = scrollViewer.TranslatePoint(lastContextMenuPos.Value, TilesCanvas);
-
-            this.Center(Coords.X, Coords.Y);
-        }
-
-        private void NewPlaceContextMenu_Click(object sender, RoutedEventArgs e)
-        {
-            var Coords = scrollViewer.TranslatePoint(lastContextMenuPos.Value, TilesCanvas);
-
-            EditPlace editPlace = new EditPlace(Coords.X, Coords.Y);
-            editPlace.Owner = Window.GetWindow(this);
-            editPlace.ShowDialog();
-            MainWindow.TheMainWindow.UpdatePlaces();
-        }
-
-        private void MapGrid_ContextMenuOpening(object sender, ContextMenuEventArgs e)
-        {
-            lastContextMenuPos = lastMousePos;
         }
     }
 }

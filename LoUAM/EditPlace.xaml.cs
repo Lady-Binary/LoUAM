@@ -29,8 +29,8 @@ namespace LoUAM
 
         public EditPlace(double X, double Z) : this()
         {
-            XTextBox.Text = X.ToString();
-            ZTextBox.Text = Z.ToString();
+            XTextBox.Text = X.ToString("0.00");
+            ZTextBox.Text = Z.ToString("0.00");
         }
 
         public EditPlace(string Id) : this()

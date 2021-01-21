@@ -9,6 +9,7 @@ namespace LoUAM
     {
 
         public string GameDirectory = "";
+        public MainWindow mainWindow;
 
         void App_Startup(object sender, StartupEventArgs e)
         {
@@ -17,7 +18,7 @@ namespace LoUAM
             var domain = AppDomain.CurrentDomain;
             domain.AssemblyResolve += LoadAssembly;
 
-            MainWindow mainWindow = new MainWindow();
+            mainWindow = new MainWindow();
             mainWindow.Show();
         }
 

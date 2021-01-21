@@ -4,29 +4,28 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
-using AssetStudio;
 using System.ComponentModel;
 using System.Diagnostics;
+using LoU;
+using System.Threading;
 
 namespace LoUAM
 {
     public partial class MapGenerator : Window
     {
         public static string GameDirectory = "";
-        private AssetsManager assetsManager;
-
-        public static bool TrackPlayer = true;
-
-        public static List<Marker> Places = new List<Marker>();
+        private string mapDirectory;
         private BackgroundWorker backgroundWorker;
 
         public MapGenerator()
         {
-            assetsManager = new AssetsManager();
+            mapDirectory = Path.GetFullPath(".\\MapData");
             backgroundWorker = new BackgroundWorker();
             InitializeComponent();
+            this.DataContext = Application.Current.MainWindow;
             InitializeBackgroundWorker();
             LoadSettings();
+            SaveSettings();
         }
 
         private void InitializeBackgroundWorker()
@@ -39,43 +38,47 @@ namespace LoUAM
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
+            Directory.CreateDirectory(mapDirectory);
 
-            string AssetFile = GameDirectory + "/Legends of Aria_Data/resources.assets";
-            assetsManager.LoadFiles(AssetFile);
+            ClientCommand Command = new ClientCommand((LoU.CommandType)Enum.Parse(typeof(LoU.CommandType), "ExportMap"));
+            Command.CommandParams.Add("0",new ClientCommand.CommandParamStruct() { CommandParamType = ClientCommand.CommandParamTypeEnum.String, String = mapDirectory });
 
-            int count = 0;
-            int total_assets = 0;
-            foreach (var assetsFile in assetsManager.assetsFileList)
+            int ClientCommandId = 0;
+            Queue<ClientCommand> ClientCommandsQueue;
+            ClientCommand[] ClientCommandsArray;
+            MainWindow.ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+            if (ClientCommandsArray == null)
             {
-                total_assets += assetsFile.Objects.Count;
+                ClientCommandsQueue = new Queue<ClientCommand>();
             }
-            foreach (var assetsFile in assetsManager.assetsFileList)
+            else
             {
-                foreach (var asset in assetsFile.Objects)
-                {
-                    if (asset.type == ClassIDType.Texture2D)
-                    {
-                        Texture2D TextureAsset = (Texture2D)asset;
-                        if (TextureAsset.m_Name.StartsWith("Grid_"))
-                        {
-                            Exporter.ExportTexture2D(TextureAsset);
-                        }
-                    }
-                    else if (asset.type == ClassIDType.GameObject)
-                    {
-                        GameObject gameObject = asset as GameObject;
-                        if (gameObject.m_Name.StartsWith("Grid_"))
-                        {
-                            Exporter.ExportGameObject(gameObject.m_Name.Replace("Minimap",""),gameObject);
-                        }
-                    }
-                    count++;
-                    UpdateProgress(1, count, total_assets);
-                }
+                ClientCommandsQueue = new Queue<ClientCommand>(ClientCommandsArray);
             }
-            assetsManager.Clear();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+
+            if (ClientCommandsQueue.Count > 100)
+            {
+                throw new Exception("Too many commands in the queue. Cannot continue.");
+            }
+
+            ClientCommandsQueue.Enqueue(Command);
+            int AssignedClientCommandId = ClientCommandId + ClientCommandsQueue.Count;
+            MainWindow.ClientCommandsMemoryMap.WriteMemoryMap(ClientCommandId, ClientCommandsQueue.ToArray());
+            Debug.WriteLine("Command inserted, assigned CommandId=" + AssignedClientCommandId.ToString());
+
+            Stopwatch timeout = new Stopwatch();
+            timeout.Start();
+            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < 30000)
+            {
+                Debug.WriteLine("Waiting for command to be executed, Current CommandId=" + ClientCommandId.ToString() + ", Assigned CommandId=" + AssignedClientCommandId.ToString());
+                Thread.Sleep(50);
+                MainWindow.ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+            }
+            timeout.Stop();
+            if (timeout.ElapsedMilliseconds >= 3000)
+            {
+                Debug.WriteLine("Timed out!");
+            }
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -109,7 +112,7 @@ namespace LoUAM
             }
 
             string GameDirectoryDefault = "";
-            foreach(string DefaultDirectory in DefaultDirectories)
+            foreach (string DefaultDirectory in DefaultDirectories)
             {
                 if (Directory.Exists(DefaultDirectory))
                 {
@@ -139,6 +142,7 @@ namespace LoUAM
             ((App)Application.Current).GameDirectory = GameDirectory;
             LoUKey.SetValue("GameDirectory", GameDirectory);
             LoUAMKey.SetValue("GameDirectory", GameDirectory);
+            LoUAMKey.SetValue("WorkingDirectory", Directory.GetCurrentDirectory());
         }
 
         private void GameDirectoryBrowse_Click(object sender, RoutedEventArgs e)
@@ -170,6 +174,7 @@ namespace LoUAM
                 {
                     BrowseButton.IsEnabled = false;
                     GenerateMapButton.IsEnabled = false;
+                    ConnectToClientButton.IsEnabled = false;
                     AssetsProgressBar.Visibility = Visibility.Visible;
                     AssetsProgressBar.IsIndeterminate = true;
                     backgroundWorker.RunWorkerAsync();
@@ -180,6 +185,7 @@ namespace LoUAM
                 MessageBoxEx.Show("The selected folder is not a Legends of Aria game folder. \n\r Please select the folder that contains the 'Legends of Aria.exe' file");
             }
         }
+        
 
         private delegate void UpdateProgressDelegate(double Minimum, double Value, double Maximum);
         private void UpdateProgress(double Minimum, double Value, double Maximum)
@@ -197,5 +203,10 @@ namespace LoUAM
             AssetsProgressLabel.Content = $"{Value} out of {Maximum} assets processed.";
         }
 
+        private void ConnectToClient_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow mainWindow = (MainWindow)Owner;
+            mainWindow.DoConnectToLoAClientCommand();
+        }
     }
 }

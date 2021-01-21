@@ -87,7 +87,7 @@ namespace LoUAM
             }
             if (InvalidMapData) {
                 MapGenerator mapGenerator = new MapGenerator();
-                mapGenerator.Owner = this;
+                mapGenerator.Owner = TheMainWindow;
                 mapGenerator.ShowDialog();
             }
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
@@ -451,8 +451,9 @@ namespace LoUAM
         {
             e.CanExecute = true;
         }
-        private void ConnectToLoAClient(int ProcessId)
+        public void ConnectToLoAClient(int ProcessId)
         {
+
             UpdateMainStatus(Colors.Orange, $"Connecting to {ProcessId.ToString()}...");
             MainWindow.CurrentClientProcessId = ProcessId;
 
@@ -494,68 +495,76 @@ namespace LoUAM
 
             UpdateMainStatus(Colors.Red, "Connection to Legends of Aria game client failed!");
         }
+
+
+        public void DoConnectToLoAClientCommand() {
+            {
+                TargetAriaClientPanel.Visibility = Visibility.Visible;
+
+                MouseEventCallback handler = null;
+                handler = (MouseEventType type, int x, int y) => {
+                    // Restore cursors
+                    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
+                    // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+                    MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
+                    TargetAriaClientPanel.Visibility = Visibility.Hidden;
+
+                    // Stop global hook
+                    MouseHook.HookEnd();
+                    MouseHook.MouseDown -= handler;
+
+                    // Get clicked coord
+                    MouseHook.POINT p;
+                    p.x = x;
+                    p.y = y;
+                    Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
+
+                    // Get clicked window handler, window title
+                    IntPtr hWnd = MouseHook.WindowFromPoint(p);
+                    int WindowTitleLength = MouseHook.GetWindowTextLength(hWnd);
+                    StringBuilder WindowTitle = new StringBuilder(WindowTitleLength + 1);
+                    MouseHook.GetWindowText(hWnd, WindowTitle, WindowTitle.Capacity);
+                    Debug.WriteLine("Clicked handle=" + hWnd.ToString() + " title=" + WindowTitle);
+
+                    if (WindowTitle.ToString() != "Legends of Aria")
+                    {
+                        MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
+                        return true;
+                    }
+
+                    // Get the processId, and connect
+                    uint processId;
+                    MouseHook.GetWindowThreadProcessId(hWnd, out processId);
+                    Debug.WriteLine("Clicked pid=" + processId.ToString());
+
+                    // Attempt connection (or injection, if needed)
+                    ConnectToLoAClient((int)processId);
+                    return true;
+                };
+
+                //// Prepare cursor image
+                //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
+                //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
+
+                ////// Set all cursors
+                ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
+                ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+                //Cursor cursor = new Cursor(image.GetHicon());
+                //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
+                //foreach (uint i in cursors)
+                //{
+                //    MouseHook.SetSystemCursor(cursor.Handle, i);
+                //}
+
+                // Start mouse global hook
+                MouseHook.MouseDown += handler;
+                MouseHook.HookStart();
+            } 
+        }
+
         private void ConnectToLoAClientCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            TargetAriaClientPanel.Visibility = Visibility.Visible;
-
-            MouseEventCallback handler = null;
-            handler = (MouseEventType type, int x, int y) => {
-                // Restore cursors
-                // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
-                // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-                MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
-                TargetAriaClientPanel.Visibility = Visibility.Hidden;
-
-                // Stop global hook
-                MouseHook.HookEnd();
-                MouseHook.MouseDown -= handler;
-
-                // Get clicked coord
-                MouseHook.POINT p;
-                p.x = x;
-                p.y = y;
-                Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
-
-                // Get clicked window handler, window title
-                IntPtr hWnd = MouseHook.WindowFromPoint(p);
-                int WindowTitleLength = MouseHook.GetWindowTextLength(hWnd);
-                StringBuilder WindowTitle = new StringBuilder(WindowTitleLength + 1);
-                MouseHook.GetWindowText(hWnd, WindowTitle, WindowTitle.Capacity);
-                Debug.WriteLine("Clicked handle=" + hWnd.ToString() + " title=" + WindowTitle);
-
-                if (WindowTitle.ToString() != "Legends of Aria")
-                {
-                    MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
-                    return true;
-                }
-
-                // Get the processId, and connect
-                uint processId;
-                MouseHook.GetWindowThreadProcessId(hWnd, out processId);
-                Debug.WriteLine("Clicked pid=" + processId.ToString());
-
-                // Attempt connection (or injection, if needed)
-                ConnectToLoAClient((int)processId);
-                return true;
-            };
-
-            //// Prepare cursor image
-            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
-            //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
-
-            ////// Set all cursors
-            ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
-            ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-            //Cursor cursor = new Cursor(image.GetHicon());
-            //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
-            //foreach (uint i in cursors)
-            //{
-            //    MouseHook.SetSystemCursor(cursor.Handle, i);
-            //}
-
-            // Start mouse global hook
-            MouseHook.MouseDown += handler;
-            MouseHook.HookStart();
+            DoConnectToLoAClientCommand();
         }
 
         private void EditPlacesCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)

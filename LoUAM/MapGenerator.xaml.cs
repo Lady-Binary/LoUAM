@@ -16,7 +16,7 @@ namespace LoUAM
         public static string GameDirectory = "";
         private string mapDirectory;
         private BackgroundWorker backgroundWorker;
-
+        private bool connecedToClient = false;
         public MapGenerator()
         {
             mapDirectory = Path.GetFullPath(".\\MapData");
@@ -168,7 +168,15 @@ namespace LoUAM
 
         private void GenerateMap_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(GameDirectory + "\\Legends of Aria.exe"))
+
+            if (!File.Exists(GameDirectory + "\\Legends of Aria.exe"))
+            {
+                MessageBoxEx.Show("The selected folder is not a Legends of Aria game folder. \n\r Please select the folder that contains the 'Legends of Aria.exe' file");
+            } else if (!connecedToClient)
+            {
+                MessageBoxEx.Show("Please connect to the Legends Of Aria Client before generating the map.");
+            }
+            else
             {
                 if (backgroundWorker.IsBusy != true)
                 {
@@ -180,13 +188,8 @@ namespace LoUAM
                     backgroundWorker.RunWorkerAsync();
                 }
             }
-            else
-            {
-                MessageBoxEx.Show("The selected folder is not a Legends of Aria game folder. \n\r Please select the folder that contains the 'Legends of Aria.exe' file");
-            }
         }
         
-
         private delegate void UpdateProgressDelegate(double Minimum, double Value, double Maximum);
         private void UpdateProgress(double Minimum, double Value, double Maximum)
         {
@@ -207,6 +210,7 @@ namespace LoUAM
         {
             MainWindow mainWindow = (MainWindow)Owner;
             mainWindow.DoConnectToLoAClientCommand();
+            connecedToClient = true;
         }
     }
 }

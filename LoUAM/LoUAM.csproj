@@ -189,6 +189,7 @@
     <ProjectReference Include="..\LoU\LOU.csproj">
       <Project>{99e17151-042b-499d-b752-5b185ab289fa}</Project>
       <Name>LOU</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\SharpMonoInjector\src\SharpMonoInjector\SharpMonoInjector.csproj">
       <Project>{dfd6d9be-4da5-4fbc-9f34-10d75d3e5318}</Project>
@@ -298,16 +299,7 @@
   <Import Project="..\packages\ILMerge.MSBuild.Task.1.0.7\build\ILMerge.MSBuild.Task.targets" Condition="Exists('..\packages\ILMerge.MSBuild.Task.1.0.7\build\ILMerge.MSBuild.Task.targets')" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="$(SolutionDir)AssetStudio\AssetStudioFBXNative\bin\x64\$(Configuration)\AssetStudioFBXNative.dll" DestinationFolder="$(TargetDir)\x64\" ContinueOnError="true" />
-    <Copy SourceFiles="$(SolutionDir)AssetStudio\Texture2DDecoderNative\bin\x64\$(Configuration)\Texture2DDecoderNative.dll" DestinationFolder="$(TargetDir)\x64\" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\Assembly-CSharp.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\Assembly-CSharp-firstpass.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\CoreUtil.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\MessageCore.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\protobuf-net.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\CoreModule.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\InputLegacyModule.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\InputModule.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\PhysicsModule.dll" ContinueOnError="true" />
-    <Delete Files="$(TargetDir)\UnityEngine.UI.dll" ContinueOnError="true" />
+    <Copy SourceFiles="$(SolutionDir)LoU\bin\$(platform)\$(Configuration)\ILMerge\LoU.dll" DestinationFolder="$(TargetDir)" ContinueOnError="false" />
+    <Copy SourceFiles="$(SolutionDir)LoU\bin\$(platform)\$(Configuration)\ILMerge\LoU.pdb" DestinationFolder="$(TargetDir)" ContinueOnError="false" />
   </Target>
 </Project>

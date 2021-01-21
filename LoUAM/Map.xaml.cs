@@ -170,6 +170,9 @@ namespace LoUAM
 
         void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
+                                             scrollViewer.ViewportHeight / 2);
+
             if (e.ExtentHeightChange != 0 || e.ExtentWidthChange != 0)
             {
                 Point? targetBefore = null;
@@ -179,9 +182,6 @@ namespace LoUAM
                 {
                     if (lastCenterPositionOnTarget.HasValue)
                     {
-                        var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
-                                                         scrollViewer.ViewportHeight / 2);
-
                         Point centerOfTargetNow =
                               scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
 
@@ -218,13 +218,10 @@ namespace LoUAM
                     scrollViewer.ScrollToHorizontalOffset(newOffsetX);
                     scrollViewer.ScrollToVerticalOffset(newOffsetY);
                 }
-
-                if (targetNow != null)
-                {
-                    var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
-                    LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
-                }
             }
+
+            centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
+            LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
 
             RefreshMapTilesQuality();
         }
@@ -409,8 +406,9 @@ namespace LoUAM
                 TilesCanvas.Children.Add(SubTile);
             }
 
-            this.Center(0, 0);
-            slider.Value = 0.2;
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.ScrollableHeight / 2);
+            scrollViewer.ScrollToHorizontalOffset(scrollViewer.ScrollableWidth / 2);
+            slider.Value = 1;
         }
     }
 }

@@ -384,7 +384,7 @@ namespace LoUAM
 
             TileFolder = Path.GetFullPath(@".\MapData");
             TilePath = TileFolder + "\\" + TileName + ".jpg";
-            TilePrefabPath = TileFolder + "\\" + TileName + ".transform";
+            TilePrefabPath = TileFolder + "\\" + TileName + ".json";
             SubTileImage = new MapImage(TilePath, TilePrefabPath);
 
             SubTileImage.Name = TileName.Replace('-', '_');

@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using LoU;
 
 namespace LoUAM
 {
@@ -101,11 +99,10 @@ namespace LoUAM
             int TileIndex = int.Parse(TileName.Substring(TileName.Length - 1, 1));
             TileName = TileName.Substring(0, TileName.Length - 2);
 
-            string Prefab = File.ReadAllText(this.TilePrefabPath);
-            JObject jobj = (JObject)JsonConvert.DeserializeObject(Prefab);
-            JObject localPosition = (JObject)jobj.GetValue("LocalPosition");
-            double X = (double)localPosition.GetValue("X");
-            double Z = (double)localPosition.GetValue("Z");
+            string prefab = File.ReadAllText(this.TilePrefabPath);
+            TileTransform tileTransform = JsonConvert.DeserializeObject<TileTransform>(prefab);
+            double X = tileTransform.x;
+            double Z = tileTransform.z;
 
             this.SetValue(Canvas.LeftProperty, X);
             this.SetValue(Canvas.TopProperty, Z);

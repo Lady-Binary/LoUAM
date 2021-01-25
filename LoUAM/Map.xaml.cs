@@ -1,21 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace LoUAM
 {
     /// <summary>
     /// Interaction logic for Map.xaml
     /// </summary>
-    public partial class Map : UserControl
+    public partial class Map : UserControl, INotifyPropertyChanged
     {
+        private const int TILE_WIDTH = 256;
+        private const int TILE_HEIGHT = 256;
+
         public Map()
         {
             InitializeComponent();
@@ -23,6 +26,7 @@ namespace LoUAM
             scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
             scrollViewer.MouseLeftButtonUp += OnMouseLeftButtonUp;
             scrollViewer.PreviewMouseLeftButtonUp += OnMouseLeftButtonUp;
+            scrollViewer.PreviewMouseRightButtonUp += OnMouseRightButtonUp;
             scrollViewer.PreviewMouseWheel += OnPreviewMouseWheel;
 
             scrollViewer.PreviewMouseLeftButtonDown += OnMouseLeftButtonDown;
@@ -31,17 +35,65 @@ namespace LoUAM
             slider.ValueChanged += OnSliderValueChanged;
         }
 
-        #region Map movement methods
-        Point? lastCenterPositionOnTarget;
-        Point? lastMousePositionOnTarget;
-        Point? lastDragPoint;
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged(string prop)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+
+            if (handler != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(prop));
+            }
+        }
+
+        #region Map movement properties and methods
+        private Point _lastCenterCoords;
+        public Point LastCenterCoords
+        {
+            get { return _lastCenterCoords; }
+            set {
+                _lastCenterCoords = value;
+                MapCenterWorldCoordsLabel.Content = $"Map center world coords: {value.X:0.00},{value.Y:0.00}";
+                OnPropertyChanged("LastCenterCoords");
+            }
+        }
+
+        private Point _lastMouseMoveCoords;
+        public Point LastMouseMoveCoords
+        {
+            get { return _lastMouseMoveCoords; }
+            private set {
+                _lastMouseMoveCoords = value;
+                MouseWorldCoordsLabel.Content = $"Mouse world coords: {value.X:0.00},{value.Y:0.00}";
+                OnPropertyChanged("LastMouseMoveCoords");
+            }
+        }
+
+        private Point _lastMouseLeftButtonUpCoords;
+        public Point LastMouseLeftButtonUpCoords
+        {
+            get { return _lastMouseLeftButtonUpCoords; }
+            private set { _lastMouseLeftButtonUpCoords = value; OnPropertyChanged("LastMouseLeftButtonUpCoords"); }
+        }
+
+        private Point _lastMouseRightButtonUpCoords;
+        public Point LastMouseRightButtonUpCoords
+        {
+            get { return _lastMouseRightButtonUpCoords; }
+            private set { _lastMouseRightButtonUpCoords = value; OnPropertyChanged("LastMouseRightButtonUpCoords"); }
+        }
+
+        private Point? lastCenterPositionOnTarget;
+        private Point? lastMousePositionOnTarget;
+        private Point? lastDragPoint;
 
         void OnMouseMove(object sender, MouseEventArgs e)
         {
+            Point posNow = e.GetPosition(scrollViewer);
+            LastMouseMoveCoords = scrollViewer.TranslatePoint(posNow, TilesCanvas);
+
             if (lastDragPoint.HasValue)
             {
-                Point posNow = e.GetPosition(scrollViewer);
-
                 double dX = posNow.X - lastDragPoint.Value.X;
                 double dY = posNow.Y - lastDragPoint.Value.Y;
 
@@ -49,6 +101,11 @@ namespace LoUAM
 
                 scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - dX);
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - dY);
+
+                var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
+                LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
+
+                RefreshMapTilesQuality();
             }
         }
 
@@ -70,11 +127,11 @@ namespace LoUAM
 
             if (e.Delta > 0)
             {
-                slider.Value += 1;
+                slider.Value += slider.TickFrequency;
             }
             if (e.Delta < 0)
             {
-                slider.Value -= 1;
+                slider.Value -= slider.TickFrequency;
             }
 
             e.Handled = true;
@@ -82,13 +139,20 @@ namespace LoUAM
 
         void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            LastMouseLeftButtonUpCoords = LastMouseMoveCoords;
+
             scrollViewer.Cursor = Cursors.Arrow;
             scrollViewer.ReleaseMouseCapture();
             lastDragPoint = null;
         }
 
+        void OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            LastMouseRightButtonUpCoords = LastMouseMoveCoords;
+        }
+
         void OnSliderValueChanged(object sender,
-             RoutedPropertyChangedEventArgs<double> e)
+            RoutedPropertyChangedEventArgs<double> e)
         {
             // Update map scale
             scaleTransform.ScaleX = e.NewValue;
@@ -98,12 +162,17 @@ namespace LoUAM
             RefreshMarkers(this.Markers);
 
             var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
-                                             scrollViewer.ViewportHeight / 2);
+                                                scrollViewer.ViewportHeight / 2);
             lastCenterPositionOnTarget = scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
+
+            RefreshMapTilesQuality();
         }
 
         void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
+                                             scrollViewer.ViewportHeight / 2);
+
             if (e.ExtentHeightChange != 0 || e.ExtentWidthChange != 0)
             {
                 Point? targetBefore = null;
@@ -113,8 +182,6 @@ namespace LoUAM
                 {
                     if (lastCenterPositionOnTarget.HasValue)
                     {
-                        var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
-                                                         scrollViewer.ViewportHeight / 2);
                         Point centerOfTargetNow =
                               scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
 
@@ -135,8 +202,8 @@ namespace LoUAM
                     double dXInTargetPixels = targetNow.Value.X - targetBefore.Value.X;
                     double dYInTargetPixels = targetNow.Value.Y - targetBefore.Value.Y;
 
-                    double multiplicatorX = e.ExtentWidth / MapGrid.Width;
-                    double multiplicatorY = e.ExtentHeight / MapGrid.Height;
+                    double multiplicatorX = e.ExtentWidth / MapGrid.ActualWidth;
+                    double multiplicatorY = e.ExtentHeight / MapGrid.ActualHeight;
 
                     double newOffsetX = scrollViewer.HorizontalOffset -
                                         dXInTargetPixels * multiplicatorX;
@@ -152,269 +219,88 @@ namespace LoUAM
                     scrollViewer.ScrollToVerticalOffset(newOffsetY);
                 }
             }
-        }
-        #endregion
 
-        #region Marker methods
-        private Dictionary<MarkerType, Dictionary<string, Marker>> Markers = new Dictionary<MarkerType, Dictionary<string, Marker>>();
+            centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
+            LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
 
-        private const double DEFAULT_MARKER_WIDTH = 16;
-        private const double DEFAULT_MARKER_HEIGHT = 16;
-
-        private (double, double) CalcMarkerSize(FrameworkElement element)
-        {
-            if (element is Image)
-            {
-                Image image = element as Image;
-                ImageSource imageSource = image.Source;
-                return (
-                    imageSource.Width * (1 / scaleTransform.ScaleX),
-                    imageSource.Height * (1 / scaleTransform.ScaleY)
-                    );
-            }
-            if (element is Ellipse)
-            {
-                return (
-                    DEFAULT_MARKER_WIDTH * (1 / scaleTransform.ScaleX),
-                    DEFAULT_MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
-                    );
-            }
-            return (
-                DEFAULT_MARKER_WIDTH * (1 / scaleTransform.ScaleX),
-                DEFAULT_MARKER_HEIGHT * (1 / scaleTransform.ScaleY)
-                );
-        }
-        private (double, double) CalcMarkerPosition(Marker marker, FrameworkElement element)
-        {
-            (double x, double y) = WorldXZToMapXY(marker.X, marker.Z);
-
-            if (element is Image)
-            {
-                Image image = element as Image;
-                ImageSource imageSource = image.Source;
-                return (
-                    x - ((imageSource.Width / 2) / scaleTransform.ScaleX),
-                    y - ((imageSource.Height / 2) / scaleTransform.ScaleY)
-                    );
-            }
-            if (element is Ellipse)
-            {
-                return (
-                    x - ((DEFAULT_MARKER_WIDTH / 2) / scaleTransform.ScaleX),
-                    y - ((DEFAULT_MARKER_HEIGHT / 2) / scaleTransform.ScaleY)
-                    );
-            }
-            return (
-                x - ((DEFAULT_MARKER_WIDTH / 2) / scaleTransform.ScaleX),
-                y - ((DEFAULT_MARKER_HEIGHT / 2) / scaleTransform.ScaleY)
-                );
+            RefreshMapTilesQuality();
         }
 
-        private Ellipse CreateBlinkingEllipse(Color color1, Color color2)
+        private void RefreshMapTilesQuality()
         {
-            ObjectAnimationUsingKeyFrames animation = new ObjectAnimationUsingKeyFrames
+            return;
+            int zoom = (int)slider.Value;
+
+            // Set a resolution between 32 and 1024 depending on zoom level
+            int dersiredResoltion = Map.GetRequiredResolution((int)slider.Minimum, (int)slider.Maximum, 16, 1024, zoom);
+
+            foreach (MapImage mapImage in TilesCanvas.Children)
             {
-                BeginTime = TimeSpan.FromSeconds(0),
-                Duration = TimeSpan.FromSeconds(2),
-                RepeatBehavior = RepeatBehavior.Forever,
-                FillBehavior = FillBehavior.HoldEnd
-            };
+                // Check if the current grid item is visible within the scroll viewer
 
-            DiscreteObjectKeyFrame keyFrame1 = new DiscreteObjectKeyFrame(color1, TimeSpan.FromSeconds(0));
-            animation.KeyFrames.Add(keyFrame1);
-
-            DiscreteObjectKeyFrame keyFrame2 = new DiscreteObjectKeyFrame(color2, TimeSpan.FromSeconds(1));
-            animation.KeyFrames.Add(keyFrame2);
-
-            Storyboard.SetTargetProperty(animation, new PropertyPath("(Ellipse.Fill).(SolidColorBrush.Color)"));
-
-            var storyboard = new Storyboard();
-            storyboard.Children.Add(animation);
-
-            var beginStoryboard = new BeginStoryboard();
-            beginStoryboard.Storyboard = storyboard;
-
-            var eventTrigger = new EventTrigger();
-            eventTrigger.Actions.Add(beginStoryboard);
-            eventTrigger.RoutedEvent = Ellipse.LoadedEvent;
-
-            var ellipse = new Ellipse();
-            ellipse.Fill = Brushes.Transparent;
-            ellipse.Triggers.Add(eventTrigger);
-
-            return ellipse;
-        }
-
-        private void AddMarker(Marker marker)
-        {
-            FrameworkElement markerElement;
-
-            switch (marker.Type)
-            {
-                case MarkerType.CurrentPlayer:
-                    {
-                        Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
-                        ellipse.Name = "Marker_" + marker.Id;
-                        ellipse.Tag = marker.Type;
-
-                        markerElement = ellipse;
-                    }
-                    break;
-
-                case MarkerType.OtherPlayer:
-                    {
-                        Ellipse ellipse = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
-                        ellipse.Name = "Marker_" + marker.Id;
-                        ellipse.Tag = marker.Type;
-
-                        markerElement = ellipse;
-                    }
-                    break;
-
-                default:
-                    Image image = new Image
-                    {
-                        Name = "Marker_" + marker.Id,
-                        Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)marker.Icon}.png", UriKind.Absolute)),
-                        Tag = marker.Type
-                    };
-                    image.PreviewMouseWheel += OnPreviewMouseWheel;
-                    markerElement = image;
-                    break;
-            }
-            MarkersCanvas.Children.Add(
-                markerElement
-                );
-            RefreshMarker(marker, markerElement);
-        }
-        private void RefreshMarker(Marker marker, FrameworkElement element)
-        {
-            if (element != null)
-            {
-                // Refresh its size based on the scale
-                (double width, double height) = CalcMarkerSize(element);
-                element.Width = width;
-                element.Height = height;
-
-                // Refresh its position based on the scale
-                (double x, double y) = CalcMarkerPosition(marker, element);
-                Canvas.SetLeft(element, x);
-                Canvas.SetTop(element, y);
-            }
-        }
-
-        private double CalcLabelFontSize(Marker marker, TextBlock textBlock)
-        {
-            return 12 / scaleTransform.ScaleX;
-        }
-        private (double, double) CalcLabelPosition(Marker marker, TextBlock textBlock)
-        {
-            (double x, double y) = WorldXZToMapXY(marker.X, marker.Z);
-
-            return (
-                x - (textBlock.ActualWidth / 2),
-                y
-                );
-        }
-        private void AddLabel(Marker marker)
-        {
-            TextBlock NewTextBlock = new TextBlock
-            {
-                Name = "Label_" + marker.Id,
-                Text = marker.Label,
-                FontSize = 12,
-                Foreground = Brushes.Yellow,
-                Tag = marker.Type
-            };
-            MarkersCanvas.Children.Add(
-                NewTextBlock
-                );
-            RefreshLabel(marker, NewTextBlock);
-        }
-        private void RefreshLabel(Marker marker, FrameworkElement element)
-        {
-            TextBlock textblock = element as TextBlock;
-            if (textblock != null)
-            {
-                // Refresh its size based on the scale
-                double fontSize = CalcLabelFontSize(marker, textblock);
-                textblock.FontSize = fontSize;
-                textblock.UpdateLayout();
-
-                // Refresh its position based on the scale
-                (double labelx, double labely) = CalcLabelPosition(marker, textblock);
-                Canvas.SetLeft(textblock, labelx);
-                Canvas.SetTop(textblock, labely);
-
-                // Refresh its text if needed
-                if (textblock.Text != marker.Label)
+                Point PositionInScrollviewer = mapImage.TranslatePoint(new Point(0, 0), scrollViewer);
+                if (
+                    PositionInScrollviewer.X >= -(TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
+                    PositionInScrollviewer.X <= scrollViewer.ViewportWidth + (TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
+                    PositionInScrollviewer.Y >= -(TILE_HEIGHT * 2 * scaleTransform.ScaleY) &&
+                    PositionInScrollviewer.Y <= scrollViewer.ViewportHeight + (TILE_HEIGHT * 2 * scaleTransform.ScaleY)
+                )
                 {
-                    textblock.Text = marker.Label;
+                    //mapImage.UpdateResolution(dersiredResoltion);
                 }
             }
         }
 
-        private (double, double) WorldXZToMapXY(float X, float Z)
+        public static int GetRequiredResolution(int SliderMin, int SliderMax, int MinRes, int MaxRes, int SliderValue)
         {
-            // Bounds taken from: https://legendsofaria.gamepedia.com/Interactive_Map
-            //
-            // var bounds = [[-3968.87, -3741.21], [3487.13, 3706.79]];
-            //
-            // Our map is 800x800
-            //
-            float WORLD_SW_LAT = -3968.87f;
-            float WORLD_SW_LNG = -3741.21f;
-            float WORLD_NE_LAT = 3487.13f;
-            float WORLD_NE_LNG = 3706.79f;
-
-            float MAP_SW_LAT = (float)this.MapViewBox.ActualHeight;
-            float MAP_SW_LNG = 0;
-            float MAP_NE_LAT = 0;
-            float MAP_NE_LNG = (float)this.MapViewBox.ActualWidth;
-
-            float MAP_LAT_TRANSFORM = -1; // real world y asis and image y axis are inverted
-            float MAP_LNG_TRANSFORM = 1;
-
-            float MAP_LAT_FACTOR = (WORLD_NE_LAT - WORLD_SW_LAT) / (MAP_NE_LAT - MAP_SW_LAT) * MAP_LAT_TRANSFORM;
-            float MAP_LNG_FACTOR = (WORLD_NE_LNG - WORLD_SW_LNG) / (MAP_NE_LNG - MAP_SW_LNG) * MAP_LNG_TRANSFORM;
-
-            float mapLat =
-                MAP_LAT_TRANSFORM == 1
-                ?
-                (Z - WORLD_SW_LAT) / MAP_LAT_FACTOR
-                :
-                MAP_LAT_TRANSFORM == -1
-                ?
-                (WORLD_NE_LAT - Z) / MAP_LAT_FACTOR
-                :
-                0;
-
-            float mapLng =
-                MAP_LNG_TRANSFORM == 1
-                ?
-                (X - WORLD_SW_LNG) / MAP_LNG_FACTOR
-                :
-                MAP_LNG_TRANSFORM == -1
-                ?
-                (WORLD_NE_LNG - X) / MAP_LNG_FACTOR
-                :
-                0;
-
-            return (
-                mapLng,
-                mapLat
-                );
+            double scale = (double)(MaxRes - MinRes) / (SliderMax - SliderMin);
+            int resolution = (int)(MinRes + ((SliderValue - SliderMin) * scale));
+            //return (resolution + 31) / 32 * 32;
+            return resolution;
         }
 
-        public void Center(float X, float Z)
+        #endregion
+
+        #region Marker properties and methods
+        private Dictionary<MarkerType, Dictionary<string, Marker>> Markers = new Dictionary<MarkerType, Dictionary<string, Marker>>();
+
+        private void AddMarker(Marker marker)
         {
-            (double mapX, double mapY) = WorldXZToMapXY(X, Z);
+            MapMarker mapMarker = new MapMarker(marker);
+            TransformGroup transformGroup = new TransformGroup();
+            Binding b = new Binding("scaleTransform");
+            //mapMarker.LayoutTransform = transformGroup;
+            mapMarker.SetBinding(MapMarker.LayoutTransformProperty, b);
+            mapMarker.Name = "Marker_" + marker.Id;
+            mapMarker.Tag = marker.Type;
+            mapMarker.PreviewMouseWheel += OnPreviewMouseWheel;
 
-            mapX = mapX * scaleTransform.ScaleX;
-            mapY = mapY * scaleTransform.ScaleY;
+            MarkersCanvas.Children.Add(
+                mapMarker
+                );
+            RefreshMarker(marker, mapMarker);
+        }
 
-            double offsetX = (mapX - (scrollViewer.ViewportWidth / 2));
-            double offsetY = (mapY - (scrollViewer.ViewportHeight / 2));
+        private void RefreshMarker(Marker marker, FrameworkElement element)
+        {
+            if (element != null)
+            {
+                Canvas.SetLeft(element, marker.X);
+                Canvas.SetTop(element, marker.Z);
+
+                // scale back so that it preserves aspect ratio
+                ScaleTransform scaleTransform = (element as MapMarker).ScaleTransform;
+                scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
+                scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
+            }
+        }
+
+        public void Center(double X, double Z)
+        {
+            Point ScrollLocation = MarkersCanvas.TranslatePoint(new Point(X, Z), MapGrid);
+
+            double offsetX = (ScrollLocation.X * scaleTransform.ScaleX - (scrollViewer.ViewportWidth / 2));
+            double offsetY = (ScrollLocation.Y * scaleTransform.ScaleY - (scrollViewer.ViewportHeight / 2));
 
             scrollViewer.ScrollToHorizontalOffset(offsetX);
             scrollViewer.ScrollToVerticalOffset(offsetY);
@@ -422,7 +308,8 @@ namespace LoUAM
 
         private void RefreshMarkers(Dictionary<MarkerType, Dictionary<string, Marker>> markers)
         {
-            foreach (var markerType in markers.Keys) {
+            foreach (var markerType in markers.Keys)
+            {
                 RefreshMarkers(markerType, markers[markerType]);
             }
         }
@@ -431,7 +318,7 @@ namespace LoUAM
             // Get all the elements
             var elements = MarkersCanvas.Children.OfType<FrameworkElement>().Where(i => i.Tag.ToString() == markerType.ToString()).ToDictionary(i => i.Name, i => i);
 
-            foreach (var marker in markers.Values) 
+            foreach (var marker in markers.Values)
             {
                 if (elements.Keys.Contains("Marker_" + marker.Id))
                 {
@@ -443,20 +330,6 @@ namespace LoUAM
                 {
                     // Add missing markers
                     AddMarker(marker);
-                }
-                if (marker.Type != MarkerType.CurrentPlayer)
-                {
-                    if (elements.Keys.Contains("Label_" + marker.Id))
-                    {
-                        // Refresh existing markers
-                        RefreshLabel(marker, elements["Label_" + marker.Id]);
-                        elements.Remove("Label_" + marker.Id);
-                    }
-                    else
-                    {
-                        // Add missing markers
-                        AddLabel(marker);
-                    }
                 }
             }
 
@@ -502,5 +375,50 @@ namespace LoUAM
         }
 
         #endregion
+        public void RefreshMapTiles(string folder)
+        {
+            if (!Directory.Exists(folder))
+                return;
+
+            string[] mapTiles = Directory.GetFiles(folder);
+            if (mapTiles == null || mapTiles.Length == 0)
+                return;
+
+            TilesCanvas.Children.Clear();
+
+            foreach (string mapTile in mapTiles)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(mapTile);
+                var SubTile = CreateSubTile(fileName);
+                TilesCanvas.Children.Add(SubTile);
+            }
+        }
+
+        private Image CreateSubTile(string TileName)
+        {
+            MapImage SubTileImage;
+            string TileFolder;
+            string TilePath;
+            string TilePrefabPath;
+
+            TileFolder = Path.GetFullPath(@".\MapData");
+            TilePath = TileFolder + "\\" + TileName + ".jpg";
+            TilePrefabPath = TileFolder + "\\" + TileName + ".json";
+            SubTileImage = new MapImage(TilePath, TilePrefabPath);
+
+            SubTileImage.Name = TileName.Replace('-', '_');
+            SubTileImage.Width = TILE_WIDTH;
+            SubTileImage.Height = TILE_HEIGHT;
+            SubTileImage.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
+
+            return SubTileImage;
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.ScrollableHeight / 2);
+            scrollViewer.ScrollToHorizontalOffset(scrollViewer.ScrollableWidth / 2);
+            slider.Value = 1;
+        }
     }
 }

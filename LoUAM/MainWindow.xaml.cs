@@ -1,4 +1,4 @@
-﻿using LoU;
+using LoU;
 using System;
 using System.Diagnostics;
 using System.Windows;
@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace LoUAM
 {
@@ -71,12 +72,30 @@ namespace LoUAM
         {
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
+
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.LoadPlaces();
-            MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
+            UpdatePlaces();
+
+            if (!Directory.Exists("./MapData")) {
+                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
+                return;
+            }
+
+            try
+            {
+                MainMap.RefreshMapTiles("./MapData");
+            } catch (Exception ex)
+            {
+                MessageBoxEx.Show(this, "It appears that the map data is corrupt.\n\nStart your Legends of Aria Client and then connect to it in order to re generate the necessary map data.", "Map data corrupt");
+                foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
+                {
+                    File.Delete(f);
+                }
+            }
         }
 
-        private void UpdateMainStatus(Color color, string message)
+        private void UpdateMainStatus(System.Windows.Media.Color color, string message)
         {
             if (MainStatusLabel.Content.ToString() != message)
             {
@@ -85,7 +104,7 @@ namespace LoUAM
             }
         }
 
-        private void UpdateLinkStatus(Color color, string message)
+        private void UpdateLinkStatus(System.Windows.Media.Color color, string message)
         {
             if (LinkStatusLabel.Content.ToString() != message)
             {
@@ -94,7 +113,84 @@ namespace LoUAM
             }
         }
 
+        public delegate void UpdatePlacesDelegate();
+        public void UpdatePlaces()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new UpdatePlacesDelegate(UpdatePlaces));
+                return;
+            }
+            MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
+        }
+
         #region Timers
+        public static int ExecuteCommandAsync(ClientCommand command)
+        {
+            if (CurrentClientProcessId == -1 || ClientCommandsMemoryMap == null)
+                return -1;
+
+            int ClientCommandId = 0;
+            Queue<ClientCommand> ClientCommandsQueue;
+            ClientCommand[] ClientCommandsArray;
+            ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+            if (ClientCommandsArray == null)
+            {
+                ClientCommandsQueue = new Queue<ClientCommand>();
+            }
+            else
+            {
+                ClientCommandsQueue = new Queue<ClientCommand>(ClientCommandsArray);
+            }
+
+            if (ClientCommandsQueue.Count > 100)
+            {
+                throw new Exception("Too many commands in the queue. Cannot continue.");
+            }
+
+            ClientCommandsQueue.Enqueue(command);
+            int AssignedClientCommandId = ClientCommandId + ClientCommandsQueue.Count;
+            ClientCommandsMemoryMap.WriteMemoryMap(ClientCommandId, ClientCommandsQueue.ToArray());
+            Debug.WriteLine("Command inserted, assigned CommandId=" + AssignedClientCommandId.ToString());
+
+            return AssignedClientCommandId;
+        }
+        public static void ExecuteCommand(ClientCommand command)
+        {
+            if (CurrentClientProcessId == -1 || ClientCommandsMemoryMap == null)
+                return;
+
+            int AssignedClientCommandId = ExecuteCommandAsync(command);
+            
+            int ClientCommandId = 0;
+            ClientCommand[] ClientCommandsArray;
+            Stopwatch timeout = new Stopwatch();
+            timeout.Start();
+            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < 60000)
+            {
+                Debug.WriteLine("Waiting for command to be executed, Current CommandId=" + ClientCommandId.ToString() + ", Assigned CommandId=" + AssignedClientCommandId.ToString());
+                Thread.Sleep(50);
+                ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+            }
+            timeout.Stop();
+            if (timeout.ElapsedMilliseconds >= 60000)
+            {
+                Debug.WriteLine("Timed out!");
+            }
+        }
+        public static void RefreshClientStatus()
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+            {
+                ClientStatus = null;
+            }
+
+            lock (ClientStatusLock)
+            {
+                ClientStatusMemoryMap.ReadMemoryMap<ClientStatus>(out ClientStatus);
+            }
+        }
+
         //private static Random rnd = new Random();
         //private static Player MockPlayer = new Player(
         //        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
@@ -103,7 +199,6 @@ namespace LoUAM
         //        (ulong)rnd.Next(1, 1000),
         //        (ulong)rnd.Next(1, 1000),
         //        (ulong)rnd.Next(1, 1000));
-
         private Player GetCurrentPlayer()
         {
             //MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -114,41 +209,39 @@ namespace LoUAM
 
             Player currentPlayer = null;
 
-            lock (ClientStatusLock)
+            RefreshClientStatus();
+
+            if (ClientStatus == null)
+                return null;
+
+            if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 60000)
             {
-                ClientStatusMemoryMap.ReadMemoryMap<ClientStatus>(out ClientStatus);
-                if (ClientStatus != null)
+                UpdateMainStatus(Colors.Green, $"Connected to Legends of Aria game client {MainWindow.CurrentClientProcessId.ToString()}.");
+
+                if (ClientStatus.CharacterInfo.CHARID != null)
                 {
-                    if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 60000)
-                    {
-                        UpdateMainStatus(Colors.Green, $"Connected to Legends of Aria game client {MainWindow.CurrentClientProcessId.ToString()}.");
+                    currentPlayer = new Player(
+                        ClientStatus.TimeStamp,
+                        ClientStatus.CharacterInfo.CHARID ?? 0,
+                        TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
+                        ClientStatus.CharacterInfo.CHARPOSX ?? 0,
+                        ClientStatus.CharacterInfo.CHARPOSY ?? 0,
+                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0);
 
-                        if (ClientStatus.CharacterInfo.CHARID != null)
-                        {
-                            currentPlayer = new Player(
-                                ClientStatus.TimeStamp,
-                                ClientStatus.CharacterInfo.CHARID ?? 0,
-                                TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
-                                ClientStatus.CharacterInfo.CHARPOSX ?? 0,
-                                ClientStatus.CharacterInfo.CHARPOSY ?? 0,
-                                ClientStatus.CharacterInfo.CHARPOSZ ?? 0);
+                    Regex rx = new Regex(@"\[(.*?)\]");
 
-                            Regex rx = new Regex(@"\[(.*?)\]");
+                    // Try to extract the color
+                    String CharColor = rx.Match(currentPlayer.DisplayName).Value;
 
-                            // Try to extract the color
-                            String CharColor = rx.Match(currentPlayer.DisplayName).Value;
+                    // Clean up the name
+                    String CharName = rx.Replace(currentPlayer.DisplayName, "");
 
-                            // Clean up the name
-                            String CharName = rx.Replace(currentPlayer.DisplayName, "");
-
-                            currentPlayer.DisplayName = CharName;
-                        }
-                    }
-                    else
-                    {
-                        UpdateMainStatus(Colors.Red, $"Client {MainWindow.CurrentClientProcessId.ToString()} not responding!");
-                    }
+                    currentPlayer.DisplayName = CharName;
                 }
+            }
+            else
+            {
+                UpdateMainStatus(Colors.Red, $"Client {MainWindow.CurrentClientProcessId.ToString()} not responding!");
             }
 
             return currentPlayer;
@@ -156,7 +249,7 @@ namespace LoUAM
 
         public void RefreshCurrentPlayer()
         {
-            Debug.Print("RefreshCurrentPlayer");
+            //Debug.Print("RefreshCurrentPlayer");
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -191,15 +284,15 @@ namespace LoUAM
         }
         private void TimerRefreshCurrentPlayer_Tick(object sender, EventArgs e)
         {
-            Debug.Print("TimerRefreshCurrentPlayer_Tick()");
+            //Debug.Print("TimerRefreshCurrentPlayer_Tick()");
 
-            Debug.Print("this.TimerRefreshCurrentPlayer.Stop();");
+            //Debug.Print("this.TimerRefreshCurrentPlayer.Stop();");
             TimerRefreshCurrentPlayer.Stop();
 
-            Debug.Print("RefreshCurrentPlayer()");
+            //Debug.Print("RefreshCurrentPlayer()");
             RefreshCurrentPlayer();
 
-            Debug.Print("TimerRefreshCurrentPlayer.Start();");
+            //Debug.Print("TimerRefreshCurrentPlayer.Start();");
             TimerRefreshCurrentPlayer.Start();
         }
 
@@ -289,15 +382,15 @@ namespace LoUAM
         }
         private async void TimerUpdateServer_TickAsync(object sender, EventArgs e)
         {
-            Debug.Print("UpdateServer_Tick()");
+            //Debug.Print("UpdateServer_Tick()");
 
-            Debug.Print("TimerUpdateServer.Stop();");
+            //Debug.Print("TimerUpdateServer.Stop();");
             TimerUpdateServer.Stop();
 
-            Debug.Print("UpdateServer()");
+            //Debug.Print("UpdateServer()");
             await UpdateServerAsync();
 
-            Debug.Print("TimerUpdateServer.Start();");
+            //Debug.Print("TimerUpdateServer.Start();");
             TimerUpdateServer.Start();
         }
         #endregion
@@ -396,15 +489,6 @@ namespace LoUAM
         #endregion Injection
 
         #region Commands
-        private static RoutedCommand connectToLoAClientCommand = new RoutedCommand();
-        public static RoutedCommand ConnectToLoAClientCommand { get => connectToLoAClientCommand; set => connectToLoAClientCommand = value; }
-
-        private static RoutedCommand trackPlayerCommand = new RoutedCommand();
-        public static RoutedCommand TrackPlayerCommand { get => trackPlayerCommand; set => trackPlayerCommand = value; }
-
-        private static RoutedCommand linkControlsCommand = new RoutedCommand();
-        public static RoutedCommand LinkControlsCommand { get => linkControlsCommand; set => linkControlsCommand = value; }
-
         private void ExitCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -430,7 +514,7 @@ namespace LoUAM
         {
             e.CanExecute = true;
         }
-        private void ConnectToLoAClient(int ProcessId)
+        public bool ConnectToLoAClient(int ProcessId)
         {
             UpdateMainStatus(Colors.Orange, $"Connecting to {ProcessId.ToString()}...");
             MainWindow.CurrentClientProcessId = ProcessId;
@@ -449,13 +533,13 @@ namespace LoUAM
             {
                 // Client already patched, memorymaps open already all good
                 UpdateMainStatus(Colors.Green, "Connection successful.");
-                return;
+                return true;
             }
 
             if (MessageBoxEx.Show(MainWindow.TheMainWindow, "Game client " + ProcessId.ToString() + " not yet injected. Inject now?", "Game client not yet injected", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
             {
                 UpdateMainStatus(Colors.Black, "Connection to Legends of Aria game client aborted.");
-                return;
+                return false;
             }
 
             UpdateMainStatus(Colors.Orange, "Connecting to Legends of Aria game client, please wait ...");
@@ -468,73 +552,133 @@ namespace LoUAM
             {
                 // Client already patched, memorymaps open already all good
                 UpdateMainStatus(Colors.Green, "Connection to Legends of Aria game client successful.");
-                return;
+                return true;
             }
 
             UpdateMainStatus(Colors.Red, "Connection to Legends of Aria game client failed!");
+            return false;
         }
+
+        public void DoConnectToLoAClientCommand() {
+            {
+                TargetAriaClientPanel.Visibility = Visibility.Visible;
+
+                MouseEventCallback handler = null;
+                handler = (MouseEventType type, int x, int y) => {
+                    // Restore cursors
+                    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
+                    // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+                    MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
+                    TargetAriaClientPanel.Visibility = Visibility.Hidden;
+
+                    // Stop global hook
+                    MouseHook.HookEnd();
+                    MouseHook.MouseDown -= handler;
+
+                    // Get clicked coord
+                    MouseHook.POINT p;
+                    p.x = x;
+                    p.y = y;
+                    Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
+
+                    // Get clicked window handler, window title
+                    IntPtr hWnd = MouseHook.WindowFromPoint(p);
+                    int WindowTitleLength = MouseHook.GetWindowTextLength(hWnd);
+                    StringBuilder WindowTitle = new StringBuilder(WindowTitleLength + 1);
+                    MouseHook.GetWindowText(hWnd, WindowTitle, WindowTitle.Capacity);
+                    Debug.WriteLine("Clicked handle=" + hWnd.ToString() + " title=" + WindowTitle);
+
+                    if (WindowTitle.ToString() != "Legends of Aria")
+                    {
+                        MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
+                        return true;
+                    }
+
+                    // Get the processId, and connect
+                    uint processId;
+                    MouseHook.GetWindowThreadProcessId(hWnd, out processId);
+                    Debug.WriteLine("Clicked pid=" + processId.ToString());
+
+                    // Attempt connection (or injection, if needed)
+                    bool connected = ConnectToLoAClient((int)processId);
+                    if (connected)
+                    {
+                        ExecuteCommand(new ClientCommand(CommandType.LoadMap));
+                        RefreshClientStatus();
+
+                        int TotalTransforms = 0;
+                        int TotalTextures = 0;
+                        lock (MainWindow.ClientStatusLock)
+                        {
+                            TotalTransforms = MainWindow.ClientStatus?.Miscellaneous.MAPTRANSFORMS ?? 0;
+                            TotalTextures = MainWindow.ClientStatus?.Miscellaneous.MAPTEXTURES ?? 0;
+                        }
+                        if (TotalTransforms == 0 || TotalTextures == 0)
+                        {
+                            MessageBoxEx.Show(this, "LoUAM was unable to load the map data from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", "Could not load map data");
+                            return false;
+                        }
+
+                        bool InvalidMapData = false;
+                        if (!Directory.Exists("./MapData"))
+                        {
+                            MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data not found");
+                            InvalidMapData = true;
+                        } else if (Directory.GetFiles("./MapData/", "*.json").Count() != TotalTransforms ||
+                            Directory.GetFiles("./MapData/", "*.jpg").Count() != TotalTextures)
+                        {
+                            MessageBoxEx.Show(this, "It appears that the map data is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data outdated");
+                            InvalidMapData = true;
+                        }
+
+                        if (InvalidMapData)
+                        {
+                            MapGenerator mapGenerator = new MapGenerator(TotalTransforms, TotalTextures);
+                            mapGenerator.Owner = TheMainWindow;
+                            mapGenerator.ShowDialog();
+                            MainMap.RefreshMapTiles("./MapData");
+                        }
+
+                        ExecuteCommand(new ClientCommand(CommandType.UnloadMap));
+                    }
+                    return true;
+                };
+
+                //// Prepare cursor image
+                //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
+                //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
+
+                ////// Set all cursors
+                ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
+                ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+                //Cursor cursor = new Cursor(image.GetHicon());
+                //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
+                //foreach (uint i in cursors)
+                //{
+                //    MouseHook.SetSystemCursor(cursor.Handle, i);
+                //}
+
+                // Start mouse global hook
+                MouseHook.MouseDown += handler;
+                MouseHook.HookStart();
+            } 
+        }
+
         private void ConnectToLoAClientCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            TargetAriaClientPanel.Visibility = Visibility.Visible;
+            DoConnectToLoAClientCommand();
+        }
 
-            MouseEventCallback handler = null;
-            handler = (MouseEventType type, int x, int y) => {
-                // Restore cursors
-                // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
-                // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-                MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
-                TargetAriaClientPanel.Visibility = Visibility.Hidden;
-
-                // Stop global hook
-                MouseHook.HookEnd();
-                MouseHook.MouseDown -= handler;
-
-                // Get clicked coord
-                MouseHook.POINT p;
-                p.x = x;
-                p.y = y;
-                Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
-
-                // Get clicked window handler, window title
-                IntPtr hWnd = MouseHook.WindowFromPoint(p);
-                int WindowTitleLength = MouseHook.GetWindowTextLength(hWnd);
-                StringBuilder WindowTitle = new StringBuilder(WindowTitleLength + 1);
-                MouseHook.GetWindowText(hWnd, WindowTitle, WindowTitle.Capacity);
-                Debug.WriteLine("Clicked handle=" + hWnd.ToString() + " title=" + WindowTitle);
-
-                if (WindowTitle.ToString() != "Legends of Aria")
-                {
-                    MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
-                    return true;
-                }
-
-                // Get the processId, and connect
-                uint processId;
-                MouseHook.GetWindowThreadProcessId(hWnd, out processId);
-                Debug.WriteLine("Clicked pid=" + processId.ToString());
-
-                // Attempt connection (or injection, if needed)
-                ConnectToLoAClient((int)processId);
-                return true;
-            };
-
-            //// Prepare cursor image
-            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
-            //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
-
-            ////// Set all cursors
-            ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
-            ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-            //Cursor cursor = new Cursor(image.GetHicon());
-            //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
-            //foreach (uint i in cursors)
-            //{
-            //    MouseHook.SetSystemCursor(cursor.Handle, i);
-            //}
-
-            // Start mouse global hook
-            MouseHook.MouseDown += handler;
-            MouseHook.HookStart();
+        private void EditPlacesCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void EditPlacesCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel controlPanel = new ControlPanel(0);
+            controlPanel.Owner = this;
+            controlPanel.ShowDialog();
+            UpdatePlaces();
         }
 
         private void LinkControlsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -543,9 +687,10 @@ namespace LoUAM
         }
         private void LinkControlsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel();
+            ControlPanel controlPanel = new ControlPanel(1);
             controlPanel.Owner = this;
             controlPanel.ShowDialog();
+            UpdatePlaces();
         }
 
         private void TrackPlayerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -558,6 +703,41 @@ namespace LoUAM
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.SaveSettings();
         }
+
+        private void MoveCursorHereCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void MoveCursorHereCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            MainMap.Center(MainMap.LastMouseRightButtonUpCoords.X, MainMap.LastMouseRightButtonUpCoords.Y);
+        }
+
+        private void NewPlaceCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void NewPlaceCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Point? NewPlaceCoords = e.Parameter as Point?;
+            if (NewPlaceCoords != null)
+            {
+                EditPlace editPlace = new EditPlace(NewPlaceCoords.Value.X, NewPlaceCoords.Value.Y);
+                editPlace.Owner = this;
+                editPlace.ShowDialog();
+                UpdatePlaces();
+            }
+        }
         #endregion Commands
+    }
+
+    public static class MainWindowCustomCommands
+    {
+        public static RoutedCommand ConnectToLoAClientCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand EditPlacesCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();
     }
 }

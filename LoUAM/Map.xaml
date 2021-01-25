@@ -3,10 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d">
-    <UserControl.Resources>
-        <Image x:Key="map" Source="/images/map.jpg"/>
-    </UserControl.Resources>
+             mc:Ignorable="d" Loaded="UserControl_Loaded">
     <Grid x:Name="OuterGrid">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -14,27 +11,45 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Slider Grid.Column="0" Orientation="Vertical" 
-               HorizontalAlignment="Left" Minimum="1" Maximum="40" x:Name="slider"/>
-            <ScrollViewer Name="scrollViewer" Grid.Column="1" 
-
+               HorizontalAlignment="Left" Minimum="0.1" TickFrequency="0.2" Maximum="3"  IsMoveToPointEnabled="True" x:Name="slider"/>
+            <ScrollViewer Name="scrollViewer" Grid.Column="1" Background="Black" 
                   VerticalScrollBarVisibility="Visible" 
-
                   HorizontalScrollBarVisibility="Visible">
 
-                <Grid Name="MapGrid" Width="800"
-                  Height="800" RenderTransformOrigin="0.5,0.5">
+                <Grid Name="MapGrid" RenderTransformOrigin="0.5,0.5" Width="7000" Height="7000" Background="Black">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
                     <Grid.LayoutTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="scaleTransform"/>
                         </TransformGroup>
                     </Grid.LayoutTransform>
-                    <Viewbox Name="MapViewBox" Grid.Column="0" Grid.Row="0">
-                        <ContentPresenter Name="MapImage" Content="{StaticResource map}"/>
-                    </Viewbox>
-                    <Canvas Name="MarkersCanvas" Grid.Column="0" Grid.Row="0">
+                    <Canvas Name="TilesCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">
+                        <Canvas.LayoutTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="1" ScaleY="-1" />
+                            </TransformGroup>
+                        </Canvas.LayoutTransform>
+                    </Canvas>
+                    <Canvas Name="MarkersCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">
+                        <Canvas.LayoutTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="1" ScaleY="-1" />
+                            </TransformGroup>
+                        </Canvas.LayoutTransform>
                     </Canvas>
                 </Grid>
             </ScrollViewer>
         </Grid>
+        <Canvas>
+            <Label Name="MapCenterWorldCoordsLabel" Canvas.Left="20" Canvas.Top="10" Foreground="Yellow">Map center world coords: </Label>
+            <Label Name="MouseWorldCoordsLabel" Canvas.Left="20" Canvas.Bottom="20" Foreground="Yellow">Mouse world coords:</Label>
+        </Canvas>
     </Grid>
 </UserControl>

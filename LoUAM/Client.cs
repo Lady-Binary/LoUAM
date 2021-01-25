@@ -188,7 +188,6 @@ namespace LoUAM
                 {
                     IEnumerable<Player> players;
                     players = JsonConvert.DeserializeObject<IEnumerable<Player>>(json);
-                    System.Diagnostics.Debug.WriteLine(players.ToString());
                     return players;
                 }
 

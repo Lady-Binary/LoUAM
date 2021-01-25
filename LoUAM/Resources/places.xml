@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <places>
   <place>
     <name>Britain</name>
@@ -121,9 +121,9 @@
     <z>-851.0783</z>
   </place>
   <place>
-    <name>Waterfall Cave</name>
+    <name>Waterfall Cave Entrance</name>
     <type>point_of_interest</type>
-    <x>Entrance	130.239</x>
+    <x>130.239</x>
     <z>-653.883</z>
   </place>
   <place>
@@ -395,5 +395,23 @@
     <type>moongate</type>
     <x>-102.8621</x>
     <z>-2056.406</z>
+  </place>
+  <place>
+    <name>Calibration Point 1 - SW</name>
+    <type>UOAM</type>
+    <x>-1729.86</x>
+    <z>-2266.79</z>
+  </place>
+  <place>
+    <name>Calibration Point 2 - Brit</name>
+    <type>UOAM</type>
+    <x>852</x>
+    <z>-1163</z>
+  </place>
+  <place>
+    <name>Calibration Point 3 - NE</name>
+    <type>UOAM</type>
+    <x>2877.47</x>
+    <z>-1291.42</z>
   </place>
 </places>

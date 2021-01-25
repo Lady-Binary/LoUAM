@@ -13,19 +13,24 @@ namespace LoUAM
 {
     public partial class MapGenerator : Window
     {
-        public static string GameDirectory = "";
         private string mapDirectory;
         private BackgroundWorker backgroundWorker;
-        private bool connecedToClient = false;
-        public MapGenerator()
+
+        private int GeneratedTransforms = 0;
+        private int TotalTransforms = 0;
+
+        private int GeneratedTextures = 0;
+        private int TotalTextures = 0;
+
+        public MapGenerator(int TotalTransforms, int TotalTextures)
         {
+            this.TotalTransforms = TotalTransforms;
+            this.TotalTextures = TotalTextures;
             mapDirectory = Path.GetFullPath(".\\MapData");
             backgroundWorker = new BackgroundWorker();
             InitializeComponent();
-            this.DataContext = Application.Current.MainWindow;
             InitializeBackgroundWorker();
-            LoadSettings();
-            SaveSettings();
+            StartBackgroundWorker();
         }
 
         private void InitializeBackgroundWorker()
@@ -35,6 +40,13 @@ namespace LoUAM
             backgroundWorker.WorkerReportsProgress = true;
         }
 
+        private void StartBackgroundWorker()
+        {
+            AssetsProgressBar.Visibility = Visibility.Visible;
+            AssetsProgressBar.IsIndeterminate = true;
+            backgroundWorker.RunWorkerAsync();
+        }
+
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
@@ -42,175 +54,79 @@ namespace LoUAM
 
             ClientCommand Command = new ClientCommand((LoU.CommandType)Enum.Parse(typeof(LoU.CommandType), "ExportMap"));
             Command.CommandParams.Add("0",new ClientCommand.CommandParamStruct() { CommandParamType = ClientCommand.CommandParamTypeEnum.String, String = mapDirectory });
-
-            int ClientCommandId = 0;
-            Queue<ClientCommand> ClientCommandsQueue;
-            ClientCommand[] ClientCommandsArray;
-            MainWindow.ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
-            if (ClientCommandsArray == null)
-            {
-                ClientCommandsQueue = new Queue<ClientCommand>();
-            }
-            else
-            {
-                ClientCommandsQueue = new Queue<ClientCommand>(ClientCommandsArray);
-            }
-
-            if (ClientCommandsQueue.Count > 100)
-            {
-                throw new Exception("Too many commands in the queue. Cannot continue.");
-            }
-
-            ClientCommandsQueue.Enqueue(Command);
-            int AssignedClientCommandId = ClientCommandId + ClientCommandsQueue.Count;
-            MainWindow.ClientCommandsMemoryMap.WriteMemoryMap(ClientCommandId, ClientCommandsQueue.ToArray());
-            Debug.WriteLine("Command inserted, assigned CommandId=" + AssignedClientCommandId.ToString());
+            MainWindow.ExecuteCommandAsync(Command);
 
             Stopwatch timeout = new Stopwatch();
             timeout.Start();
-            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < 30000)
+            while (GeneratedTransforms < TotalTransforms &&
+                timeout.ElapsedMilliseconds < 120000)
             {
-                Debug.WriteLine("Waiting for command to be executed, Current CommandId=" + ClientCommandId.ToString() + ", Assigned CommandId=" + AssignedClientCommandId.ToString());
-                Thread.Sleep(50);
-                MainWindow.ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+                GeneratedTransforms = Directory.GetFiles("./MapData/", "*.json").Length;
+                UpdateProgress(0, GeneratedTransforms, TotalTransforms, "transforms");
+
+                Thread.Sleep(100);
             }
-            timeout.Stop();
-            if (timeout.ElapsedMilliseconds >= 3000)
+            if (timeout.ElapsedMilliseconds >= 120000)
             {
                 Debug.WriteLine("Timed out!");
+                return;
+            }
+            timeout.Reset();
+            while ((GeneratedTransforms < TotalTransforms || GeneratedTextures < TotalTextures) &&
+                timeout.ElapsedMilliseconds < 120000)
+            {
+                GeneratedTextures = Directory.GetFiles("./MapData/", "*.jpg").Length;
+                UpdateProgress(0, GeneratedTextures, TotalTextures, "textures");
+
+                Thread.Sleep(100);
+            }
+            timeout.Stop();
+            if (timeout.ElapsedMilliseconds >= 120000)
+            {
+                Debug.WriteLine("Timed out!");
+                return;
             }
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            MessageBoxEx.Show(this, "Export completed. You can now close this window.", "Assets export completed");
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            GameDirectoryTextBox.Text = GameDirectory;
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            SaveSettings();
-        }
-
-        public static void LoadSettings()
-        {
-            string[] DefaultDirectories = {
-                "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Legends of Aria",
-                "C:\\Program Files\\Legends of Aria Launcher"
-            };
-
-            RegistryKey SoftwareKey = Registry.CurrentUser.OpenSubKey("Software", true);
-
-            RegistryKey LoUAMKey = SoftwareKey.OpenSubKey("LoUAM", true);
-            if (LoUAMKey == null)
+            GeneratedTransforms = Directory.GetFiles("./MapData/", "*.json").Length;
+            GeneratedTextures = Directory.GetFiles("./MapData/", "*.jpg").Length;
+            if (GeneratedTransforms < TotalTransforms || GeneratedTextures < TotalTextures)
             {
-                LoUAMKey = SoftwareKey.CreateSubKey("LoUAM", true);
-            }
-
-            string GameDirectoryDefault = "";
-            foreach (string DefaultDirectory in DefaultDirectories)
-            {
-                if (Directory.Exists(DefaultDirectory))
-                {
-                    GameDirectoryDefault = DefaultDirectory;
-                }
-            }
-
-            GameDirectory = (string)LoUAMKey.GetValue("GameDirectory", GameDirectoryDefault);
-        }
-
-        public static void SaveSettings()
-        {
-            RegistryKey SoftwareKey = Registry.CurrentUser.OpenSubKey("Software", true);
-
-            RegistryKey LoUAMKey = SoftwareKey.OpenSubKey("LoUAM", true);
-            if (LoUAMKey == null)
-            {
-                LoUAMKey = SoftwareKey.CreateSubKey("LoUAM", true);
-            }
-
-            RegistryKey LoUKey = SoftwareKey.OpenSubKey("LoU", true);
-            if (LoUKey == null)
-            {
-                LoUKey = SoftwareKey.CreateSubKey("LoU", true);
-            }
-
-            ((App)Application.Current).GameDirectory = GameDirectory;
-            LoUKey.SetValue("GameDirectory", GameDirectory);
-            LoUAMKey.SetValue("GameDirectory", GameDirectory);
-            LoUAMKey.SetValue("WorkingDirectory", Directory.GetCurrentDirectory());
-        }
-
-        private void GameDirectoryBrowse_Click(object sender, RoutedEventArgs e)
-        {
-            VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
-            dialog.Description = "Please select a folder.";
-            dialog.UseDescriptionForTitle = true;
-            if ((bool)dialog.ShowDialog(this))
-            {
-                string Folder = dialog.SelectedPath;
-                if (!File.Exists(Folder + "\\Legends of Aria.exe"))
-                {
-                    MessageBoxEx.Show("The selected folder is not a Legends of Aria game folder. \n\r Please select the folder that contains the 'Legends of Aria.exe' file");
-                }
-                else
-                {
-                    GameDirectoryTextBox.Text = Folder;
-                    GameDirectory = Folder;
-                    SaveSettings();
-                }
-            }
-        }
-
-        private void GenerateMap_Click(object sender, RoutedEventArgs e)
-        {
-
-            if (!File.Exists(GameDirectory + "\\Legends of Aria.exe"))
-            {
-                MessageBoxEx.Show("The selected folder is not a Legends of Aria game folder. \n\r Please select the folder that contains the 'Legends of Aria.exe' file");
-            } else if (!connecedToClient)
-            {
-                MessageBoxEx.Show("Please connect to the Legends Of Aria Client before generating the map.");
+                MessageBoxExShow(this, "Export completed, but map could be incomplete. This window will now close and the map will be loaded: it might take few minutes, depending on your computer.", "Map export incomplete");
             }
             else
             {
-                if (backgroundWorker.IsBusy != true)
-                {
-                    BrowseButton.IsEnabled = false;
-                    GenerateMapButton.IsEnabled = false;
-                    ConnectToClientButton.IsEnabled = false;
-                    AssetsProgressBar.Visibility = Visibility.Visible;
-                    AssetsProgressBar.IsIndeterminate = true;
-                    backgroundWorker.RunWorkerAsync();
-                }
+                MessageBoxExShow(this, "Export completed. This window will now close and the map will be loaded: it might take few minutes, depending on your computer.", "Map export completed");
             }
+            Close();
         }
-        
-        private delegate void UpdateProgressDelegate(double Minimum, double Value, double Maximum);
-        private void UpdateProgress(double Minimum, double Value, double Maximum)
+
+        private delegate void MessageBoxExShowDelegate(Window owner, string text, string caption);
+        private void MessageBoxExShow(Window owner, string text, string caption)
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(new UpdateProgressDelegate(UpdateProgress), Minimum, Value, Maximum);
+                Dispatcher.Invoke(new MessageBoxExShowDelegate(MessageBoxExShow), new object[] { owner, text, caption });
+                return;
+            }
+            MessageBoxEx.Show(owner, text, caption);
+        }
+
+        private delegate void UpdateProgressDelegate(double minimum, double value, double maximum, string item);
+        private void UpdateProgress(double minimum, double value, double maximum, string item)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new UpdateProgressDelegate(UpdateProgress), minimum, value, maximum, item);
                 return;
             }
             AssetsProgressBar.IsIndeterminate = false;
-            AssetsProgressBar.Minimum = Minimum;
-            AssetsProgressBar.Value = Value;
-            AssetsProgressBar.Maximum = Maximum;
-
-            AssetsProgressLabel.Content = $"{Value} out of {Maximum} assets processed.";
-        }
-
-        private void ConnectToClient_Click(object sender, RoutedEventArgs e)
-        {
-            MainWindow mainWindow = (MainWindow)Owner;
-            mainWindow.DoConnectToLoAClientCommand();
-            connecedToClient = true;
+            AssetsProgressBar.Minimum = minimum;
+            AssetsProgressBar.Value = value;
+            AssetsProgressBar.Maximum = maximum;
+            AssetsProgressTextBlock.Text = $"{value} out of {maximum} {item} processed.";
         }
     }
 }

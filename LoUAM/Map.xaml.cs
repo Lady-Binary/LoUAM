@@ -375,6 +375,25 @@ namespace LoUAM
         }
 
         #endregion
+        public void RefreshMapTiles(string folder)
+        {
+            if (!Directory.Exists(folder))
+                return;
+
+            string[] mapTiles = Directory.GetFiles(folder);
+            if (mapTiles == null || mapTiles.Length == 0)
+                return;
+
+            TilesCanvas.Children.Clear();
+
+            foreach (string mapTile in mapTiles)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(mapTile);
+                var SubTile = CreateSubTile(fileName);
+                TilesCanvas.Children.Add(SubTile);
+            }
+        }
+
         private Image CreateSubTile(string TileName)
         {
             MapImage SubTileImage;
@@ -397,15 +416,6 @@ namespace LoUAM
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            string[] mapTiles = Directory.GetFiles("./MapData/", "*.jpg");
-
-            foreach (string mapTile in mapTiles)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(mapTile);
-                var SubTile = CreateSubTile(fileName);
-                TilesCanvas.Children.Add(SubTile);
-            }
-
             scrollViewer.ScrollToVerticalOffset(scrollViewer.ScrollableHeight / 2);
             scrollViewer.ScrollToHorizontalOffset(scrollViewer.ScrollableWidth / 2);
             slider.Value = 1;

@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace LoUAM
 {
@@ -71,28 +72,27 @@ namespace LoUAM
         {
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
-            MapGenerator.LoadSettings();
 
-            bool InvalidMapData = false;
-            if (!Directory.Exists("./MapData")) {
-                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer. Click OK to continue.", "Map data not found");
-                InvalidMapData = true;
-            }
-            if (Directory.Exists("./MapData")
-                && (Directory.GetFiles("./MapData/", "*.jpg").Count() != 416 ||
-                Directory.GetFiles("./MapData/", "*.json").Count() != 416))
-            {
-                MessageBoxEx.Show(this, "It appears that the map data is corrupt or some file got deleted.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer. Click OK to continue.", "Map data corrupt");
-                InvalidMapData = true;
-            }
-            if (InvalidMapData) {
-                MapGenerator mapGenerator = new MapGenerator();
-                mapGenerator.Owner = TheMainWindow;
-                mapGenerator.ShowDialog();
-            }
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.LoadPlaces();
             UpdatePlaces();
+
+            if (!Directory.Exists("./MapData")) {
+                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
+                return;
+            }
+
+            try
+            {
+                MainMap.RefreshMapTiles("./MapData");
+            } catch (Exception ex)
+            {
+                MessageBoxEx.Show(this, "It appears that the map data is corrupt.\n\nStart your Legends of Aria Client and then connect to it in order to re generate the necessary map data.", "Map data corrupt");
+                foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
+                {
+                    File.Delete(f);
+                }
+            }
         }
 
         private void UpdateMainStatus(System.Windows.Media.Color color, string message)
@@ -125,6 +125,72 @@ namespace LoUAM
         }
 
         #region Timers
+        public static int ExecuteCommandAsync(ClientCommand command)
+        {
+            if (CurrentClientProcessId == -1 || ClientCommandsMemoryMap == null)
+                return -1;
+
+            int ClientCommandId = 0;
+            Queue<ClientCommand> ClientCommandsQueue;
+            ClientCommand[] ClientCommandsArray;
+            ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+            if (ClientCommandsArray == null)
+            {
+                ClientCommandsQueue = new Queue<ClientCommand>();
+            }
+            else
+            {
+                ClientCommandsQueue = new Queue<ClientCommand>(ClientCommandsArray);
+            }
+
+            if (ClientCommandsQueue.Count > 100)
+            {
+                throw new Exception("Too many commands in the queue. Cannot continue.");
+            }
+
+            ClientCommandsQueue.Enqueue(command);
+            int AssignedClientCommandId = ClientCommandId + ClientCommandsQueue.Count;
+            ClientCommandsMemoryMap.WriteMemoryMap(ClientCommandId, ClientCommandsQueue.ToArray());
+            Debug.WriteLine("Command inserted, assigned CommandId=" + AssignedClientCommandId.ToString());
+
+            return AssignedClientCommandId;
+        }
+        public static void ExecuteCommand(ClientCommand command)
+        {
+            if (CurrentClientProcessId == -1 || ClientCommandsMemoryMap == null)
+                return;
+
+            int AssignedClientCommandId = ExecuteCommandAsync(command);
+            
+            int ClientCommandId = 0;
+            ClientCommand[] ClientCommandsArray;
+            Stopwatch timeout = new Stopwatch();
+            timeout.Start();
+            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < 60000)
+            {
+                Debug.WriteLine("Waiting for command to be executed, Current CommandId=" + ClientCommandId.ToString() + ", Assigned CommandId=" + AssignedClientCommandId.ToString());
+                Thread.Sleep(50);
+                ClientCommandsMemoryMap.ReadMemoryMap(out ClientCommandId, out ClientCommandsArray);
+            }
+            timeout.Stop();
+            if (timeout.ElapsedMilliseconds >= 60000)
+            {
+                Debug.WriteLine("Timed out!");
+            }
+        }
+        public static void RefreshClientStatus()
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+            {
+                ClientStatus = null;
+            }
+
+            lock (ClientStatusLock)
+            {
+                ClientStatusMemoryMap.ReadMemoryMap<ClientStatus>(out ClientStatus);
+            }
+        }
+
         //private static Random rnd = new Random();
         //private static Player MockPlayer = new Player(
         //        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
@@ -133,7 +199,6 @@ namespace LoUAM
         //        (ulong)rnd.Next(1, 1000),
         //        (ulong)rnd.Next(1, 1000),
         //        (ulong)rnd.Next(1, 1000));
-
         private Player GetCurrentPlayer()
         {
             //MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -144,41 +209,39 @@ namespace LoUAM
 
             Player currentPlayer = null;
 
-            lock (ClientStatusLock)
+            RefreshClientStatus();
+
+            if (ClientStatus == null)
+                return null;
+
+            if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 60000)
             {
-                ClientStatusMemoryMap.ReadMemoryMap<ClientStatus>(out ClientStatus);
-                if (ClientStatus != null)
+                UpdateMainStatus(Colors.Green, $"Connected to Legends of Aria game client {MainWindow.CurrentClientProcessId.ToString()}.");
+
+                if (ClientStatus.CharacterInfo.CHARID != null)
                 {
-                    if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 60000)
-                    {
-                        UpdateMainStatus(Colors.Green, $"Connected to Legends of Aria game client {MainWindow.CurrentClientProcessId.ToString()}.");
+                    currentPlayer = new Player(
+                        ClientStatus.TimeStamp,
+                        ClientStatus.CharacterInfo.CHARID ?? 0,
+                        TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
+                        ClientStatus.CharacterInfo.CHARPOSX ?? 0,
+                        ClientStatus.CharacterInfo.CHARPOSY ?? 0,
+                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0);
 
-                        if (ClientStatus.CharacterInfo.CHARID != null)
-                        {
-                            currentPlayer = new Player(
-                                ClientStatus.TimeStamp,
-                                ClientStatus.CharacterInfo.CHARID ?? 0,
-                                TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
-                                ClientStatus.CharacterInfo.CHARPOSX ?? 0,
-                                ClientStatus.CharacterInfo.CHARPOSY ?? 0,
-                                ClientStatus.CharacterInfo.CHARPOSZ ?? 0);
+                    Regex rx = new Regex(@"\[(.*?)\]");
 
-                            Regex rx = new Regex(@"\[(.*?)\]");
+                    // Try to extract the color
+                    String CharColor = rx.Match(currentPlayer.DisplayName).Value;
 
-                            // Try to extract the color
-                            String CharColor = rx.Match(currentPlayer.DisplayName).Value;
+                    // Clean up the name
+                    String CharName = rx.Replace(currentPlayer.DisplayName, "");
 
-                            // Clean up the name
-                            String CharName = rx.Replace(currentPlayer.DisplayName, "");
-
-                            currentPlayer.DisplayName = CharName;
-                        }
-                    }
-                    else
-                    {
-                        UpdateMainStatus(Colors.Red, $"Client {MainWindow.CurrentClientProcessId.ToString()} not responding!");
-                    }
+                    currentPlayer.DisplayName = CharName;
                 }
+            }
+            else
+            {
+                UpdateMainStatus(Colors.Red, $"Client {MainWindow.CurrentClientProcessId.ToString()} not responding!");
             }
 
             return currentPlayer;
@@ -451,9 +514,8 @@ namespace LoUAM
         {
             e.CanExecute = true;
         }
-        public void ConnectToLoAClient(int ProcessId)
+        public bool ConnectToLoAClient(int ProcessId)
         {
-
             UpdateMainStatus(Colors.Orange, $"Connecting to {ProcessId.ToString()}...");
             MainWindow.CurrentClientProcessId = ProcessId;
 
@@ -471,13 +533,13 @@ namespace LoUAM
             {
                 // Client already patched, memorymaps open already all good
                 UpdateMainStatus(Colors.Green, "Connection successful.");
-                return;
+                return true;
             }
 
             if (MessageBoxEx.Show(MainWindow.TheMainWindow, "Game client " + ProcessId.ToString() + " not yet injected. Inject now?", "Game client not yet injected", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
             {
                 UpdateMainStatus(Colors.Black, "Connection to Legends of Aria game client aborted.");
-                return;
+                return false;
             }
 
             UpdateMainStatus(Colors.Orange, "Connecting to Legends of Aria game client, please wait ...");
@@ -490,12 +552,12 @@ namespace LoUAM
             {
                 // Client already patched, memorymaps open already all good
                 UpdateMainStatus(Colors.Green, "Connection to Legends of Aria game client successful.");
-                return;
+                return true;
             }
 
             UpdateMainStatus(Colors.Red, "Connection to Legends of Aria game client failed!");
+            return false;
         }
-
 
         public void DoConnectToLoAClientCommand() {
             {
@@ -538,7 +600,47 @@ namespace LoUAM
                     Debug.WriteLine("Clicked pid=" + processId.ToString());
 
                     // Attempt connection (or injection, if needed)
-                    ConnectToLoAClient((int)processId);
+                    bool connected = ConnectToLoAClient((int)processId);
+                    if (connected)
+                    {
+                        ExecuteCommand(new ClientCommand(CommandType.LoadMap));
+                        RefreshClientStatus();
+
+                        int TotalTransforms = 0;
+                        int TotalTextures = 0;
+                        lock (MainWindow.ClientStatusLock)
+                        {
+                            TotalTransforms = MainWindow.ClientStatus?.Miscellaneous.MAPTRANSFORMS ?? 0;
+                            TotalTextures = MainWindow.ClientStatus?.Miscellaneous.MAPTEXTURES ?? 0;
+                        }
+                        if (TotalTransforms == 0 || TotalTextures == 0)
+                        {
+                            MessageBoxEx.Show(this, "LoUAM was unable to load the map data from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", "Could not load map data");
+                            return false;
+                        }
+
+                        bool InvalidMapData = false;
+                        if (!Directory.Exists("./MapData"))
+                        {
+                            MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data not found");
+                            InvalidMapData = true;
+                        } else if (Directory.GetFiles("./MapData/", "*.json").Count() != TotalTransforms ||
+                            Directory.GetFiles("./MapData/", "*.jpg").Count() != TotalTextures)
+                        {
+                            MessageBoxEx.Show(this, "It appears that the map data is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data outdated");
+                            InvalidMapData = true;
+                        }
+
+                        if (InvalidMapData)
+                        {
+                            MapGenerator mapGenerator = new MapGenerator(TotalTransforms, TotalTextures);
+                            mapGenerator.Owner = TheMainWindow;
+                            mapGenerator.ShowDialog();
+                            MainMap.RefreshMapTiles("./MapData");
+                        }
+
+                        ExecuteCommand(new ClientCommand(CommandType.UnloadMap));
+                    }
                     return true;
                 };
 

@@ -10,6 +10,21 @@ Discord server: https://discord.gg/RWAqYcV
 
 LoU Auto-Map is a totally free tool inspired by UO Auto-Map, the popular premiere mapping tool for Ultima Online. 
 
+## Instructions
+
+- From the [Releases](https://github.com/Lady-Binary/LoUAM/releases) tab here on GitHub, download the archive containing the latest build and extract it
+- Launch LoUAM.exe
+- Launch your Legends of Aria Client
+- Wait for your Legends of Aria Client login page to show up
+- On LoUAM, click on the "LoU"->"Connect to LoA game client.." menu.
+- Click on the Legends of Aria Client you want to connect to
+- When asked, click OK to inject
+- Enjoy!
+
+*Note 1*: On Windows 10, upon launcing LoUAM.exe you might get a "Microsoft Defender SmartScreen prevented an unrecognised app from starting." error message. If you know what you're doing then open the properties menu of LoUAM.exe, check the "Unblock" box, click apply, click OK, and relaunch LoUAM.exe.  
+
+*Note 2*: LoUAM requires Administrative Privileges in order to be able to inject into the Legends of Aria Client running process.  
+
 ## Why LoUAM and not LoAAM?
 
 For one simple reason:  
@@ -48,16 +63,20 @@ Rinse, and repeat.
 LoUAM has been compiled for x64 architevture with Visual Studio Community 2017 and .NETFramework Version v4.7.2.  
 In order to build it, you need to own a copy of the Legends of Aria client, and you need to copy into the LOU\libs\ folder the following libraries which you can take from the C:\Program Files\Legends of Aria Launcher\Legends of Aria\Legends of Aria_Data\Managed folder (or whatever path you have installed your client into):
 
-Assembly-CSharp-firstpass.dll  
-Assembly-CSharp.dll  
-CoreUtil.dll  
-MessageCore.dll  
-protobuf-net.dll  
-UnityEngine.CoreModule.dll  
-UnityEngine.InputLegacyModule.dll  
-UnityEngine.InputModule.dll  
-UnityEngine.PhysicsModule.dll  
-UnityEngine.UI.dll  
+Assembly-CSharp.dll
+Assembly-CSharp-firstpass.dll
+CoreUtil.dll
+MessageCore.dll
+protobuf-net.dll
+UnityEngine.AssetBundleModule.dll
+UnityEngine.CoreModule.dll
+UnityEngine.dll
+UnityEngine.ImageConversionModule.dll
+UnityEngine.InputLegacyModule.dll
+UnityEngine.InputModule.dll
+UnityEngine.JSONSerializeModule.dll
+UnityEngine.PhysicsModule.dll
+UnityEngine.UI.dll
 
 ## How can I contribute?
 

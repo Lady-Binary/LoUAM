@@ -1,5 +1,15 @@
 # Changelog
 
+## LoA 1.4.0.0 - LoUAM 0.1.0.9 (25/01/2021)
+
+#### function (placeholders) {
+			return '';
+        }
+
+- Export high detail map from client upon connection [#3](https://github.com/Lady-Binary/LoUAM/issues/3)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.8 (13/01/2021)
 *No changelog for this release.*
 

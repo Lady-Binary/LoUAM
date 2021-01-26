@@ -1,7 +1,4 @@
-﻿using Microsoft.Win32;
-using Ookii.Dialogs.Wpf;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Windows;
 using System.ComponentModel;

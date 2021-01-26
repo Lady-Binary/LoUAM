@@ -188,10 +188,9 @@
     <Resource Include="icons\uo.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LoU\LOU.csproj">
+    <ProjectReference Include="..\LoU\LoU.csproj">
       <Project>{99e17151-042b-499d-b752-5b185ab289fa}</Project>
-      <Name>LOU</Name>
-      <Private>True</Private>
+      <Name>LoU</Name>
     </ProjectReference>
     <ProjectReference Include="..\SharpMonoInjector\src\SharpMonoInjector\SharpMonoInjector.csproj">
       <Project>{dfd6d9be-4da5-4fbc-9f34-10d75d3e5318}</Project>

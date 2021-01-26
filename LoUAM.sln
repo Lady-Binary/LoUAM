@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoUAM", "LoUAM\LoUAM.csproj", "{B91D3575-2723-4C98-BF8E-DC9459C10DB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LOU", "LoU\LOU.csproj", "{99E17151-042B-499D-B752-5B185AB289FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoU", "LoU\LoU.csproj", "{99E17151-042B-499D-B752-5B185AB289FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpMonoInjector", "SharpMonoInjector\src\SharpMonoInjector\SharpMonoInjector.csproj", "{DFD6D9BE-4DA5-4FBC-9F34-10D75D3E5318}"
 EndProject

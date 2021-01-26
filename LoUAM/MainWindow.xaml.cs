@@ -79,6 +79,7 @@ namespace LoUAM
 
             if (!Directory.Exists("./MapData")) {
                 MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
+                Directory.CreateDirectory("./MapData");
                 return;
             }
 
@@ -92,6 +93,7 @@ namespace LoUAM
                 {
                     File.Delete(f);
                 }
+                return;
             }
         }
 
@@ -623,11 +625,16 @@ namespace LoUAM
                         if (!Directory.Exists("./MapData"))
                         {
                             MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data not found");
+                            Directory.CreateDirectory("./MapData");
                             InvalidMapData = true;
                         } else if (Directory.GetFiles("./MapData/", "*.json").Count() != TotalTransforms ||
                             Directory.GetFiles("./MapData/", "*.jpg").Count() != TotalTextures)
                         {
                             MessageBoxEx.Show(this, "It appears that the map data is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data outdated");
+                            foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
+                            {
+                                File.Delete(f);
+                            }
                             InvalidMapData = true;
                         }
 

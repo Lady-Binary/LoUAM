@@ -1,10 +1,16 @@
 # Changelog
 
-## LoA 1.4.0.0 - LoUAM 0.1.0.9 (25/01/2021)
+## LoA 1.4.0.0 - LoUAM 0.1.0.10 (27/01/2021)
 
 #### function (placeholders) {
 			return '';
         }
+
+- Embed necessary libraries, LoUAM can be run from anywhere [#5](https://github.com/Lady-Binary/LoUAM/issues/5)
+
+---
+
+## LoA 1.4.0.0 - LoUAM 0.1.0.9 (25/01/2021)
 
 - Export high detail map from client upon connection [#3](https://github.com/Lady-Binary/LoUAM/issues/3)
 

@@ -431,13 +431,6 @@ namespace LoUAM
             return MonoModule;
         }
 
-        private static void Log(string s)
-        {
-            using (StreamWriter w = File.AppendText("c:\\log.txt"))
-            {
-                w.WriteLine(s);
-            }
-        }
         private byte[] ReadDllFromFile(string AssemblyPath)
         {
             File.ReadAllBytes(AssemblyPath);
@@ -465,15 +458,12 @@ namespace LoUAM
         }
         private void Inject(int ProcessId)
         {
-            Log("1");            
             var MonoModule = GetMonoModule(ProcessId);
 
-            Log("2");
             IntPtr handle = Native.OpenProcess(ProcessAccessRights.PROCESS_ALL_ACCESS, false, ProcessId);
 
             if (handle == IntPtr.Zero)
             {
-                Log("3");
                 UpdateMainStatus(Colors.Red, "Failed to open process");
                 return;
             }
@@ -510,7 +500,6 @@ namespace LoUAM
             {
                 try
                 {
-                    Log("6");
                     IntPtr asm = injector.Inject(file, "LoU", "Loader", "Load");
                     UpdateMainStatus(Colors.Green, $"Injection on {ProcessId.ToString()} successful");
                 }

@@ -45,7 +45,7 @@ Rinse, and repeat.
 
 ## How can I build LoUAM?
 
-LoUAM has been compiled for x64 architevture with Visual Studio Community 2017 and .NETFramework Version v4.7.2.  
+LoUAM has been compiled for x64 architecture with Visual Studio Community 2017 and .NETFramework Version v4.7.2.  
 In order to build it, you need to own a copy of the Legends of Aria client, and you need to copy into the LOU\libs\ folder the following libraries which you can take from the C:\Program Files\Legends of Aria Launcher\Legends of Aria\Legends of Aria_Data\Managed folder (or whatever path you have installed your client into):
 
 Assembly-CSharp-firstpass.dll  

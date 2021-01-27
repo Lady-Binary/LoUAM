@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO.Compression;
 
 namespace LoUAM
 {
@@ -79,6 +80,7 @@ namespace LoUAM
 
             if (!Directory.Exists("./MapData")) {
                 MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
+                Directory.CreateDirectory("./MapData");
                 return;
             }
 
@@ -92,6 +94,7 @@ namespace LoUAM
                 {
                     File.Delete(f);
                 }
+                return;
             }
         }
 
@@ -428,51 +431,75 @@ namespace LoUAM
             return MonoModule;
         }
 
-        private static void Log(string s)
+        private byte[] ReadDllFromFile(string AssemblyPath)
         {
-            using (StreamWriter w = File.AppendText("c:\\log.txt"))
+            File.ReadAllBytes(AssemblyPath);
+            return null;
+        }
+        private byte[] ReadDllFromCompressedResources(string ResourceName)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            using (var compressedStream = assembly.GetManifestResourceStream(ResourceName))
             {
-                w.WriteLine(s);
+                if (compressedStream != null)
+                {
+                    using (var decompressedStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
+                    using (var output = new MemoryStream())
+                    {
+                        if (decompressedStream != null)
+                        {
+                            decompressedStream.CopyTo(output);
+                            return output.ToArray();
+                        }
+                    }
+                }
             }
+            return null;
         }
         private void Inject(int ProcessId)
         {
-            Log("1");            
             var MonoModule = GetMonoModule(ProcessId);
 
-            String AssemblyPath = "LoU.dll";
-
-            Log("2");
             IntPtr handle = Native.OpenProcess(ProcessAccessRights.PROCESS_ALL_ACCESS, false, ProcessId);
 
             if (handle == IntPtr.Zero)
             {
-                Log("3");
                 UpdateMainStatus(Colors.Red, "Failed to open process");
                 return;
             }
 
             byte[] file;
 
+            // Once we're happy with hoe Fody.Costura works, we can get rid of this
+            //String AssemblyPath = "LoU.dll";
+            //try
+            //{
+            //    file = ReadDllFromFile(AssemblyPath);
+            //}
+            //catch (IOException)
+            //{
+            //    UpdateMainStatus(Colors.Red, $"Failed to read the file {AssemblyPath}");
+            //    return;
+            //}
+            //UpdateMainStatus(Colors.Orange, $"Injecting {Path.GetFileName(AssemblyPath)}");
+
+            // New method, where the dll is embedded by Fody.Costura
+            String ResourceName = "costura.lou.dll.compressed";
             try
             {
-                Log("4");
-                file = File.ReadAllBytes(AssemblyPath);
+                file = ReadDllFromCompressedResources(ResourceName);
             }
             catch (IOException)
             {
-                UpdateMainStatus(Colors.Red, $"Failed to read the file {AssemblyPath}");
+                UpdateMainStatus(Colors.Red, $"Failed to read the resource {ResourceName}");
                 return;
             }
-
-            Log("5");
-            UpdateMainStatus(Colors.Orange, $"Injecting {Path.GetFileName(AssemblyPath)}");
+            UpdateMainStatus(Colors.Orange, $"Injecting {Path.GetFileName(ResourceName)}");
 
             using (Injector injector = new Injector(handle, MonoModule))
             {
                 try
                 {
-                    Log("6");
                     IntPtr asm = injector.Inject(file, "LoU", "Loader", "Load");
                     UpdateMainStatus(Colors.Green, $"Injection on {ProcessId.ToString()} successful");
                 }
@@ -623,11 +650,16 @@ namespace LoUAM
                         if (!Directory.Exists("./MapData"))
                         {
                             MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data not found");
+                            Directory.CreateDirectory("./MapData");
                             InvalidMapData = true;
                         } else if (Directory.GetFiles("./MapData/", "*.json").Count() != TotalTransforms ||
                             Directory.GetFiles("./MapData/", "*.jpg").Count() != TotalTextures)
                         {
                             MessageBoxEx.Show(this, "It appears that the map data is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data outdated");
+                            foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
+                            {
+                                File.Delete(f);
+                            }
                             InvalidMapData = true;
                         }
 

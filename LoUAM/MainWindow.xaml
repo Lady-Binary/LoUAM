@@ -47,8 +47,17 @@
         <local:Map x:Name="MainMap" Grid.Row="1">
             <local:Map.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Move Cursor Here" Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}" />
-                    <MenuItem Header="New place..." Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding Path=PlacementTarget.LastMouseRightButtonUpCoords, RelativeSource={RelativeSource Mode=FindAncestor,  AncestorType={x:Type ContextMenu}}}" />
+                    <MenuItem
+                        Header="Move Cursor Here"
+                        Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}"
+                        CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                        />
+                    <MenuItem
+                        Header="New place..."
+                        Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}"
+                        CommandParameter="{Binding Path=PlacementTarget.LastMouseRightButtonUpCoords, RelativeSource={RelativeSource Mode=FindAncestor,  AncestorType={x:Type ContextMenu}}}"
+                        CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                        />
                 </ContextMenu>
             </local:Map.ContextMenu>
         </local:Map>

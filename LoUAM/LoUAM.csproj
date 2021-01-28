@@ -201,9 +201,13 @@
     <Resource Include="louam.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ContentWithTargetPath Include="Resources\places.xml">
+    <ContentWithTargetPath Include="Resources\common-places.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <TargetPath>places.xml</TargetPath>
+      <TargetPath>common-places.xml</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="Resources\personal-places.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>personal-places.xml</TargetPath>
     </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>

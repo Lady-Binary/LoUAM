@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -150,18 +151,33 @@ namespace LoUAM
         #endregion
         public static void LoadPlaces()
         {
-            Places = new List<Marker>();
+            List<Marker> CommonPlaces = LoadPlaces("common-places.xml");
+            List<Marker> PersonalPlaces = LoadPlaces("personal-places.xml");
+
+            Places = CommonPlaces.Select(p => { p.File = MarkerFile.Common; return p; })
+                    .Union(PersonalPlaces.Select(p => { p.File = MarkerFile.Personal; return p; }))
+                    .ToList();
+        }
+        public static List<Marker> LoadPlaces(string fileName)
+        {
+            List<Marker> LoadedPlaces = new List<Marker>();
+
+            if (!File.Exists(fileName))
+            {
+                SavePlaces(fileName, LoadedPlaces);
+                return LoadedPlaces;
+            }
 
             XmlDocument doc;
             try
             {
                 doc = new XmlDocument();
-                doc.Load("places.xml");
+                doc.Load(fileName);
             }
             catch (Exception ex)
             {
-                MessageBoxEx.Show($"Cannot load places.xml: {ex.Message}");
-                return;
+                MessageBoxEx.Show($"Cannot load {fileName}: {ex.Message}");
+                return LoadedPlaces;
             }
 
             XmlNode placesNode = doc.DocumentElement.SelectSingleNode("/places");
@@ -182,18 +198,28 @@ namespace LoUAM
                     XmlNode xNode = placeNode.SelectSingleNode("x");
                     double x = double.TryParse(xNode.InnerText, out x) ? x : 0;
 
-                    Marker marker = new Marker(MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
+                    Marker marker = new Marker(MarkerFile.None, MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
 
-                    Places.Add(marker);
+                    LoadedPlaces.Add(marker);
                 }
                 catch (Exception ex)
                 {
                     Debug.Print($"Cannot load place: {ex.Message}");
                 }
             }
+
+            return LoadedPlaces;
         }
 
         public static void SavePlaces()
+        {
+            List<Marker> CommonPlaces = Places.Where(place => place.File == MarkerFile.Common).ToList();
+            SavePlaces("common-places.xml", CommonPlaces);
+
+            List<Marker> PersonalPlaces = Places.Where(place => place.File == MarkerFile.Personal).ToList();
+            SavePlaces("personal-places.xml", PersonalPlaces);
+        }
+        public static void SavePlaces(string fileName, List<Marker> places)
         {
             XmlDocument doc;
             doc = new XmlDocument();
@@ -205,7 +231,7 @@ namespace LoUAM
             XmlElement placesNode = doc.CreateElement(string.Empty, "places", string.Empty);
             doc.AppendChild(placesNode);
 
-            foreach(var Place in Places)
+            foreach(var place in places)
             {
                 try
                 {
@@ -213,22 +239,22 @@ namespace LoUAM
                     placesNode.AppendChild(placeNode);
 
                     XmlElement nameNode = doc.CreateElement(string.Empty, "name", string.Empty);
-                    XmlText nameText = doc.CreateTextNode(Place.Label);
+                    XmlText nameText = doc.CreateTextNode(place.Label);
                     nameNode.AppendChild(nameText);
                     placeNode.AppendChild(nameNode);
 
                     XmlElement typeNode = doc.CreateElement(string.Empty, "type", string.Empty);
-                    XmlText typeText = doc.CreateTextNode(Place.Icon.ToString());
+                    XmlText typeText = doc.CreateTextNode(place.Icon.ToString());
                     typeNode.AppendChild(typeText);
                     placeNode.AppendChild(typeNode);
 
                     XmlElement xNode = doc.CreateElement(string.Empty, "x", string.Empty);
-                    XmlText xText = doc.CreateTextNode(Place.X.ToString());
+                    XmlText xText = doc.CreateTextNode(place.X.ToString());
                     xNode.AppendChild(xText);
                     placeNode.AppendChild(xNode);
 
                     XmlElement zNode = doc.CreateElement(string.Empty, "z", string.Empty);
-                    XmlText zText = doc.CreateTextNode(Place.Z.ToString());
+                    XmlText zText = doc.CreateTextNode(place.Z.ToString());
                     zNode.AppendChild(zText);
                     placeNode.AppendChild(zNode);
 
@@ -242,11 +268,11 @@ namespace LoUAM
 
             try
             {
-                doc.Save("places.xml");
+                doc.Save(fileName);
             }
             catch (Exception ex)
             {
-                Debug.Print($"Cannot save place: {ex.Message}");
+                Debug.Print($"Cannot save {fileName}: {ex.Message}");
             }
         }
 

@@ -69,20 +69,20 @@
   <place>
     <name>Brecca Mines</name>
     <type>point_of_interest</type>
-    <x>586.0963</x>
-    <z>-1312.356</z>
+    <x>386.0963</x>
+    <z>-1532.356</z>
   </place>
   <place>
     <name>Bootstrap Crevice</name>
     <type>point_of_interest</type>
     <x>-1787.88</x>
-    <z>-2261.379</z>
+    <z>-2361.379</z>
   </place>
   <place>
     <name>Rebel Camp</name>
     <type>point_of_interest</type>
-    <x>-1376.86</x>
-    <z>-2159.044</z>
+    <x>-1416.86</x>
+    <z>-2199.044</z>
   </place>
   <place>
     <name>Bake Kitsunes</name>
@@ -121,16 +121,16 @@
     <z>-851.0783</z>
   </place>
   <place>
-    <name>Waterfall Cave Entrance</name>
+    <name>Waterfall Cave</name>
     <type>point_of_interest</type>
     <x>130.239</x>
     <z>-653.883</z>
   </place>
   <place>
     <name>Wind Entrance</name>
-    <type>point_of_interest</type>
-    <x>353.661</x>
-    <z>-746.8396</z>
+    <type>dungeon</type>
+    <x>337</x>
+    <z>-752</z>
   </place>
   <place>
     <name>Whelplings</name>
@@ -145,12 +145,6 @@
     <z>-1623.751</z>
   </place>
   <place>
-    <name>Shipwreck</name>
-    <type>point_of_interest</type>
-    <x>1715.755</x>
-    <z>-1657.7</z>
-  </place>
-  <place>
     <name>Undead Zone</name>
     <type>point_of_interest</type>
     <x>270.6104</x>
@@ -163,22 +157,10 @@
     <z>-1126.331</z>
   </place>
   <place>
-    <name>Brit Graveyard</name>
-    <type>point_of_interest</type>
-    <x>751.1203</x>
-    <z>-768.5935</z>
-  </place>
-  <place>
     <name>Riverside Cave</name>
     <type>point_of_interest</type>
     <x>676.5</x>
     <z>-626.8826</z>
-  </place>
-  <place>
-    <name>Moonglow Cemetary</name>
-    <type>point_of_interest</type>
-    <x>412.7598</x>
-    <z>950.1326</z>
   </place>
   <place>
     <name>Haunted Ruins</name>
@@ -202,7 +184,7 @@
     <name>Ruins of the Artificer</name>
     <type>point_of_interest</type>
     <x>-1679.96</x>
-    <z>-658.3258</z>
+    <z>-858.3258</z>
   </place>
   <place>
     <name>Red Portal</name>
@@ -253,6 +235,12 @@
     <z>1715.439</z>
   </place>
   <place>
+    <name>Bandit Camp</name>
+    <type>point_of_interest</type>
+    <x>2373.19</x>
+    <z>989.8</z>
+  </place>
+  <place>
     <name>Dragon Champ</name>
     <type>point_of_interest</type>
     <x>-2729.32</x>
@@ -261,8 +249,8 @@
   <place>
     <name>Fangorn</name>
     <type>point_of_interest</type>
-    <x>2474.803</x>
-    <z>-866.0482</z>
+    <x>2504.803</x>
+    <z>-761.0482</z>
   </place>
   <place>
     <name>Undead Champ</name>
@@ -274,7 +262,7 @@
     <name>Spider Champ</name>
     <type>point_of_interest</type>
     <x>2877.358</x>
-    <z>-1281.674</z>
+    <z>-1261.674</z>
   </place>
   <place>
     <name>Juka Champ</name>
@@ -291,20 +279,14 @@
   <place>
     <name>Teleporter to Pirate's Grotto</name>
     <type>teleporter</type>
-    <x>83.33813</x>
-    <z>-1853.23</z>
+    <x>55.33813</x>
+    <z>-1870.23</z>
   </place>
   <place>
     <name>Magincia Farms</name>
     <type>point_of_interest</type>
     <x>2710.62</x>
     <z>925.9937</z>
-  </place>
-  <place>
-    <name>Magincia Graveyard</name>
-    <type>graveyard</type>
-    <x>2880.062</x>
-    <z>1050.882</z>
   </place>
   <place>
     <name>Minoc Quarry</name>
@@ -315,19 +297,19 @@
   <place>
     <name>Grim's Cavern</name>
     <type>point_of_interest</type>
-    <x>910.0659</x>
-    <z>448.8096</z>
+    <x>900.0659</x>
+    <z>490</z>
   </place>
   <place>
     <name>Nujel'm Moongate</name>
     <type>moongate</type>
     <x>-2102.65</x>
-    <z>-718.0542</z>
+    <z>-700.0542</z>
   </place>
   <place>
     <name>Britain Moongate</name>
     <type>moongate</type>
-    <x>945.4438</x>
+    <x>965.4438</x>
     <z>-1284.71</z>
   </place>
   <place>
@@ -337,16 +319,10 @@
     <z>98.37769</z>
   </place>
   <place>
-    <name>Moonglow Moongate</name>
-    <type>moongate</type>
-    <x>206.23</x>
-    <z>1021.058</z>
-  </place>
-  <place>
     <name>Yew Graveyard</name>
     <type>graveyard</type>
-    <x>2222.776</x>
-    <z>-410.4941</z>
+    <x>2077</x>
+    <z>-373</z>
   </place>
   <place>
     <name>Housing Display</name>
@@ -367,12 +343,6 @@
     <z>-1349.95</z>
   </place>
   <place>
-    <name>Vesper Moongate</name>
-    <type>moongate</type>
-    <x>-2607.252</x>
-    <z>-2112.326</z>
-  </place>
-  <place>
     <name>Shrine of Chaos</name>
     <type>shrine</type>
     <x>1518.94</x>
@@ -382,19 +352,19 @@
     <name>Moonglow Graveyard</name>
     <type>graveyard</type>
     <x>411.0498</x>
-    <z>909.2178</z>
+    <z>930.2178</z>
   </place>
   <place>
     <name>Magincia Moongate</name>
     <type>moongate</type>
-    <x>2898.682</x>
-    <z>918.5376</z>
+    <x>2794</x>
+    <z>953</z>
   </place>
   <place>
     <name>Ocllo Moongate</name>
     <type>moongate</type>
     <x>-102.8621</x>
-    <z>-2056.406</z>
+    <z>-2006.406</z>
   </place>
   <place>
     <name>Calibration Point 1 - SW</name>
@@ -413,5 +383,407 @@
     <type>UOAM</type>
     <x>2877.47</x>
     <z>-1291.42</z>
+  </place>
+  <place>
+    <name>Spider Cave</name>
+    <type>point_of_interest</type>
+    <x>2085</x>
+    <z>470</z>
+  </place>
+  <place>
+    <name>Abandoned Shrine</name>
+    <type>point_of_interest</type>
+    <x>1456</x>
+    <z>1172</z>
+  </place>
+  <place>
+    <name>Moonglow Moongate</name>
+    <type>moongate</type>
+    <x>85.5</x>
+    <z>927.51</z>
+  </place>
+  <place>
+    <name>Faction Caravan Tower</name>
+    <type>point_of_interest</type>
+    <x>86.95</x>
+    <z>1276.28</z>
+  </place>
+  <place>
+    <name>Buccaneer Shipwreck</name>
+    <type>point_of_interest</type>
+    <x>1886.37</x>
+    <z>-1643.7</z>
+  </place>
+  <place>
+    <name>Imp Shrine</name>
+    <type>point_of_interest</type>
+    <x>1717.92</x>
+    <z>1133.89</z>
+  </place>
+  <place>
+    <name>Cave Trolls</name>
+    <type>point_of_interest</type>
+    <x>1816.44</x>
+    <z>1407.8</z>
+  </place>
+  <place>
+    <name>Arena</name>
+    <type>point_of_interest</type>
+    <x>1705.48</x>
+    <z>1440.44</z>
+  </place>
+  <place>
+    <name>Dire Bears</name>
+    <type>point_of_interest</type>
+    <x>1683.69</x>
+    <z>1381.54</z>
+  </place>
+  <place>
+    <name>Harpy Nest</name>
+    <type>point_of_interest</type>
+    <x>1396.18</x>
+    <z>-485.7</z>
+  </place>
+  <place>
+    <name>Wisp Grove</name>
+    <type>point_of_interest</type>
+    <x>1699.87</x>
+    <z>-155.77</z>
+  </place>
+  <place>
+    <name>Lumberjack Camp</name>
+    <type>carpenter</type>
+    <x>1911.28</x>
+    <z>52.47</z>
+  </place>
+  <place>
+    <name>Trolls and Reapers</name>
+    <type>point_of_interest</type>
+    <x>1290.12</x>
+    <z>352.49</z>
+  </place>
+  <place>
+    <name>Dagger Isle</name>
+    <type>island</type>
+    <x>1339.41</x>
+    <z>625.01</z>
+  </place>
+  <place>
+    <name>Spirit Isle</name>
+    <type>island</type>
+    <x>1178.83</x>
+    <z>135.44</z>
+  </place>
+  <place>
+    <name>Swamp Wyverns</name>
+    <type>point_of_interest</type>
+    <x>915.02</x>
+    <z>237.38</z>
+  </place>
+  <place>
+    <name>Spiders</name>
+    <type>point_of_interest</type>
+    <x>770.25</x>
+    <z>257.39</z>
+  </place>
+  <place>
+    <name>Dungeon Corruption</name>
+    <type>dungeon</type>
+    <x>674.31</x>
+    <z>601.46</z>
+  </place>
+  <place>
+    <name>Bandit Camp</name>
+    <type>point_of_interest</type>
+    <x>-274.44</x>
+    <z>357.7</z>
+  </place>
+  <place>
+    <name>Riverside Graveyard</name>
+    <type>graveyard</type>
+    <x>757</x>
+    <z>-726.05</z>
+  </place>
+  <place>
+    <name>Bandit Camp</name>
+    <type>point_of_interest</type>
+    <x>787.7</x>
+    <z>-770.86</z>
+  </place>
+  <place>
+    <name>Entrance to Misty Caverns</name>
+    <type>point_of_interest</type>
+    <x>472.16</x>
+    <z>-717.24</z>
+  </place>
+  <place>
+    <name>Misty Caverns</name>
+    <type>point_of_interest</type>
+    <x>289.88</x>
+    <z>-672.67</z>
+  </place>
+  <place>
+    <name>Magincia Graveyard</name>
+    <type>graveyard</type>
+    <x>2848</x>
+    <z>1203.91</z>
+  </place>
+  <place>
+    <name>Iron Peak Caverns East</name>
+    <type>point_of_interest</type>
+    <x>2860.9</x>
+    <z>1341.34</z>
+  </place>
+  <place>
+    <name>Mount Aris Orc Camp</name>
+    <type>point_of_interest</type>
+    <x>2542.5</x>
+    <z>301.96</z>
+  </place>
+  <place>
+    <name>Lich Lords</name>
+    <type>point_of_interest</type>
+    <x>2895.42</x>
+    <z>115.53</z>
+  </place>
+  <place>
+    <name>Dungeon Contempt</name>
+    <type>dungeon</type>
+    <x>2981.14</x>
+    <z>-478.03</z>
+  </place>
+  <place>
+    <name>Vesper Moongate</name>
+    <type>moongate</type>
+    <x>-2657.64</x>
+    <z>-2078.47</z>
+  </place>
+  <place>
+    <name>Cove Moongate</name>
+    <type>moongate</type>
+    <x>651.52</x>
+    <z>-440.58</z>
+  </place>
+  <place>
+    <name>Teleporter to Occlo</name>
+    <type>teleporter</type>
+    <x>1680.26</x>
+    <z>-2405.54</z>
+  </place>
+  <place>
+    <name>Cave Trolls</name>
+    <type>point_of_interest</type>
+    <x>95.34</x>
+    <z>-1803.84</z>
+  </place>
+  <place>
+    <name>Occlo Farms</name>
+    <type>point_of_interest</type>
+    <x>-2.18</x>
+    <z>-1916.94</z>
+  </place>
+  <place>
+    <name>Papua Moongate</name>
+    <type>moongate</type>
+    <x>2180.49</x>
+    <z>-77.63</z>
+  </place>
+  <place>
+    <name>Vesper Farms</name>
+    <type>point_of_interest</type>
+    <x>-2607.95</x>
+    <z>-2168.28</z>
+  </place>
+  <place>
+    <name>Elemental Cave</name>
+    <type>point_of_interest</type>
+    <x>1854</x>
+    <z>2235.94</z>
+  </place>
+  <place>
+    <name>Tree Champ</name>
+    <type>point_of_interest</type>
+    <x>1917.33</x>
+    <z>1706.61</z>
+  </place>
+  <place>
+    <name>Asper Town</name>
+    <type>town</type>
+    <x>1506.67</x>
+    <z>1727.94</z>
+  </place>
+  <place>
+    <name>Ancient Wyvern Champ</name>
+    <type>dungeon</type>
+    <x>1330.67</x>
+    <z>2095.94</z>
+  </place>
+  <place>
+    <name>Krampus Champ</name>
+    <type>point_of_interest</type>
+    <x>1335.33</x>
+    <z>1969.28</z>
+  </place>
+  <place>
+    <name>Fishing Vendor</name>
+    <type>fishermans_guild</type>
+    <x>1134.67</x>
+    <z>2257.94</z>
+  </place>
+  <place>
+    <name>Fishing Vendor</name>
+    <type>fishermans_guild</type>
+    <x>682</x>
+    <z>2307.94</z>
+  </place>
+  <place>
+    <name>Orc Cave</name>
+    <type>point_of_interest</type>
+    <x>298</x>
+    <z>2318.61</z>
+  </place>
+  <place>
+    <name>Orc Champ</name>
+    <type>point_of_interest</type>
+    <x>388.67</x>
+    <z>2399.94</z>
+  </place>
+  <place>
+    <name>Orc Town</name>
+    <type>town</type>
+    <x>185.33</x>
+    <z>2355.28</z>
+  </place>
+  <place>
+    <name>Fishing Vendor</name>
+    <type>fishermans_guild</type>
+    <x>-136.67</x>
+    <z>2171.28</z>
+  </place>
+  <place>
+    <name>Bear Champ</name>
+    <type>point_of_interest</type>
+    <x>-468</x>
+    <z>2106.61</z>
+  </place>
+  <place>
+    <name>Fishing Vendor</name>
+    <type>fishermans_guild</type>
+    <x>480</x>
+    <z>2053.94</z>
+  </place>
+  <place>
+    <name>Ghost Champ</name>
+    <type>point_of_interest</type>
+    <x>869.33</x>
+    <z>2135.28</z>
+  </place>
+  <place>
+    <name>Ice Fiend Champ</name>
+    <type>point_of_interest</type>
+    <x>776.67</x>
+    <z>2134.61</z>
+  </place>
+  <place>
+    <name>White Wyrm</name>
+    <type>point_of_interest</type>
+    <x>1597.33</x>
+    <z>1855.44</z>
+  </place>
+  <place>
+    <name>Faction Starter</name>
+    <type>fighters_guild</type>
+    <x>-259.88</x>
+    <z>2217.49</z>
+  </place>
+  <place>
+    <name>Faction Boss 1</name>
+    <type>point_of_interest</type>
+    <x>-315.24</x>
+    <z>2237.49</z>
+  </place>
+  <place>
+    <name>Faction Boss 3</name>
+    <type>point_of_interest</type>
+    <x>-410.24</x>
+    <z>2347.49</z>
+  </place>
+  <place>
+    <name>Faction Boss 2</name>
+    <type>point_of_interest</type>
+    <x>-399.88</x>
+    <z>2208.92</z>
+  </place>
+  <place>
+    <name>Faction Boss 2</name>
+    <type>point_of_interest</type>
+    <x>-348.09</x>
+    <z>2282.84</z>
+  </place>
+  <place>
+    <name>Faction Boss 2</name>
+    <type>point_of_interest</type>
+    <x>-253.24</x>
+    <z>2308.65</z>
+  </place>
+  <place>
+    <name>Snake Champ</name>
+    <type>point_of_interest</type>
+    <x>-417.9</x>
+    <z>1625.32</z>
+  </place>
+  <place>
+    <name>Valdheim Guard Outpost</name>
+    <type>town</type>
+    <x>-200.3</x>
+    <z>2132.46</z>
+  </place>
+  <place>
+    <name>Iron Peak Caverns West</name>
+    <type>point_of_interest</type>
+    <x>2702.61</x>
+    <z>1236.87</z>
+  </place>
+  <place>
+    <name>Magincia Mines</name>
+    <type>miners_guild</type>
+    <x>2630.79</x>
+    <z>712.32</z>
+  </place>
+  <place>
+    <name>Orc Camp</name>
+    <type>point_of_interest</type>
+    <x>-2463.64</x>
+    <z>-2242.22</z>
+  </place>
+  <place>
+    <name>Abandoned Camp</name>
+    <type>point_of_interest</type>
+    <x>-1373.33</x>
+    <z>-223.85</z>
+  </place>
+  <place>
+    <name>Fey Champ</name>
+    <type>point_of_interest</type>
+    <x>1935.56</x>
+    <z>-1339.41</z>
+  </place>
+  <place>
+    <name>Fire Beetle</name>
+    <type>point_of_interest</type>
+    <x>595.56</x>
+    <z>-1339.41</z>
+  </place>
+  <place>
+    <name>Beetle Champ</name>
+    <type>point_of_interest</type>
+    <x>536.67</x>
+    <z>-1329.41</z>
+  </place>
+  <place>
+    <name>Britain Graveyard</name>
+    <type>graveyard</type>
+    <x>768.65</x>
+    <z>-1226.87</z>
   </place>
 </places>

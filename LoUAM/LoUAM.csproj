@@ -205,10 +205,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>common-places.xml</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="Resources\personal-places.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <TargetPath>personal-places.xml</TargetPath>
-    </ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\0.png" />

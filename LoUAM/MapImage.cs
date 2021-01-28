@@ -5,6 +5,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json;
 using LoU;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace LoUAM
 {
@@ -19,9 +21,10 @@ namespace LoUAM
         public string TileImagePath;
         public string TilePrefabPath;
 
+        public float Brightness = 1;
         public int Resolution = 256;
 
-        public MapImage(string TileImagePath, string TilePrefabPath)
+        public MapImage(string TileImagePath, string TilePrefabPath, float Brightness)
         {
             TransformGroup transformGroup = new TransformGroup();
 
@@ -45,6 +48,8 @@ namespace LoUAM
 
             this.RenderTransform = transformGroup;
 
+            this.Brightness = Brightness;
+
             // Show the tile image
             this.TileImagePath = TileImagePath;
             this.SetTileImage();
@@ -61,20 +66,50 @@ namespace LoUAM
             centerTransform.Y = -this.ActualHeight / 2;
         }
 
-        private BitmapImage GetScaledImage(string uriSource, int Resolution)
+        private BitmapImage GetScaledImage(string uriSource, int Resolution, float Brightness)
         {
-            Image img = new Image();
-
             var buffer = File.ReadAllBytes(uriSource);
             MemoryStream ms = new MemoryStream(buffer);
-            BitmapImage src = new BitmapImage();
-            src.BeginInit();
-            src.StreamSource = ms;
-            src.DecodePixelHeight = Resolution;
-            src.DecodePixelWidth = Resolution;
-            src.EndInit();
+            Bitmap originalBitmap = new Bitmap(ms);
+            Bitmap resizedBitmap = new Bitmap(originalBitmap, new System.Drawing.Size(Resolution, Resolution));
+            Bitmap resizedAndAdjustedBitmap = new Bitmap(Resolution, Resolution);
 
-            return src;
+            float[][] ptsArray ={
+                    new float[] {Brightness, 0, 0, 0, 0},
+                    new float[] {0, Brightness, 0, 0, 0},
+                    new float[] {0, 0, Brightness, 0, 0},
+                    new float[] {0, 0, 0, Brightness, 0},
+                    new float[] {0, 0, 0, 0, Brightness},
+            };
+            ImageAttributes imageAttributes = new ImageAttributes();
+            imageAttributes.SetColorMatrix(new ColorMatrix(ptsArray), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+            using (Graphics g = Graphics.FromImage(resizedAndAdjustedBitmap))
+            {
+                g.DrawImage(
+                    resizedBitmap,
+                    new Rectangle(0, 0, resizedAndAdjustedBitmap.Width, resizedAndAdjustedBitmap.Height),
+                    0,
+                    0,
+                    resizedBitmap.Width,
+                    resizedBitmap.Height,
+                    GraphicsUnit.Pixel,
+                    imageAttributes);
+            }
+            
+            using (var memory = new MemoryStream())
+            {
+                resizedAndAdjustedBitmap.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+
+                var src = new BitmapImage();
+                src.BeginInit();
+                src.StreamSource = memory;
+                src.CacheOption = BitmapCacheOption.OnLoad;
+                src.EndInit();
+                src.Freeze();
+
+                return src;
+            }
         }
 
         public void UpdateResolution(int Resolution)
@@ -85,7 +120,7 @@ namespace LoUAM
 
         private void SetTileImage()
         {
-            this.Source = GetScaledImage(this.TileImagePath, this.Resolution);
+            this.Source = GetScaledImage(this.TileImagePath, this.Resolution, this.Brightness);
         }
 
         private void SetTilePositionFromPrefab()

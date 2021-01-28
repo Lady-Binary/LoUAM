@@ -18,6 +18,13 @@ namespace LoUAM
     /// </summary>
     public partial class ControlPanel : Window
     {
+        public enum Tab
+        {
+            Places = 0,
+            Map,
+            LinkControl
+        }
+
         public static string MyName = "(your name)";
         public static string Host = "";
         public static int Port = 4443;
@@ -27,14 +34,16 @@ namespace LoUAM
 
         public static List<Marker> Places = new List<Marker>();
 
+        public static float Brightness = 1;
+
         public ControlPanel()
         {
             InitializeComponent();
         }
 
-        public ControlPanel(int TabIndex) : this()
+        public ControlPanel(Tab TabIndex) : this()
         {
-            ControlPanelTabControl.SelectedIndex = TabIndex;
+            ControlPanelTabControl.SelectedIndex = (int)TabIndex;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -56,11 +65,14 @@ namespace LoUAM
                 BreakConnection.IsEnabled = false;
             }
 
+            BrightnessSlider.Value = Brightness;
+
             RefreshPlaces();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            Brightness = (float)BrightnessSlider.Value;
             MyName = MyNameTextBox.Text;
             Host = HostTextBox.Text;
             Port = int.TryParse(PortTextBox.Text, out int i) ? i : 4443;
@@ -90,6 +102,8 @@ namespace LoUAM
             Password = (string)LoUAMKey.GetValue("Password", "");
 
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool b) ? b : true;
+
+            Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float f) ? f : 1;
         }
 
         public static void SaveSettings()
@@ -108,6 +122,8 @@ namespace LoUAM
             LoUAMKey.SetValue("Password", Password);
 
             LoUAMKey.SetValue("TrackPlayer", TrackPlayer);
+
+            LoUAMKey.SetValue("Brightness", Brightness);
         }
 
         // I used this when I dumped the places from https://www.worldanvil.com/w/legends-of-ultima-legendsofultima/map/f830b718-06c1-42cf-a8ed-460269315023
@@ -471,6 +487,21 @@ namespace LoUAM
         private void LocatePlaceButton_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxEx.Show(this, "Not implemented!", "Locate Place", MessageBoxButton.OK);
+        }
+
+        private void ApplyBrightnessButton_Click(object sender, RoutedEventArgs e)
+        {
+            Brightness = (float)BrightnessSlider.Value;
+            MainWindow TheMainWindow = (MainWindow)Owner;
+            TheMainWindow.RefreshMapTiles();
+        }
+
+        private void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (BrightnessLabel != null)
+            {
+                BrightnessLabel.Content = e.NewValue.ToString("0.00");
+            }
         }
     }
 }

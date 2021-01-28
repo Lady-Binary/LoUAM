@@ -10,6 +10,7 @@
         <CommandBinding Command="Close"  CanExecute="ExitCommand_CanExecute" Executed="ExitCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.ConnectToLoAClientCommand}" CanExecute="ConnectToLoAClientCommand_CanExecute" Executed="ConnectToLoAClientCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" CanExecute="MapAdditionalSettingsCommand_CanExecute" Executed="MapAdditionalSettingsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}" CanExecute="MoveCursorHereCommand_CanExecute" Executed="MoveCursorHereCommand_Executed" />
@@ -17,6 +18,7 @@
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}"/>
+        <KeyBinding Key="M" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}"/>
         <KeyBinding Key="N" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" />
         <KeyBinding Key="P" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}"/>
         <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
@@ -39,6 +41,9 @@
             <MenuItem Header="_Places">
                 <MenuItem Header="Add New Place..." Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+N" />
                 <MenuItem Header="_Edit Places..." Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" InputGestureText="Ctrl+P" />
+            </MenuItem>
+            <MenuItem Header="_Map">
+                <MenuItem Header="_Additional settings..." Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" InputGestureText="Ctrl+M" />
             </MenuItem>
             <MenuItem Header="_Link">
                 <MenuItem Header="_Link Controls..." Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" InputGestureText="Ctrl+K" />

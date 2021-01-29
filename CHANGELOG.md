@@ -1,5 +1,13 @@
 # Changelog
 
+## LoA 1.4.0.0 - LoUAM 0.1.0.14 (29/01/2021)
+
+#### Enhancements:
+
+- New brightness setting [#9](https://github.com/Lady-Binary/LoUAM/issues/9)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.13 (29/01/2021)
 
 #### Enhancements:

@@ -377,6 +377,11 @@ namespace LoUAM
         #endregion
         public void RefreshMapTiles(string folder)
         {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+            });
+
             if (!Directory.Exists(folder))
                 return;
 
@@ -392,6 +397,11 @@ namespace LoUAM
                 var SubTile = CreateSubTile(fileName);
                 TilesCanvas.Children.Add(SubTile);
             }
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = null;
+            });
         }
 
         private Image CreateSubTile(string TileName)
@@ -404,7 +414,7 @@ namespace LoUAM
             TileFolder = Path.GetFullPath(@".\MapData");
             TilePath = TileFolder + "\\" + TileName + ".jpg";
             TilePrefabPath = TileFolder + "\\" + TileName + ".json";
-            SubTileImage = new MapImage(TilePath, TilePrefabPath);
+            SubTileImage = new MapImage(TilePath, TilePrefabPath, ControlPanel.Brightness);
 
             SubTileImage.Name = TileName.Replace('-', '_');
             SubTileImage.Width = TILE_WIDTH;

@@ -90,10 +90,6 @@ namespace LoUAM
             } catch (Exception ex)
             {
                 MessageBoxEx.Show(this, "It appears that the map data is corrupt.\n\nStart your Legends of Aria Client and then connect to it in order to re generate the necessary map data.", "Map data corrupt");
-                foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
-                {
-                    File.Delete(f);
-                }
                 return;
             }
         }
@@ -125,6 +121,17 @@ namespace LoUAM
                 return;
             }
             MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
+        }
+
+        public delegate void RefreshMapTilesDelegate();
+        public void RefreshMapTiles()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshMapTilesDelegate(RefreshMapTiles));
+                return;
+            }
+            MainMap.RefreshMapTiles("./MapData");
         }
 
         #region Timers
@@ -708,7 +715,19 @@ namespace LoUAM
         }
         private void EditPlacesCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel(0);
+            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.Places);
+            controlPanel.Owner = this;
+            controlPanel.ShowDialog();
+            UpdatePlaces();
+        }
+
+        private void MapAdditionalSettingsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void MapAdditionalSettingsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.Map);
             controlPanel.Owner = this;
             controlPanel.ShowDialog();
             UpdatePlaces();
@@ -720,7 +739,7 @@ namespace LoUAM
         }
         private void LinkControlsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel(1);
+            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.LinkControl);
             controlPanel.Owner = this;
             controlPanel.ShowDialog();
             UpdatePlaces();
@@ -768,6 +787,7 @@ namespace LoUAM
     {
         public static RoutedCommand ConnectToLoAClientCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand EditPlacesCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MapAdditionalSettingsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();

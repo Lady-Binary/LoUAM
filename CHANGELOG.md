@@ -1,5 +1,13 @@
 # Changelog
 
+## LoA 1.4.0.0 - LoUAM 0.1.0.13 (29/01/2021)
+
+#### Enhancements:
+
+- Ability to store personal places and common places in two separate files [#8](https://github.com/Lady-Binary/LoUAM/issues/8)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.12 (27/01/2021)
 *No changelog for this release.*
 

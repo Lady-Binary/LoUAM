@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:LoUAM"
         mc:Ignorable="d"
         Title="Edit Place" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner"
-        Height="250" Width="250">
+        Height="320" Width="250">
     <Grid Margin="10" Loaded="Grid_Loaded">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10*"/>
@@ -15,6 +15,7 @@
             <ColumnDefinition Width="40*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -34,8 +35,10 @@
         <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="1" Name="XTextBox" PreviewTextInput="XTextBox_PreviewTextInput"></TextBox>
         <Label Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="1">Z:</Label>
         <TextBox Grid.Row="5" Grid.Column="3" Grid.ColumnSpan="1" Name="ZTextBox" PreviewTextInput="ZTextBox_PreviewTextInput"></TextBox>
-        <Label Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="4" Name="ErrorMessageLabel" Foreground="Red" HorizontalAlignment="Center" Visibility="Hidden">Error message</Label>
-        <Button Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,0" Name="OkButton" Click="OkButton_Click">Ok</Button>
-        <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Margin="10,0" Name="CancelButton" Click="CancelButton_Click">Cancel</Button>
+        <Label Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4">File:</Label>
+        <ComboBox Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="4" Name="FileComboBox"></ComboBox>
+        <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="4" Name="ErrorMessageLabel" Foreground="Red" HorizontalAlignment="Center" Visibility="Hidden">Error message</Label>
+        <Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="10,0" Name="OkButton" Click="OkButton_Click">Ok</Button>
+        <Button Grid.Row="9" Grid.Column="2" Grid.ColumnSpan="2" Margin="10,0" Name="CancelButton" Click="CancelButton_Click">Cancel</Button>
     </Grid>
 </Window>

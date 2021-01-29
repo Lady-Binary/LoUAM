@@ -39,16 +39,22 @@ namespace LoUAM
             Marker EditingMarker = ControlPanel.Places.First(Place => Place.Id == Id);
             NameTextBox.Text = EditingMarker.Label;
             TypeComboBox.SelectedItem = EditingMarker.Icon;
+            FileComboBox.SelectedItem = EditingMarker.File;
             XTextBox.Text = EditingMarker.X.ToString();
             ZTextBox.Text = EditingMarker.Z.ToString();
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            var values = Enum.GetValues(typeof(MarkerIcon));
-            foreach(var value in values)
+            var icons = Enum.GetValues(typeof(MarkerIcon));
+            foreach(var icon in icons)
             {
-                TypeComboBox.Items.Add(value);
+                TypeComboBox.Items.Add(icon);
+            }
+            var files = Enum.GetValues(typeof(MarkerFile));
+            foreach (var file in files)
+            {
+                FileComboBox.Items.Add(file);
             }
         }
 
@@ -116,12 +122,23 @@ namespace LoUAM
             {
                 ZTextBox.ClearValue(Button.BackgroundProperty);
             }
+            if (!Enum.TryParse(FileComboBox.SelectedItem?.ToString() ?? "", out MarkerFile File))
+            {
+                ErrorMessageLabel.Content = "No file selected.";
+                ErrorMessageLabel.Visibility = Visibility.Visible;
+                FileComboBox.Background = Brushes.Red;
+                return;
+            }
+            else
+            {
+                FileComboBox.ClearValue(Button.BackgroundProperty);
+            }
             if (EditingId == null)
             {
-                ControlPanel.Places.Add(new Marker(MarkerType.Place, Guid.NewGuid().ToString("N"), Icon, Label, X, 0, Z));
+                ControlPanel.Places.Add(new Marker(File, MarkerType.Place, Guid.NewGuid().ToString("N"), Icon, Label, X, 0, Z));
             } else
             {
-                ControlPanel.Places[ControlPanel.Places.FindIndex(Place => Place.Id == EditingId)] = new Marker(MarkerType.Place, EditingId, Icon, Label, X, 0, Z);
+                ControlPanel.Places[ControlPanel.Places.FindIndex(Place => Place.Id == EditingId)] = new Marker(File, MarkerType.Place, EditingId, Icon, Label, X, 0, Z);
             }
             ControlPanel.SavePlaces();
             Close();

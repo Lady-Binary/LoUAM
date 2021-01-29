@@ -1,5 +1,12 @@
 ﻿namespace LoUAM
 {
+    public enum MarkerFile
+    {
+        None,
+        Common,
+        Personal
+    }
+
     public enum MarkerType
     {
         CurrentPlayer = 0,
@@ -95,6 +102,7 @@
 
     public struct Marker
     {
+        public MarkerFile File { get; set; }
         public MarkerType Type { get; set; }
         public string Id { get; set; }
         public MarkerIcon Icon { get; set; }
@@ -103,8 +111,9 @@
         public double Y { get; set; }
         public double Z { get; set; }
 
-        public Marker(MarkerType type, string id, MarkerIcon Icon, string label, double x, double y, double z)
+        public Marker(MarkerFile file, MarkerType type, string id, MarkerIcon Icon, string label, double x, double y, double z)
         {
+            this.File = file;
             this.Type = type;
             this.Id = id;
             this.Icon = Icon;

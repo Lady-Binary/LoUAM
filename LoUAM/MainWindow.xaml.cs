@@ -262,6 +262,7 @@ namespace LoUAM
             if (currentPlayer != null)
             {
                 Marker currentPlayerMarker = new Marker(
+                    MarkerFile.None,
                     MarkerType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
                     MarkerIcon.none,
@@ -323,7 +324,7 @@ namespace LoUAM
                         TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
                         List<Marker> OtherMarkers = TheServer.Players.Values
                         .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                        .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                        .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
                         MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                     }
                 }
@@ -372,7 +373,7 @@ namespace LoUAM
                     IEnumerable<Player> OtherPlayers = await TheClient.RetrievePlayers();
                     List<Marker> OtherMarkers = OtherPlayers
                         .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                        .Select(player => new Marker(MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                        .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
                     MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                 }
                 catch (Exception ex)

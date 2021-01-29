@@ -32,8 +32,9 @@
                     <ListView Name="placesListView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Label}" />
-                                <GridViewColumn Header="Type" Width="100" DisplayMemberBinding="{Binding Icon}" />
+                                <GridViewColumn Header="Name" Width="75" DisplayMemberBinding="{Binding Label}" />
+                                <GridViewColumn Header="Type" Width="75" DisplayMemberBinding="{Binding Icon}" />
+                                <GridViewColumn Header="File" Width="75" DisplayMemberBinding="{Binding File}" />
                                 <GridViewColumn Header="X" Width="75" DisplayMemberBinding="{Binding X}" />
                                 <GridViewColumn Header="Z" Width="75" DisplayMemberBinding="{Binding Z}" />
                             </GridView>

@@ -78,7 +78,7 @@ after_build:
     $artifact = "LoUAM-$env:APPVEYOR_BUILD_VERSION.zip"
 
 
-    7z a -tzip $artifact $pwd\LoUAM\bin\x64\Release\LoUAM.exe $pwd\LoUAM\bin\x64\Release\places.xml
+    7z a -tzip $artifact $pwd\LoUAM\bin\x64\Release\LoUAM.exe $pwd\LoUAM\bin\x64\Release\common-places.xml
 artifacts:
 - path: LoUAM-$(APPVEYOR_BUILD_VERSION).zip
 deploy:

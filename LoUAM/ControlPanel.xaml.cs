@@ -27,6 +27,7 @@ namespace LoUAM
 
         public static string MyName = "(your name)";
         public static string Host = "";
+        public static bool Https = true;
         public static int Port = 4443;
         public static string Password = "";
 
@@ -52,6 +53,7 @@ namespace LoUAM
             HostTextBox.Text = Host;
             PortTextBox.Text = Port.ToString();
             PasswordTextBox.Text = Password;
+            HttpsCheckBox.IsChecked = Https;
 
             if (MainWindow.TheServer != null || MainWindow.TheClient != null)
             {
@@ -77,6 +79,7 @@ namespace LoUAM
             Host = HostTextBox.Text;
             Port = int.TryParse(PortTextBox.Text, out int i) ? i : 4443;
             Password = PasswordTextBox.Text;
+            Https = HttpsCheckBox.IsChecked ?? true;
             SaveSettings();
         }
 
@@ -100,6 +103,7 @@ namespace LoUAM
             Host = (string)LoUAMKey.GetValue("Host", "");
             Port = int.TryParse(LoUAMKey.GetValue("Port", 4443).ToString(), out int i) ? i : 4443;
             Password = (string)LoUAMKey.GetValue("Password", "");
+            Https = bool.TryParse(LoUAMKey.GetValue("Https", true).ToString(), out bool https) ? https : true;
 
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool b) ? b : true;
 
@@ -120,6 +124,7 @@ namespace LoUAM
             LoUAMKey.SetValue("Host", Host);
             LoUAMKey.SetValue("Port", Port);
             LoUAMKey.SetValue("Password", Password);
+            LoUAMKey.SetValue("Https", Https);
 
             LoUAMKey.SetValue("TrackPlayer", TrackPlayer);
 
@@ -302,6 +307,12 @@ namespace LoUAM
 
             if (MainWindow.TheServer == null)
             {
+                if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
+                {
+                    MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
+                    return;
+                }
+
                 if (String.IsNullOrEmpty(PortTextBox.Text))
                 {
                     if (MessageBox.Show("No port set: server will be started on port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
@@ -324,7 +335,7 @@ namespace LoUAM
 
                 try
                 {
-                    MainWindow.TheServer = new Server(int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+                    MainWindow.TheServer = new Server(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
                     MainWindow.TheServer.StartServer();
                 }
                 catch (Exception ex)
@@ -346,6 +357,11 @@ namespace LoUAM
 
             if (MainWindow.TheClient == null)
             {
+                if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
+                {
+                    MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
+                    return;
+                }
                 if (String.IsNullOrEmpty(HostTextBox.Text))
                 {
                     MessageBox.Show("No host set.", "No host", MessageBoxButton.OK);
@@ -380,7 +396,7 @@ namespace LoUAM
                         TheMainWindow.LinkStatusLabel.Content = string.Format(
                         "LoUAM Link connecting...");
                     }
-                    MainWindow.TheClient = new Client(HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+                    MainWindow.TheClient = new Client(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
                     await MainWindow.TheClient.ConnectAsync();
                 } catch (Exception ex)
                 {

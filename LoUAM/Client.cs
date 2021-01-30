@@ -56,6 +56,7 @@ namespace LoUAM
 
     class Client
     {
+        private readonly bool https;
         private readonly string host;
         private readonly int port;
         private readonly string password;
@@ -72,12 +73,9 @@ namespace LoUAM
         private ClientStateEnum clientState;
         public ClientStateEnum ClientState { get => clientState; set => clientState = value; }
 
-        public Client(string host, int port) : this(host, port, "")
+        public Client(bool https, string host, int port, string password)
         {
-        }
-
-        public Client(string host, int port, string password)
-        {
+            this.https = https;
             this.host = host;
             this.port = port;
             this.password = password;
@@ -93,9 +91,40 @@ namespace LoUAM
                     return true;
                 };
 
+            string URI = $"{this.host}:{this.port}/".ToLower();
+            if (https)
+            {
+                if (URI.StartsWith("https://"))
+                {
+                    ;
+                }
+                else if (URI.StartsWith("http://"))
+                {
+                    URI = URI.Replace("http://", "https://");
+                }
+                else
+                {
+                    URI = "https://" + URI;
+                }
+            } else
+            {
+                if (URI.StartsWith("http://"))
+                {
+                    ;
+                }
+                else if (URI.StartsWith("https://"))
+                {
+                    URI = URI.Replace("https://", "http://");
+                }
+                else
+                {
+                    URI = "http://" + URI;
+                }
+            }
+
             client = new HttpClient(handler)
             {
-                BaseAddress = new Uri($"https://{this.host}:{this.port}/")
+                BaseAddress = new Uri(URI)
             };
 
             var username = "LoUAM";

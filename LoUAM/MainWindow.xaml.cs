@@ -323,16 +323,24 @@ namespace LoUAM
 
             if (TheServer != null)
             {
-                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on port ${ControlPanel.Port}...");
+                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
                 lock (TheServer.PlayersLock)
                 {
-                    if (TheServer.Players != null && currentPlayer != null)
+                    if (TheServer.Players != null)
                     {
-                        TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
-                        List<Marker> OtherMarkers = TheServer.Players.Values
-                        .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                        .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
-                        MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        if (currentPlayer != null)
+                        {
+                            TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
+                            List<Marker> OtherMarkers = TheServer.Players.Values
+                            .Where(player => player.ObjectId != currentPlayer.ObjectId)
+                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                            MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        } else
+                        {
+                            List<Marker> OtherMarkers = TheServer.Players.Values
+                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                            MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        }
                     }
                 }
             }

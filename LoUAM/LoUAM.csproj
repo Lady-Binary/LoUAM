@@ -126,6 +126,7 @@
     <Compile Include="EditPlace.xaml.cs">
       <DependentUpon>EditPlace.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainConsole.cs" />
     <Compile Include="MapGenerator.xaml.cs">
       <DependentUpon>MapGenerator.xaml</DependentUpon>
     </Compile>

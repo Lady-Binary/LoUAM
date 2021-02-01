@@ -26,10 +26,10 @@ namespace LoUAM
         public static MainWindow TheMainWindow;
 
         private static Server theServer;
-        internal static Server TheServer { get => theServer; set => theServer = value; }
+        public static Server TheServer { get => theServer; set => theServer = value; }
 
         private static Client theClient;
-        internal static Client TheClient { get => theClient; set => theClient = value; }
+        public static Client TheClient { get => theClient; set => theClient = value; }
 
         public static int CurrentClientProcessId = -1;
 
@@ -311,7 +311,6 @@ namespace LoUAM
         {
             if (TheClient == null && TheServer == null)
             {
-                UpdateLinkStatus(Colors.Black, "LoUAM Link not connected.");
                 return;
             }
 
@@ -351,7 +350,7 @@ namespace LoUAM
                 {
                     try
                     {
-                        UpdateLinkStatus(Colors.Orange, "LoUAM Link connecting...");
+                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts+1})...");
                         await TheClient.ConnectAsync();
                         if (TheClient.ClientState != Client.ClientStateEnum.Connected)
                         {
@@ -359,6 +358,13 @@ namespace LoUAM
                             TheClient.Disconnect();
                             return;
                         }
+                    }
+                    catch (TooManyAttemptsException ex)
+                    {
+                        UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {ex.Message}");
+                        TheClient.Disconnect();
+                        TheClient = null;
+                        return;
                     }
                     catch (Exception ex)
                     {
@@ -373,7 +379,7 @@ namespace LoUAM
                 {
                     try
                     {
-                        TheClient.UpdatePlayer(currentPlayer);
+                        await TheClient.UpdatePlayer(currentPlayer);
                     }
                     catch (Exception ex)
                     {

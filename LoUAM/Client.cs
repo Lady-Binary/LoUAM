@@ -54,7 +54,22 @@ namespace LoUAM
         }
     }
 
-    class Client
+    public class TooManyAttemptsException : Exception
+    {
+        public TooManyAttemptsException()
+        {
+        }
+
+        public TooManyAttemptsException(string message) : base(message)
+        {
+        }
+
+        public TooManyAttemptsException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
+    public class Client
     {
         private readonly bool https;
         private readonly string host;
@@ -73,6 +88,10 @@ namespace LoUAM
         private ClientStateEnum clientState;
         public ClientStateEnum ClientState { get => clientState; set => clientState = value; }
 
+        public const int MAX_CONNECTION_ATTEMPTS = 3;
+        private int connectionAttempts = 0;
+        public int ConnectionAttempts { get => connectionAttempts; set => connectionAttempts = value; }
+
         public Client(bool https, string host, int port, string password)
         {
             this.https = https;
@@ -81,8 +100,18 @@ namespace LoUAM
             this.password = password;
         }
 
+        public void ResetConnectionAttempts()
+        {
+            ConnectionAttempts = 0;
+        }
+
         public async Task ConnectAsync()
         {
+            if (ConnectionAttempts >= MAX_CONNECTION_ATTEMPTS)
+            {
+                throw new TooManyAttemptsException("Too many attempts.");
+            }
+            ConnectionAttempts++;
             handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback =
                 (httpRequestMessage, cert, cetChain, policyErrors) =>
@@ -160,7 +189,7 @@ namespace LoUAM
             this.handler = null;
         }
 
-        public async void UpdatePlayer(Player Player)
+        public async Task UpdatePlayer(Player Player)
         {
             if (this.client == null || this.handler == null || this.ClientState == ClientStateEnum.Disconnected)
             {

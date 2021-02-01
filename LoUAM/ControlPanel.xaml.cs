@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using System.Xml;
 
 namespace LoUAM
@@ -37,9 +38,15 @@ namespace LoUAM
 
         public static float Brightness = 1;
 
+        DispatcherTimer RefreshLinkStatusTimer;
+
         public ControlPanel()
         {
             InitializeComponent();
+            RefreshLinkStatusTimer = new DispatcherTimer();
+            RefreshLinkStatusTimer.Tick += RefreshLinkStatusTimer_Tick;
+            RefreshLinkStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            RefreshLinkStatusTimer.Start();
         }
 
         public ControlPanel(Tab TabIndex) : this()
@@ -55,18 +62,6 @@ namespace LoUAM
             PasswordTextBox.Text = Password;
             HttpsCheckBox.IsChecked = Https;
 
-            if (MainWindow.TheServer != null || MainWindow.TheClient != null)
-            {
-                StartServer.IsEnabled = false;
-                LinkToServer.IsEnabled = false;
-                BreakConnection.IsEnabled = true;
-            } else
-            {
-                StartServer.IsEnabled = true;
-                LinkToServer.IsEnabled = true;
-                BreakConnection.IsEnabled = false;
-            }
-
             BrightnessSlider.Value = Brightness;
 
             RefreshPlaces();
@@ -81,6 +76,27 @@ namespace LoUAM
             Password = PasswordTextBox.Text;
             Https = HttpsCheckBox.IsChecked ?? true;
             SaveSettings();
+        }
+
+        private void RefreshLinkStatusTimer_Tick(object sender, EventArgs e)
+        {
+            if (MainWindow.TheMainWindow != null)
+            {
+                LinkStatus.Content = MainWindow.TheMainWindow.LinkStatusLabel.Content;
+                LinkStatus.Foreground = MainWindow.TheMainWindow.LinkStatusLabel.Foreground;
+            }
+            if (MainWindow.TheServer != null || MainWindow.TheClient != null)
+            {
+                StartServer.IsEnabled = false;
+                LinkToServer.IsEnabled = false;
+                BreakConnection.IsEnabled = true;
+            }
+            else
+            {
+                StartServer.IsEnabled = true;
+                LinkToServer.IsEnabled = true;
+                BreakConnection.IsEnabled = false;
+            }
         }
 
         private void PortTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)

@@ -37,7 +37,7 @@ namespace LoUAM
         }
     }
 
-    class Server
+    public class Server
     {
         private readonly bool https;
         private readonly int port;

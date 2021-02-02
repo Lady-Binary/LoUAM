@@ -1,5 +1,18 @@
 # Changelog
 
+## LoA 1.4.0.0 - LoUAM 0.1.0.15 (02/02/2021)
+
+#### Bugfixes:
+
+- LoUAM sometimes crashes on Link connection failures [#14](https://github.com/Lady-Binary/LoUAM/issues/14)
+
+#### Enhancements:
+
+- Add README instructions for Link Server and Client [#12](https://github.com/Lady-Binary/LoUAM/issues/12)
+- Ability to run LoUAM server in headless mode [#11](https://github.com/Lady-Binary/LoUAM/issues/11)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.14 (29/01/2021)
 
 #### Enhancements:

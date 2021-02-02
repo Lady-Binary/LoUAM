@@ -1,5 +1,13 @@
 # Changelog
 
+## LoA 1.4.0.0 - LoUAM 0.1.0.16 (02/02/2021)
+
+#### Bugfixes:
+
+- Server disconnects when not connected to a LoA game client [#15](https://github.com/Lady-Binary/LoUAM/issues/15)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.15 (02/02/2021)
 
 #### Bugfixes:

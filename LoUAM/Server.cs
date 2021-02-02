@@ -37,42 +37,52 @@ namespace LoUAM
         }
     }
 
-    class Server
+    public class Server
     {
+        private readonly bool https;
         private readonly int port;
         private readonly string password;
-        private bool keepRunning = false;
+        private bool isRunning = false;
+        public bool IsRunning { get => isRunning; set => isRunning = value; }
 
         public object PlayersLock { get; set; } = new object();
         public IDictionary<ulong, Player> Players { get; } = new Dictionary<ulong, Player>();
 
-        public Server() : this(8080)
+        public Server() : this(true, 4443, "s3cr3t")
         {
         }
 
-        public Server(int port) : this(port, "")
+        public Server(bool https, int port, string password)
         {
-        }
-
-        public Server(int port, string password)
-        {
+            this.https = https;
             this.port = port;
             this.password = password;
         }
 
         public async void StartServer()
         {
-            var rsa = RSA.Create(2048);
-            var req = new CertificateRequest("CN=LoUAM", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            var certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(2));
-            var serverCertificate = new X509Certificate2(certificate.Export(X509ContentType.Pfx, ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh"), ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh", X509KeyStorageFlags.MachineKeySet);
+            X509Certificate2 serverCertificate = null;
+            if (https)
+            {
+                var rsa = RSA.Create(2048);
+                var req = new CertificateRequest("CN=LoUAM", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                var certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(2));
+                serverCertificate = new X509Certificate2(certificate.Export(X509ContentType.Pfx, ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh"), ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh", X509KeyStorageFlags.MachineKeySet);
+            }
 
             using (var httpServer = new HttpServer(new HttpRequestProvider()))
             {
                 var listener = new TcpListener(IPAddress.Any, this.port);
 
-                // Https decorator
-                httpServer.Use(new ListenerSslDecorator(new TcpListenerAdapter(listener), serverCertificate));
+                if (https)
+                {
+                    // Https decorator
+                    httpServer.Use(new ListenerSslDecorator(new TcpListenerAdapter(listener), serverCertificate));
+                } else
+                {
+                    // Http only
+                    httpServer.Use(new TcpListenerAdapter(listener));
+                }
 
                 // Exception handling (must be the first handler)
                 httpServer.Use(async (context, next) =>
@@ -224,10 +234,10 @@ namespace LoUAM
                     throw new CannotStartServerException($"Cannot start server on port {port}.", ex);
                 }
 
-                keepRunning = true;
+                IsRunning = true;
 
                 long lastCleanup  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                while (keepRunning)
+                while (IsRunning)
                 {
                     // Every second
                     if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastCleanup >= 1000)
@@ -255,7 +265,7 @@ namespace LoUAM
 
         public void StopServer()
         {
-            keepRunning = false;
+            IsRunning = false;
             Players.Clear();
         }
     }

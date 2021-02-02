@@ -54,8 +54,24 @@ namespace LoUAM
         }
     }
 
-    class Client
+    public class TooManyAttemptsException : Exception
     {
+        public TooManyAttemptsException()
+        {
+        }
+
+        public TooManyAttemptsException(string message) : base(message)
+        {
+        }
+
+        public TooManyAttemptsException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
+    public class Client
+    {
+        private readonly bool https;
         private readonly string host;
         private readonly int port;
         private readonly string password;
@@ -72,19 +88,30 @@ namespace LoUAM
         private ClientStateEnum clientState;
         public ClientStateEnum ClientState { get => clientState; set => clientState = value; }
 
-        public Client(string host, int port) : this(host, port, "")
-        {
-        }
+        public const int MAX_CONNECTION_ATTEMPTS = 3;
+        private int connectionAttempts = 0;
+        public int ConnectionAttempts { get => connectionAttempts; set => connectionAttempts = value; }
 
-        public Client(string host, int port, string password)
+        public Client(bool https, string host, int port, string password)
         {
+            this.https = https;
             this.host = host;
             this.port = port;
             this.password = password;
         }
 
+        public void ResetConnectionAttempts()
+        {
+            ConnectionAttempts = 0;
+        }
+
         public async Task ConnectAsync()
         {
+            if (ConnectionAttempts >= MAX_CONNECTION_ATTEMPTS)
+            {
+                throw new TooManyAttemptsException("Too many attempts.");
+            }
+            ConnectionAttempts++;
             handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback =
                 (httpRequestMessage, cert, cetChain, policyErrors) =>
@@ -93,9 +120,40 @@ namespace LoUAM
                     return true;
                 };
 
+            string URI = $"{this.host}:{this.port}/".ToLower();
+            if (https)
+            {
+                if (URI.StartsWith("https://"))
+                {
+                    ;
+                }
+                else if (URI.StartsWith("http://"))
+                {
+                    URI = URI.Replace("http://", "https://");
+                }
+                else
+                {
+                    URI = "https://" + URI;
+                }
+            } else
+            {
+                if (URI.StartsWith("http://"))
+                {
+                    ;
+                }
+                else if (URI.StartsWith("https://"))
+                {
+                    URI = URI.Replace("https://", "http://");
+                }
+                else
+                {
+                    URI = "http://" + URI;
+                }
+            }
+
             client = new HttpClient(handler)
             {
-                BaseAddress = new Uri($"https://{this.host}:{this.port}/")
+                BaseAddress = new Uri(URI)
             };
 
             var username = "LoUAM";
@@ -131,7 +189,7 @@ namespace LoUAM
             this.handler = null;
         }
 
-        public async void UpdatePlayer(Player Player)
+        public async Task UpdatePlayer(Player Player)
         {
             if (this.client == null || this.handler == null || this.ClientState == ClientStateEnum.Disconnected)
             {

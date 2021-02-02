@@ -26,10 +26,10 @@ namespace LoUAM
         public static MainWindow TheMainWindow;
 
         private static Server theServer;
-        internal static Server TheServer { get => theServer; set => theServer = value; }
+        public static Server TheServer { get => theServer; set => theServer = value; }
 
         private static Client theClient;
-        internal static Client TheClient { get => theClient; set => theClient = value; }
+        public static Client TheClient { get => theClient; set => theClient = value; }
 
         public static int CurrentClientProcessId = -1;
 
@@ -311,7 +311,6 @@ namespace LoUAM
         {
             if (TheClient == null && TheServer == null)
             {
-                UpdateLinkStatus(Colors.Black, "LoUAM Link not connected.");
                 return;
             }
 
@@ -323,16 +322,24 @@ namespace LoUAM
 
             if (TheServer != null)
             {
-                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on port ${ControlPanel.Port}...");
+                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
                 lock (TheServer.PlayersLock)
                 {
-                    if (TheServer.Players != null && currentPlayer != null)
+                    if (TheServer.Players != null)
                     {
-                        TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
-                        List<Marker> OtherMarkers = TheServer.Players.Values
-                        .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                        .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
-                        MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        if (currentPlayer != null)
+                        {
+                            TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
+                            List<Marker> OtherMarkers = TheServer.Players.Values
+                            .Where(player => player.ObjectId != currentPlayer.ObjectId)
+                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                            MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        } else
+                        {
+                            List<Marker> OtherMarkers = TheServer.Players.Values
+                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                            MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        }
                     }
                 }
             }
@@ -343,7 +350,7 @@ namespace LoUAM
                 {
                     try
                     {
-                        UpdateLinkStatus(Colors.Orange, "LoUAM Link connecting...");
+                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts+1})...");
                         await TheClient.ConnectAsync();
                         if (TheClient.ClientState != Client.ClientStateEnum.Connected)
                         {
@@ -351,6 +358,13 @@ namespace LoUAM
                             TheClient.Disconnect();
                             return;
                         }
+                    }
+                    catch (TooManyAttemptsException ex)
+                    {
+                        UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {ex.Message}");
+                        TheClient.Disconnect();
+                        TheClient = null;
+                        return;
                     }
                     catch (Exception ex)
                     {
@@ -365,7 +379,7 @@ namespace LoUAM
                 {
                     try
                     {
-                        TheClient.UpdatePlayer(currentPlayer);
+                        await TheClient.UpdatePlayer(currentPlayer);
                     }
                     catch (Exception ex)
                     {

@@ -69,6 +69,8 @@
                         <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
@@ -76,18 +78,21 @@
                         <ColumnDefinition></ColumnDefinition>
                         <ColumnDefinition Width="Auto"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0">Name</Label>
-                    <TextBox HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Name="MyNameTextBox" Width="200px">(your name)</TextBox>
-                    <Button Grid.Row="0" Grid.Column="2" Name="StartServer" Width="100px" Click="StartServer_Click" HorizontalAlignment="Left">Start Server</Button>
-                    <Label Grid.Row="1" Grid.Column="0">Host</Label>
-                    <TextBox HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Name="HostTextBox" Width="200px"></TextBox>
-                    <Button Grid.Row="1" Grid.Column="2" Name="LinkToServer" Width="100px" Click="LinkToServer_Click">Link to Server</Button>
-                    <Label Grid.Row="2" Grid.Column="0">Port</Label>
-                    <TextBox HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Name="PortTextBox" Width="200px" PreviewTextInput="PortTextBox_PreviewTextInput"></TextBox>
-                    <Button Grid.Row="2" Grid.Column="2" Name="BreakConnection" Width="100px" Click="BreakConnection_Click" IsEnabled="False">Break Connection</Button>
-                    <Label Grid.Row="3" Grid.Column="0">Password</Label>
-                    <Button Grid.Row="3" Grid.Column="2" Name="CopySettings" Width="100px" Click="CopySettings_Click">Copy Settings</Button>
-                    <TextBox HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Name="PasswordTextBox" Width="200px"></TextBox>
+                    <Label Grid.Row="0" Grid.Column="0" Margin="10">Name</Label>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1" Margin="10" Name="MyNameTextBox" Width="200px">(your name)</TextBox>
+                    <Button Grid.Row="0" Grid.Column="2" Margin="10" Name="StartServer" Width="100px" Click="StartServer_Click" HorizontalAlignment="Left">Start Server</Button>
+                    <Label Grid.Row="1" Grid.Column="0" Margin="10">Host</Label>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Margin="10" Name="HostTextBox" Width="200px"></TextBox>
+                    <Button Grid.Row="1" Grid.Column="2" Margin="10" Name="LinkToServer" Width="100px" Click="LinkToServer_Click">Link to Server</Button>
+                    <Label Grid.Row="2" Grid.Column="0" Margin="10">Port</Label>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="2" Grid.Column="1" Margin="10" Name="PortTextBox" Width="200px" PreviewTextInput="PortTextBox_PreviewTextInput"></TextBox>
+                    <Button Grid.Row="2" Grid.Column="2" Margin="10" Name="BreakConnection" Width="100px" Click="BreakConnection_Click" IsEnabled="False">Break Connection</Button>
+                    <Label Grid.Row="3" Grid.Column="0" Margin="10">Password</Label>
+                    <Button Grid.Row="3" Grid.Column="2" Margin="10" Name="CopySettings" Width="100px" Click="CopySettings_Click">Copy Settings</Button>
+                    <TextBox HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Margin="10" Name="PasswordTextBox" Width="200px"></TextBox>
+                    <Label Grid.Row="4" Grid.Column="0" Margin="10">Use HTTPS</Label>
+                    <CheckBox Grid.Row="4" Grid.Column="1" Margin="10" Name="HttpsCheckBox" Width="100px" IsChecked="True" HorizontalAlignment="left" VerticalAlignment="Center" />
+                    <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="10" Name="LinkStatus" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Link Status:</Label>
                 </Grid>
             </TabItem>
         </TabControl>

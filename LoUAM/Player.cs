@@ -1,6 +1,6 @@
 ﻿namespace LoUAM
 {
-    class Player
+    public class Player
     {
         public long LastUpdate { get; set; }
         public ulong ObjectId { get; set; }

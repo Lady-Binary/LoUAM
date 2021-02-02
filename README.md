@@ -28,8 +28,11 @@ LoU Auto-Map is a totally free tool inspired by UO Auto-Map, the popular premier
 ## How can me and my friends see each other location and join the same map?
 
 One of you must run LoUAM in Server Mode, the others will have to connect to it.
+
 If you know your public IP address and know how to forward a port from your router/firewall to your machine, then you probably know what you're doing: use the Link Controls menu and click on Start Server.
+
 If you don't know how to forward a port on your router/firewall, or you don't know your public IP address, then you can follow these instructions:
+
 - On LoUAM, click on the "Link"->"Link Controls..." menu
 - Enter your name, leave the Host port as it is, enter 80 in the port field, enter a password, *remove* the HTTPS checkmark
 - Click on Start Server
@@ -44,7 +47,9 @@ If you don't know how to forward a port on your router/firewall, or you don't kn
 ## Can I run LoUAM as a server in headless mode, without GUI?
 
 Yes! Via command line prompt, issue the following command:
+
 louam --headless --port 80 --password s3cr3t --http
+
 Then follow the previous steps for setting up ngrok.
 
 ## Why LoUAM and not LoAAM?

@@ -13,17 +13,20 @@ namespace LoUAM
         private string mapDirectory;
         private BackgroundWorker backgroundWorker;
 
+        private string Region = "";
+
         private int GeneratedTransforms = 0;
         private int TotalTransforms = 0;
 
         private int GeneratedTextures = 0;
         private int TotalTextures = 0;
 
-        public MapGenerator(int TotalTransforms, int TotalTextures)
+        public MapGenerator(string region, int TotalTransforms, int TotalTextures)
         {
+            this.Region = region;
             this.TotalTransforms = TotalTransforms;
             this.TotalTextures = TotalTextures;
-            mapDirectory = Path.GetFullPath(".\\MapData");
+            mapDirectory = Path.GetFullPath($"./MapData/{region}");
             backgroundWorker = new BackgroundWorker();
             InitializeComponent();
             InitializeBackgroundWorker();
@@ -58,7 +61,7 @@ namespace LoUAM
             while (GeneratedTransforms < TotalTransforms &&
                 timeout.ElapsedMilliseconds < 120000)
             {
-                GeneratedTransforms = Directory.GetFiles("./MapData/", "*.json").Length;
+                GeneratedTransforms = Directory.GetFiles(mapDirectory, "*.json").Length;
                 UpdateProgress(0, GeneratedTransforms, TotalTransforms, "transforms");
 
                 Thread.Sleep(100);
@@ -72,7 +75,7 @@ namespace LoUAM
             while ((GeneratedTransforms < TotalTransforms || GeneratedTextures < TotalTextures) &&
                 timeout.ElapsedMilliseconds < 120000)
             {
-                GeneratedTextures = Directory.GetFiles("./MapData/", "*.jpg").Length;
+                GeneratedTextures = Directory.GetFiles(mapDirectory, "*.jpg").Length;
                 UpdateProgress(0, GeneratedTextures, TotalTextures, "textures");
 
                 Thread.Sleep(100);
@@ -87,8 +90,8 @@ namespace LoUAM
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            GeneratedTransforms = Directory.GetFiles("./MapData/", "*.json").Length;
-            GeneratedTextures = Directory.GetFiles("./MapData/", "*.jpg").Length;
+            GeneratedTransforms = Directory.GetFiles(mapDirectory, "*.json").Length;
+            GeneratedTextures = Directory.GetFiles(mapDirectory, "*.jpg").Length;
             if (GeneratedTransforms < TotalTransforms || GeneratedTextures < TotalTextures)
             {
                 MessageBoxExShow(this, "Export completed, but map could be incomplete. This window will now close and the map will be loaded: it might take few minutes, depending on your computer.", "Map export incomplete");

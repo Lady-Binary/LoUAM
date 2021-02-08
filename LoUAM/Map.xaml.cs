@@ -19,6 +19,9 @@ namespace LoUAM
         private const int TILE_WIDTH = 256;
         private const int TILE_HEIGHT = 256;
 
+        private string region = "";
+        public string Region { get => region; set => region = value; }
+
         public Map()
         {
             InitializeComponent();
@@ -377,24 +380,23 @@ namespace LoUAM
         #endregion
         public void RefreshMapTiles(string folder)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-            });
-
             if (!Directory.Exists(folder))
                 return;
 
-            string[] mapTiles = Directory.GetFiles(folder);
+            string[] mapTiles = Directory.GetFiles(folder, "*.jpg");
             if (mapTiles == null || mapTiles.Length == 0)
                 return;
 
             TilesCanvas.Children.Clear();
 
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+            });
+
             foreach (string mapTile in mapTiles)
             {
-                string fileName = Path.GetFileNameWithoutExtension(mapTile);
-                var SubTile = CreateSubTile(fileName);
+                var SubTile = CreateSubTile(mapTile);
                 TilesCanvas.Children.Add(SubTile);
             }
 
@@ -404,17 +406,16 @@ namespace LoUAM
             });
         }
 
-        private Image CreateSubTile(string TileName)
+        private Image CreateSubTile(string tilePath)
         {
             MapImage SubTileImage;
-            string TileFolder;
+            string TileName;
             string TilePath;
             string TilePrefabPath;
 
-            TileFolder = Path.GetFullPath(@".\MapData");
-            TilePath = TileFolder + "\\" + TileName + ".jpg";
-            TilePrefabPath = TileFolder + "\\" + TileName + ".json";
-            SubTileImage = new MapImage(TilePath, TilePrefabPath, ControlPanel.Brightness);
+            TileName = Path.GetFileNameWithoutExtension(tilePath);
+            TilePrefabPath = tilePath.Replace(".jpg", ".json");
+            SubTileImage = new MapImage(tilePath, TilePrefabPath, ControlPanel.Brightness);
 
             SubTileImage.Name = TileName.Replace('-', '_');
             SubTileImage.Width = TILE_WIDTH;

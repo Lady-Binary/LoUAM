@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using LoU;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Text.RegularExpressions;
 
 namespace LoUAM
 {
@@ -131,13 +132,44 @@ namespace LoUAM
             }
 
             string TileName = Path.GetFileNameWithoutExtension(TileImagePath);
-            int TileIndex = int.Parse(TileName.Substring(TileName.Length - 1, 1));
+            string TileIndexString = Regex.Match(TileName, @"\d+").Value;
+            int TileIndex = int.Parse(TileIndexString);
             TileName = TileName.Substring(0, TileName.Length - 2);
 
-            string prefab = File.ReadAllText(this.TilePrefabPath);
-            TileTransform tileTransform = JsonConvert.DeserializeObject<TileTransform>(prefab);
-            double X = tileTransform.x;
-            double Z = tileTransform.z;
+            double X;
+            double Z;
+            if (File.Exists(this.TilePrefabPath))
+            {
+                string prefab = File.ReadAllText(this.TilePrefabPath);
+                TileTransform tileTransform = JsonConvert.DeserializeObject<TileTransform>(prefab);
+                X = tileTransform.x;
+                Z = tileTransform.z;
+            } else
+            {
+                switch (TileIndex)
+                {
+                    case 0:
+                        X = 128;
+                        Z = 128;
+                        break;
+                    case 1:
+                        X = 128;
+                        Z = 128-256;
+                        break;
+                    case 2:
+                        X = 128-256;
+                        Z = 128;
+                        break;
+                    case 3:
+                        X = 128-256;
+                        Z = 128-256;
+                        break;
+                    default:
+                        X = 0;
+                        Z = 0;
+                        break;
+                }
+            }
 
             this.SetValue(Canvas.LeftProperty, X);
             this.SetValue(Canvas.TopProperty, Z);

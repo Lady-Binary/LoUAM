@@ -46,6 +46,8 @@ namespace LoUAM
         public static object ClientStatusLock = new object();
         public static ClientStatus ClientStatus;
 
+        private string CurrentServer;
+        private string CurrentRegion;
         DispatcherTimer TimerRefreshCurrentPlayer;
 
         DispatcherTimer TimerUpdateServer;
@@ -81,15 +83,6 @@ namespace LoUAM
             if (!Directory.Exists("./MapData")) {
                 MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
                 Directory.CreateDirectory("./MapData");
-                return;
-            }
-
-            try
-            {
-                MainMap.RefreshMapTiles("./MapData");
-            } catch (Exception ex)
-            {
-                MessageBoxEx.Show(this, "It appears that the map data is corrupt.\n\nStart your Legends of Aria Client and then connect to it in order to re generate the necessary map data.", "Map data corrupt");
                 return;
             }
         }
@@ -236,7 +229,10 @@ namespace LoUAM
                         TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
                         ClientStatus.CharacterInfo.CHARPOSX ?? 0,
                         ClientStatus.CharacterInfo.CHARPOSY ?? 0,
-                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0);
+                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0,
+                        ClientStatus.CharacterInfo.REGION,
+                        ClientStatus.ClientInfo.SERVER
+                        );
 
                     Regex rx = new Regex(@"\[(.*?)\]");
 
@@ -257,6 +253,71 @@ namespace LoUAM
             return currentPlayer;
         }
 
+        public bool CheckMapData(string server, string region)
+        {
+            ExecuteCommand(new ClientCommand(CommandType.LoadMap, "region", region));
+            RefreshClientStatus();
+
+            int TotalTransforms = 0;
+            int TotalTextures = 0;
+            lock (MainWindow.ClientStatusLock)
+            {
+                TotalTransforms = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTRANSFORMS ?? 0;
+                TotalTextures = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTEXTURES ?? 0;
+            }
+            if (TotalTransforms == 0 && TotalTextures == 0)
+            {
+                ExecuteCommand(new ClientCommand(CommandType.LoadMap, "region", region+"Maps"));
+                RefreshClientStatus();
+                lock (MainWindow.ClientStatusLock)
+                {
+                    TotalTransforms = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTRANSFORMS ?? 0;
+                    TotalTextures = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTEXTURES ?? 0;
+                }
+            }
+
+            if (TotalTransforms == 0 && TotalTextures == 0)
+            {
+                MessageBoxEx.Show(this, "LoUAM was unable to load the map data from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", "Could not load map data");
+                return false;
+            }
+
+            bool InvalidMapData = false;
+            if (!Directory.Exists("./MapData"))
+            {
+                Directory.CreateDirectory("./MapData");
+                InvalidMapData = true;
+            }
+            if (!Directory.Exists($"./MapData/{region}"))
+            {
+                Directory.CreateDirectory($"./MapData/{region}");
+                InvalidMapData = true;
+            }
+            if (Directory.GetFiles($"./MapData/{region}", "*.json").Count() != TotalTransforms ||
+                Directory.GetFiles($"./MapData/{region}", "*.jpg").Count() != TotalTextures)
+            {
+                foreach (string f in Directory.EnumerateFiles($"./MapData/{region}", "*.*"))
+                {
+                    File.Delete(f);
+                }
+                InvalidMapData = true;
+            }
+
+            if (InvalidMapData)
+            {
+                if (MessageBoxEx.Show(this, $"It appears that the map data for the current region ({region}) is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", $"Map data outdated for region {region}", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                    MapGenerator mapGenerator = new MapGenerator(region, TotalTransforms, TotalTextures);
+                    mapGenerator.Owner = TheMainWindow;
+                    mapGenerator.ShowDialog();
+                }
+            }
+
+            ExecuteCommand(new ClientCommand(CommandType.UnloadMap));
+
+            return true;
+        }
+
         public void RefreshCurrentPlayer()
         {
             //Debug.Print("RefreshCurrentPlayer");
@@ -268,6 +329,20 @@ namespace LoUAM
 
             if (currentPlayer != null)
             {
+                if (CurrentServer != currentPlayer.Server)
+                {
+                    // Handle server change
+                    CurrentServer = currentPlayer.Server;
+                }
+                if (CurrentRegion != currentPlayer.Region)
+                {
+                    // Handle region change
+                    CurrentRegion = currentPlayer.Region;
+
+                    CheckMapData(CurrentServer, CurrentRegion);
+                    MainMap.Region = CurrentRegion;
+                    MainMap.RefreshMapTiles($"./MapData/{CurrentRegion}");
+                }
                 Marker currentPlayerMarker = new Marker(
                     MarkerFile.None,
                     MarkerType.CurrentPlayer,
@@ -659,52 +734,8 @@ namespace LoUAM
 
                     // Attempt connection (or injection, if needed)
                     bool connected = ConnectToLoAClient((int)processId);
-                    if (connected)
-                    {
-                        ExecuteCommand(new ClientCommand(CommandType.LoadMap));
-                        RefreshClientStatus();
 
-                        int TotalTransforms = 0;
-                        int TotalTextures = 0;
-                        lock (MainWindow.ClientStatusLock)
-                        {
-                            TotalTransforms = MainWindow.ClientStatus?.Miscellaneous.MAPTRANSFORMS ?? 0;
-                            TotalTextures = MainWindow.ClientStatus?.Miscellaneous.MAPTEXTURES ?? 0;
-                        }
-                        if (TotalTransforms == 0 || TotalTextures == 0)
-                        {
-                            MessageBoxEx.Show(this, "LoUAM was unable to load the map data from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", "Could not load map data");
-                            return false;
-                        }
-
-                        bool InvalidMapData = false;
-                        if (!Directory.Exists("./MapData"))
-                        {
-                            MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data not found");
-                            Directory.CreateDirectory("./MapData");
-                            InvalidMapData = true;
-                        } else if (Directory.GetFiles("./MapData/", "*.json").Count() != TotalTransforms ||
-                            Directory.GetFiles("./MapData/", "*.jpg").Count() != TotalTextures)
-                        {
-                            MessageBoxEx.Show(this, "It appears that the map data is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data outdated");
-                            foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
-                            {
-                                File.Delete(f);
-                            }
-                            InvalidMapData = true;
-                        }
-
-                        if (InvalidMapData)
-                        {
-                            MapGenerator mapGenerator = new MapGenerator(TotalTransforms, TotalTextures);
-                            mapGenerator.Owner = TheMainWindow;
-                            mapGenerator.ShowDialog();
-                            MainMap.RefreshMapTiles("./MapData");
-                        }
-
-                        ExecuteCommand(new ClientCommand(CommandType.UnloadMap));
-                    }
-                    return true;
+                    return connected;
                 };
 
                 //// Prepare cursor image

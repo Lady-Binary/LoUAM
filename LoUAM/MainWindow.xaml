@@ -10,6 +10,8 @@
         <CommandBinding Command="Close"  CanExecute="ExitCommand_CanExecute" Executed="ExitCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.ConnectToLoAClientCommand}" CanExecute="ConnectToLoAClientCommand_CanExecute" Executed="ConnectToLoAClientCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeRegionCommand}" CanExecute="MapChangeRegionCommand_CanExecute" Executed="MapChangeRegionCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeServerCommand}" CanExecute="MapChangeServerCommand_CanExecute" Executed="MapChangeServerCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" CanExecute="MapAdditionalSettingsCommand_CanExecute" Executed="MapAdditionalSettingsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
@@ -44,6 +46,11 @@
             </MenuItem>
             <MenuItem Header="_Map">
                 <MenuItem Header="_Additional settings..." Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" InputGestureText="Ctrl+M" />
+                <Separator/>
+                <MenuItem Header="_Server" Name="ServerMenuItem">
+                </MenuItem>
+                <MenuItem Header="_Region" Name="RegionMenuITem">
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_Link">
                 <MenuItem Header="_Link Controls..." Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" InputGestureText="Ctrl+K" />

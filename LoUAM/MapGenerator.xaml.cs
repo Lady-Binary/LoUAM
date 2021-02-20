@@ -15,18 +15,14 @@ namespace LoUAM
 
         private string Region = "";
 
-        private int GeneratedTransforms = 0;
-        private int TotalTransforms = 0;
+        private int GeneratedTiles = 0;
+        private int TotalTiles = 0;
 
-        private int GeneratedTextures = 0;
-        private int TotalTextures = 0;
-
-        public MapGenerator(string region, int TotalTransforms, int TotalTextures)
+        public MapGenerator(string region, int TotalTiles)
         {
             this.Region = region;
-            this.TotalTransforms = TotalTransforms;
-            this.TotalTextures = TotalTextures;
-            mapDirectory = Path.GetFullPath($"./MapData/{region}");
+            this.TotalTiles = TotalTiles;
+            mapDirectory = Path.GetFullPath($"{Map.MAP_DATA_FOLDER}/{region}");
             backgroundWorker = new BackgroundWorker();
             InitializeComponent();
             InitializeBackgroundWorker();
@@ -58,29 +54,14 @@ namespace LoUAM
 
             Stopwatch timeout = new Stopwatch();
             timeout.Start();
-            while (GeneratedTransforms < TotalTransforms &&
+            while (GeneratedTiles < TotalTiles &&
                 timeout.ElapsedMilliseconds < 120000)
             {
-                GeneratedTransforms = Directory.GetFiles(mapDirectory, "*.json").Length;
-                UpdateProgress(0, GeneratedTransforms, TotalTransforms, "transforms");
+                GeneratedTiles = (Directory.GetFiles(mapDirectory, "*.json").Length + Directory.GetFiles(mapDirectory, "*.jpg").Length) / 2;
+                UpdateProgress(0, GeneratedTiles, TotalTiles, "tiles");
 
                 Thread.Sleep(100);
             }
-            if (timeout.ElapsedMilliseconds >= 120000)
-            {
-                Debug.WriteLine("Timed out!");
-                return;
-            }
-            timeout.Reset();
-            while ((GeneratedTransforms < TotalTransforms || GeneratedTextures < TotalTextures) &&
-                timeout.ElapsedMilliseconds < 120000)
-            {
-                GeneratedTextures = Directory.GetFiles(mapDirectory, "*.jpg").Length;
-                UpdateProgress(0, GeneratedTextures, TotalTextures, "textures");
-
-                Thread.Sleep(100);
-            }
-            timeout.Stop();
             if (timeout.ElapsedMilliseconds >= 120000)
             {
                 Debug.WriteLine("Timed out!");
@@ -90,9 +71,8 @@ namespace LoUAM
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            GeneratedTransforms = Directory.GetFiles(mapDirectory, "*.json").Length;
-            GeneratedTextures = Directory.GetFiles(mapDirectory, "*.jpg").Length;
-            if (GeneratedTransforms < TotalTransforms || GeneratedTextures < TotalTextures)
+            GeneratedTiles = (Directory.GetFiles(mapDirectory, "*.json").Length + Directory.GetFiles(mapDirectory, "*.jpg").Length) / 2;
+            if (GeneratedTiles < TotalTiles)
             {
                 MessageBoxExShow(this, "Export completed, but map could be incomplete. This window will now close and the map will be loaded: it might take few minutes, depending on your computer.", "Map export incomplete");
             }

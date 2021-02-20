@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
@@ -186,16 +187,42 @@ namespace LoUAM
         }
 
         #endregion
+        private static Marker LoadPlace(MarkerFileEnum file, MarkerServerEnum server, MarkerRegionEnum region, XmlNode placeNode)
+        {
+            try
+            {
+                XmlNode nameNode = placeNode.SelectSingleNode("name");
+                string name = nameNode.InnerText;
+
+                XmlNode typeNode = placeNode.SelectSingleNode("type");
+                MarkerIcon type = Enum.TryParse<MarkerIcon>(typeNode.InnerText, true, out type) ? type : MarkerIcon.none;
+
+                XmlNode zNode = placeNode.SelectSingleNode("z");
+                double z = double.TryParse(zNode.InnerText, out z) ? z : 0;
+
+                XmlNode xNode = placeNode.SelectSingleNode("x");
+                double x = double.TryParse(xNode.InnerText, out x) ? x : 0;
+
+                Marker marker = new Marker(file, server, region, MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
+
+                return marker;
+            }
+            catch (Exception ex)
+            {
+                Debug.Print($"Cannot load place: {ex.Message}");
+                return null;
+            }
+        }
         public static void LoadPlaces()
         {
-            List<Marker> CommonPlaces = LoadPlaces("common-places.xml");
-            List<Marker> PersonalPlaces = LoadPlaces("personal-places.xml");
+            List<Marker> CommonPlaces = LoadPlaces(MarkerFileEnum.Common, "common-places.xml");
+            List<Marker> PersonalPlaces = LoadPlaces(MarkerFileEnum.Personal, "personal-places.xml");
 
-            Places = CommonPlaces.Select(p => { p.File = MarkerFile.Common; return p; })
-                    .Union(PersonalPlaces.Select(p => { p.File = MarkerFile.Personal; return p; }))
+            Places = CommonPlaces
+                    .Union(PersonalPlaces)
                     .ToList();
         }
-        public static List<Marker> LoadPlaces(string fileName)
+        public static List<Marker> LoadPlaces(MarkerFileEnum file, string fileName)
         {
             List<Marker> LoadedPlaces = new List<Marker>();
 
@@ -217,32 +244,95 @@ namespace LoUAM
                 return LoadedPlaces;
             }
 
-            XmlNode placesNode = doc.DocumentElement.SelectSingleNode("/places");
-
-            foreach (XmlNode placeNode in doc.DocumentElement.ChildNodes)
+            foreach(XmlNode ServerNode in doc.DocumentElement.ChildNodes)
             {
-                try
+                Enum.TryParse(ServerNode.Name, true, out MarkerServerEnum Server);
+                foreach (XmlNode RegionNode in ServerNode.ChildNodes)
                 {
-                    XmlNode nameNode = placeNode.SelectSingleNode("name");
-                    string name = nameNode.InnerText;
-
-                    XmlNode typeNode = placeNode.SelectSingleNode("type");
-                    MarkerIcon type = Enum.TryParse<MarkerIcon>(typeNode.InnerText, true, out type) ? type : MarkerIcon.none;
-
-                    XmlNode zNode = placeNode.SelectSingleNode("z");
-                    double z = double.TryParse(zNode.InnerText, out z) ? z : 0;
-
-                    XmlNode xNode = placeNode.SelectSingleNode("x");
-                    double x = double.TryParse(xNode.InnerText, out x) ? x : 0;
-
-                    Marker marker = new Marker(MarkerFile.None, MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
-
-                    LoadedPlaces.Add(marker);
+                    Enum.TryParse(RegionNode.Name, true, out MarkerRegionEnum Region);
+                    foreach (XmlNode PlaceNode in RegionNode.ChildNodes)
+                    {
+                        Marker marker = LoadPlace(file, Server, Region, PlaceNode);
+                        if (marker != null)
+                        {
+                            LoadedPlaces.Add(marker);
+                        }
+                    }
                 }
-                catch (Exception ex)
+            }
+
+            return LoadedPlaces;
+        }
+        public static List<Marker> LoadPlacesFromLoACSV(string fileName)
+        {
+            // This is only a helper method we've used to import places from the following map
+            // https://legendsofaria.gamepedia.com/Celador_Locations
+
+            List<Marker> LoadedPlaces = new List<Marker>();
+
+            string[] tokens;
+            char[] separators = { ',' };
+            string str = "";
+
+            FileStream fs = new FileStream(fileName,
+                                           FileMode.Open);
+            StreamReader sr = new StreamReader(fs, Encoding.Default);
+
+            while ((str = sr.ReadLine()) != null)
+            {
+                tokens = str.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                if (tokens[0] == "Location Type")
+                    continue;
+                string type = tokens[0];
+                string name = tokens[1];
+                string x = tokens[2];
+                string y = tokens[3];
+
+                MarkerIcon _icon = MarkerIcon.point_of_interest;
+                switch (type)
                 {
-                    Debug.Print($"Cannot load place: {ex.Message}");
+                    case "City":
+                        _icon = MarkerIcon.town;
+                        break;
+
+                    case "Transport":
+                        _icon = MarkerIcon.teleporter;
+                        break;
+
+                    case "Mine":
+                        _icon = MarkerIcon.miners_guild;
+                        break;
+
+                    case "Monsters":
+                        _icon = MarkerIcon.graveyard;
+                        break;
+
+                    case "Dungeons":
+                        _icon = MarkerIcon.dungeon;
+                        break;
+
+                    case "Taming":
+                        _icon = MarkerIcon.point_of_interest;
+                        break;
                 }
+
+                double _x = double.Parse(x);
+                double _z = double.Parse(y);
+
+                Marker marker = new Marker(
+                    MarkerFileEnum.Common,
+                    MarkerServerEnum.LoA,
+                     MarkerRegionEnum.NewCelador,
+                      MarkerType.Place,
+                     Guid.NewGuid().ToString("N"),
+                     _icon,
+                     name,
+                     _x,
+                     0,
+                     _z)
+                     ;
+
+                LoadedPlaces.Add(marker);
             }
 
             return LoadedPlaces;
@@ -250,10 +340,10 @@ namespace LoUAM
 
         public static void SavePlaces()
         {
-            List<Marker> CommonPlaces = Places.Where(place => place.File == MarkerFile.Common).ToList();
+            List<Marker> CommonPlaces = Places.Where(place => place.File == MarkerFileEnum.Common).ToList();
             SavePlaces("common-places.xml", CommonPlaces);
 
-            List<Marker> PersonalPlaces = Places.Where(place => place.File == MarkerFile.Personal).ToList();
+            List<Marker> PersonalPlaces = Places.Where(place => place.File == MarkerFileEnum.Personal).ToList();
             SavePlaces("personal-places.xml", PersonalPlaces);
         }
         public static void SavePlaces(string fileName, List<Marker> places)
@@ -268,38 +358,58 @@ namespace LoUAM
             XmlElement placesNode = doc.CreateElement(string.Empty, "places", string.Empty);
             doc.AppendChild(placesNode);
 
-            foreach(var place in places)
+            var servers = Enum.GetValues(typeof(MarkerServerEnum));
+            foreach (MarkerServerEnum server in servers)
             {
-                try
+                if (server == MarkerServerEnum.Unknown)
+                    continue;
+
+                XmlElement serverNode = doc.CreateElement(string.Empty, server.ToString(), string.Empty);
+                placesNode.AppendChild(serverNode);
+
+                var regions = Enum.GetValues(typeof(MarkerRegionEnum));
+                foreach (MarkerRegionEnum region in regions)
                 {
-                    XmlElement placeNode = doc.CreateElement(string.Empty, "place", string.Empty);
-                    placesNode.AppendChild(placeNode);
+                    if (region == MarkerRegionEnum.Unknown)
+                        continue;
 
-                    XmlElement nameNode = doc.CreateElement(string.Empty, "name", string.Empty);
-                    XmlText nameText = doc.CreateTextNode(place.Label);
-                    nameNode.AppendChild(nameText);
-                    placeNode.AppendChild(nameNode);
+                    XmlElement regionNode = doc.CreateElement(string.Empty, region.ToString(), string.Empty);
+                    serverNode.AppendChild(regionNode);
 
-                    XmlElement typeNode = doc.CreateElement(string.Empty, "type", string.Empty);
-                    XmlText typeText = doc.CreateTextNode(place.Icon.ToString());
-                    typeNode.AppendChild(typeText);
-                    placeNode.AppendChild(typeNode);
+                    foreach (var place in places.Where(place => place.Server == server && place.Region == region))
+                    {
+                        try
+                        {
+                            XmlElement placeNode = doc.CreateElement(string.Empty, "place", string.Empty);
 
-                    XmlElement xNode = doc.CreateElement(string.Empty, "x", string.Empty);
-                    XmlText xText = doc.CreateTextNode(place.X.ToString());
-                    xNode.AppendChild(xText);
-                    placeNode.AppendChild(xNode);
+                            XmlElement nameNode = doc.CreateElement(string.Empty, "name", string.Empty);
+                            XmlText nameText = doc.CreateTextNode(place.Label);
+                            nameNode.AppendChild(nameText);
+                            placeNode.AppendChild(nameNode);
 
-                    XmlElement zNode = doc.CreateElement(string.Empty, "z", string.Empty);
-                    XmlText zText = doc.CreateTextNode(place.Z.ToString());
-                    zNode.AppendChild(zText);
-                    placeNode.AppendChild(zNode);
+                            XmlElement typeNode = doc.CreateElement(string.Empty, "type", string.Empty);
+                            XmlText typeText = doc.CreateTextNode(place.Icon.ToString());
+                            typeNode.AppendChild(typeText);
+                            placeNode.AppendChild(typeNode);
 
-                    placesNode.AppendChild(placeNode);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Print($"Cannot save place: {ex.Message}");
+                            XmlElement xNode = doc.CreateElement(string.Empty, "x", string.Empty);
+                            XmlText xText = doc.CreateTextNode(place.X.ToString());
+                            xNode.AppendChild(xText);
+                            placeNode.AppendChild(xNode);
+
+                            XmlElement zNode = doc.CreateElement(string.Empty, "z", string.Empty);
+                            XmlText zText = doc.CreateTextNode(place.Z.ToString());
+                            zNode.AppendChild(zText);
+                            placeNode.AppendChild(zNode);
+
+                            regionNode.AppendChild(placeNode);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.Print($"Cannot save place: {ex.Message}");
+                        }
+                    }
+
                 }
             }
 

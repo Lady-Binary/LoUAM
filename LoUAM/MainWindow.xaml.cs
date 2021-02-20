@@ -104,6 +104,7 @@ namespace LoUAM
 
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
             ControlPanel.LoadPlaces();
+            ControlPanel.SavePlaces();
             UpdatePlaces();
 
             if (!Directory.Exists(Map.MAP_DATA_FOLDER)) {
@@ -959,7 +960,7 @@ namespace LoUAM
             Point? NewPlaceCoords = e.Parameter as Point?;
             if (NewPlaceCoords != null)
             {
-                EditPlace editPlace = new EditPlace(NewPlaceCoords.Value.X, NewPlaceCoords.Value.Y);
+                EditPlace editPlace = new EditPlace(MainMap.CurrentServer, MainMap.CurrentRegion, NewPlaceCoords.Value.X, NewPlaceCoords.Value.Y);
                 editPlace.Owner = this;
                 editPlace.ShowDialog();
                 UpdatePlaces();

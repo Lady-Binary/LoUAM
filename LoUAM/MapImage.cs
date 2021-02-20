@@ -141,7 +141,7 @@ namespace LoUAM
             if (File.Exists(this.TilePrefabPath))
             {
                 string prefab = File.ReadAllText(this.TilePrefabPath);
-                TileTransform tileTransform = JsonConvert.DeserializeObject<TileTransform>(prefab);
+                Tile tileTransform = JsonConvert.DeserializeObject<Tile>(prefab);
                 X = tileTransform.x;
                 Z = tileTransform.z;
             } else

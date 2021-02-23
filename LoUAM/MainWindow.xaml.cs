@@ -346,6 +346,9 @@ namespace LoUAM
                     var regions = Enum.GetValues(typeof(MarkerRegionEnum));
                     foreach (var r in regions)
                     {
+                        if (region.ToString() == "Unknown")
+                            continue;
+
                         MapGenerator mapGenerator = new MapGenerator(r.ToString());
                         mapGenerator.Owner = TheMainWindow;
                         bool exportSuccessful = mapGenerator.ShowDialog() ?? false;

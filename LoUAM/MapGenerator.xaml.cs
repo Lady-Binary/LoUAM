@@ -18,10 +18,9 @@ namespace LoUAM
         private int GeneratedTiles = 0;
         private int TotalTiles = 0;
 
-        public MapGenerator(string region, int TotalTiles)
+        public MapGenerator(string region)
         {
             this.Region = region;
-            this.TotalTiles = TotalTiles;
             mapDirectory = Path.GetFullPath($"{Map.MAP_DATA_FOLDER}/{region}");
             backgroundWorker = new BackgroundWorker();
             InitializeComponent();
@@ -46,11 +45,30 @@ namespace LoUAM
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            Directory.CreateDirectory(mapDirectory);
 
-            ClientCommand Command = new ClientCommand((LoU.CommandType)Enum.Parse(typeof(LoU.CommandType), "ExportMap"));
-            Command.CommandParams.Add("0",new ClientCommand.CommandParamStruct() { CommandParamType = ClientCommand.CommandParamTypeEnum.String, String = mapDirectory });
-            MainWindow.ExecuteCommandAsync(Command);
+            MainWindow.ExecuteCommand(new ClientCommand(CommandType.LoadMap, "region", Region));
+            MainWindow.RefreshClientStatus();
+
+            lock (MainWindow.ClientStatusLock)
+            {
+                TotalTiles = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTILES ?? 0;
+            }
+            if (TotalTiles == 0)
+            {
+                MainWindow.ExecuteCommand(new ClientCommand(CommandType.LoadMap, "region", Region + "Maps"));
+                MainWindow.RefreshClientStatus();
+                lock (MainWindow.ClientStatusLock)
+                {
+                    TotalTiles = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTILES ?? 0;
+                }
+            }
+            if (TotalTiles == 0)
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(mapDirectory);
+            MainWindow.ExecuteCommandAsync(new ClientCommand(CommandType.ExportMap, "mapDirectory", mapDirectory));
 
             Stopwatch timeout = new Stopwatch();
             timeout.Start();
@@ -67,31 +85,33 @@ namespace LoUAM
                 Debug.WriteLine("Timed out!");
                 return;
             }
+
+            MainWindow.ExecuteCommand(new ClientCommand(CommandType.UnloadMap, "region", Region));
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             GeneratedTiles = (Directory.GetFiles(mapDirectory, "*.json").Length + Directory.GetFiles(mapDirectory, "*.jpg").Length) / 2;
-            if (GeneratedTiles < TotalTiles)
+            if (TotalTiles == 0 || GeneratedTiles < TotalTiles)
             {
-                MessageBoxExShow(this, "Export completed, but map could be incomplete. This window will now close and the map will be loaded: it might take few minutes, depending on your computer.", "Map export incomplete");
+                Close(false);
             }
             else
             {
-                MessageBoxExShow(this, "Export completed. This window will now close and the map will be loaded: it might take few minutes, depending on your computer.", "Map export completed");
+                Close(true);
             }
-            Close();
         }
 
-        private delegate void MessageBoxExShowDelegate(Window owner, string text, string caption);
-        private void MessageBoxExShow(Window owner, string text, string caption)
+        private delegate void CloseDelegate(bool dialogResult);
+        private void Close(bool dialogResult)
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(new MessageBoxExShowDelegate(MessageBoxExShow), new object[] { owner, text, caption });
+                Dispatcher.Invoke(new CloseDelegate(Close), new object[] { dialogResult });
                 return;
             }
-            MessageBoxEx.Show(owner, text, caption);
+            this.DialogResult = dialogResult;
+            this.Close();
         }
 
         private delegate void UpdateProgressDelegate(double minimum, double value, double maximum, string item);
@@ -106,7 +126,7 @@ namespace LoUAM
             AssetsProgressBar.Minimum = minimum;
             AssetsProgressBar.Value = value;
             AssetsProgressBar.Maximum = maximum;
-            AssetsProgressTextBlock.Text = $"{value} out of {maximum} {item} processed.";
+            AssetsProgressTextBlock.Text = $"Region {Region}, {value} out of {maximum} {item} processed.";
         }
     }
 }

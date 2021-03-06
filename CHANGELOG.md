@@ -1,5 +1,15 @@
 # Changelog
 
+## LoA 1.4.0.0 - LoUAM 0.1.0.17 (06/03/2021)
+
+#### Enhancements:
+
+- Add some interesting markers for official LoA servers [#20](https://github.com/Lady-Binary/LoUAM/issues/20)
+- Handle markers for other regions (i.e. dungeons, etc) and servers (i.e. LoA, LoU, etc) [#19](https://github.com/Lady-Binary/LoUAM/issues/19)
+- Handle maps for other regions (i.e. dungeons, etc) [#17](https://github.com/Lady-Binary/LoUAM/issues/17)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.16 (02/02/2021)
 
 #### Bugfixes:

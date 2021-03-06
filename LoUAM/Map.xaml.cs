@@ -23,10 +23,10 @@ namespace LoUAM
         private const int TILE_HEIGHT = 256;
 
         private MarkerServerEnum currentServer = MarkerServerEnum.Unknown;
-        public MarkerServerEnum CurrentServer { get => currentServer; set => currentServer = value; }
+        public MarkerServerEnum CurrentServer { get => currentServer; set { currentServer = value; this.ServerLabel.Content = $"Server: {value}"; } }
 
         private MarkerRegionEnum currentRegion = MarkerRegionEnum.Unknown;
-        public MarkerRegionEnum CurrentRegion { get { return currentRegion; } set { currentRegion = value; this.RefreshMapTiles($"{MAP_DATA_FOLDER }/{value}"); } }
+        public MarkerRegionEnum CurrentRegion { get { return currentRegion; } set { currentRegion = value; this.RegionLabel.Content = $"Region: {value}"; this.RefreshMapTiles($"{MAP_DATA_FOLDER }/{value}"); } }
 
         public Map()
         {

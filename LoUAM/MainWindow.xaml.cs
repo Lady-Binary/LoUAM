@@ -281,7 +281,10 @@ namespace LoUAM
         //        $"LadyBinary",
         //        (ulong)rnd.Next(1, 1000),
         //        (ulong)rnd.Next(1, 1000),
-        //        (ulong)rnd.Next(1, 1000));
+        //        (ulong)rnd.Next(1, 1000),
+        //        "NewCelador",
+        //        "cluster1.shardsonline.com:5150"
+        //        );
         private Player GetCurrentPlayer()
         {
             //MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();

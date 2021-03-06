@@ -15,6 +15,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.IO.Compression;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace LoUAM
 {
@@ -46,6 +48,8 @@ namespace LoUAM
         public static object ClientStatusLock = new object();
         public static ClientStatus ClientStatus;
 
+        private string CurrentServer;
+        private string CurrentRegion;
         DispatcherTimer TimerRefreshCurrentPlayer;
 
         DispatcherTimer TimerUpdateServer;
@@ -57,7 +61,6 @@ namespace LoUAM
             TimerRefreshCurrentPlayer = new DispatcherTimer();
             TimerRefreshCurrentPlayer.Tick += TimerRefreshCurrentPlayer_Tick;
             TimerRefreshCurrentPlayer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            TimerRefreshCurrentPlayer.Start();
 
             TimerUpdateServer = new DispatcherTimer();
             TimerUpdateServer.Tick += TimerUpdateServer_TickAsync;
@@ -74,22 +77,37 @@ namespace LoUAM
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
 
-            TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
-            ControlPanel.LoadPlaces();
-            UpdatePlaces();
-
-            if (!Directory.Exists("./MapData")) {
-                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
-                Directory.CreateDirectory("./MapData");
-                return;
+            var servers = Enum.GetValues(typeof(MarkerServerEnum));
+            foreach (var server in servers)
+            {
+                MenuItem newServerMenuItem = new MenuItem();
+                newServerMenuItem.Header = "_" + server;
+                newServerMenuItem.Command = MainWindowCustomCommands.MapChangeServerCommand;
+                newServerMenuItem.CommandParameter = server;
+                if (ServerMenuItem.Items.Count == 0) newServerMenuItem.IsChecked = true;
+                ServerMenuItem.Items.Add(newServerMenuItem);
+            }
+            var regions = Enum.GetValues(typeof(MarkerRegionEnum));
+            foreach (var region in regions)
+            {
+                MenuItem newRegionMenuItem = new MenuItem();
+                newRegionMenuItem.Header = "_" + region;
+                newRegionMenuItem.Command = MainWindowCustomCommands.MapChangeRegionCommand;
+                newRegionMenuItem.CommandParameter = region;
+                if (RegionMenuITem.Items.Count == 0) newRegionMenuItem.IsChecked = true;
+                RegionMenuITem.Items.Add(newRegionMenuItem);
             }
 
-            try
-            {
-                MainMap.RefreshMapTiles("./MapData");
-            } catch (Exception ex)
-            {
-                MessageBoxEx.Show(this, "It appears that the map data is corrupt.\n\nStart your Legends of Aria Client and then connect to it in order to re generate the necessary map data.", "Map data corrupt");
+            ChangeRegion(MarkerRegionEnum.Unknown);
+            ChangeServer(MarkerServerEnum.Unknown);
+
+            TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
+            ControlPanel.LoadPlaces();
+            ControlPanel.SavePlaces();
+            UpdatePlaces();
+
+            if (!Directory.Exists(Map.MAP_DATA_FOLDER)) {
+                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
                 return;
             }
         }
@@ -131,7 +149,58 @@ namespace LoUAM
                 Dispatcher.Invoke(new RefreshMapTilesDelegate(RefreshMapTiles));
                 return;
             }
-            MainMap.RefreshMapTiles("./MapData");
+            MainMap.RefreshMapTiles();
+        }
+
+        public delegate void ChangeServerDelegate(MarkerServerEnum server);
+        public void ChangeServer(MarkerServerEnum server)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new ChangeServerDelegate(ChangeServer), new object[] { server });
+                return;
+            }
+
+            foreach (MenuItem ChangeServerMenuItem in ServerMenuItem.Items)
+            {
+                if (ChangeServerMenuItem.Header.ToString() == "_" + server.ToString())
+                {
+                    ChangeServerMenuItem.IsChecked = true;
+                }
+                else
+                {
+                    ChangeServerMenuItem.IsChecked = false;
+                }
+            }
+
+            MainMap.CurrentServer = server;
+            UpdatePlaces();
+        }
+
+        public delegate void ChangeRegionDelegate(MarkerRegionEnum region);
+        public void ChangeRegion(MarkerRegionEnum region)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new ChangeRegionDelegate(ChangeRegion), new object[] { region });
+                return;
+            }
+
+            foreach (MenuItem ChangeRegionMenuItem in RegionMenuITem.Items)
+            {
+                if (ChangeRegionMenuItem.Header.ToString() == "_"+region.ToString())
+                {
+                    ChangeRegionMenuItem.IsChecked = true;
+                }
+                else
+                {
+                    ChangeRegionMenuItem.IsChecked = false;
+                }
+            }
+
+            CheckMapData(region.ToString());
+            MainMap.CurrentRegion = region;
+            UpdatePlaces();
         }
 
         #region Timers
@@ -167,6 +236,10 @@ namespace LoUAM
         }
         public static void ExecuteCommand(ClientCommand command)
         {
+            ExecuteCommand(command, 10000);
+        }
+        public static void ExecuteCommand(ClientCommand command, long commandTimeout)
+        {
             if (CurrentClientProcessId == -1 || ClientCommandsMemoryMap == null)
                 return;
 
@@ -176,7 +249,7 @@ namespace LoUAM
             ClientCommand[] ClientCommandsArray;
             Stopwatch timeout = new Stopwatch();
             timeout.Start();
-            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < 60000)
+            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < commandTimeout)
             {
                 Debug.WriteLine("Waiting for command to be executed, Current CommandId=" + ClientCommandId.ToString() + ", Assigned CommandId=" + AssignedClientCommandId.ToString());
                 Thread.Sleep(50);
@@ -208,7 +281,10 @@ namespace LoUAM
         //        $"LadyBinary",
         //        (ulong)rnd.Next(1, 1000),
         //        (ulong)rnd.Next(1, 1000),
-        //        (ulong)rnd.Next(1, 1000));
+        //        (ulong)rnd.Next(1, 1000),
+        //        "NewCelador",
+        //        "cluster1.shardsonline.com:5150"
+        //        );
         private Player GetCurrentPlayer()
         {
             //MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -236,7 +312,10 @@ namespace LoUAM
                         TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
                         ClientStatus.CharacterInfo.CHARPOSX ?? 0,
                         ClientStatus.CharacterInfo.CHARPOSY ?? 0,
-                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0);
+                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0,
+                        ClientStatus.CharacterInfo.REGION,
+                        ClientStatus.ClientInfo.SERVER
+                        );
 
                     Regex rx = new Regex(@"\[(.*?)\]");
 
@@ -257,6 +336,83 @@ namespace LoUAM
             return currentPlayer;
         }
 
+        public bool CheckMapData()
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+                return false;
+
+            bool MapDataExported = false;
+
+            if (!Directory.Exists(Map.MAP_DATA_FOLDER))
+                Directory.CreateDirectory(Map.MAP_DATA_FOLDER);
+
+            if (Directory.GetDirectories(Map.MAP_DATA_FOLDER).Count() == 0)
+            {
+                if (MessageBoxEx.Show(this, $"It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data not present", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                    var regions = Enum.GetNames(typeof(MarkerRegionEnum));
+                    foreach (var region in regions)
+                    {
+                        if (region == "Unknown")
+                            continue;
+
+                        MapGenerator mapGenerator = new MapGenerator(region);
+                        mapGenerator.Owner = TheMainWindow;
+                        bool exportSuccessful = mapGenerator.ShowDialog() ?? false;
+                        if (!exportSuccessful)
+                        {
+                            MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {region} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {region}");
+                        }
+                        else
+                        {
+                            MapDataExported = true;
+                        }
+                    }
+                }
+            }
+
+            return MapDataExported;
+        }
+
+        public bool CheckMapData(string region)
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+                return false;
+
+            if (region == "Unknown")
+                return false;
+
+            if (!Directory.Exists($"{Map.MAP_DATA_FOLDER}"))
+                Directory.CreateDirectory($"{Map.MAP_DATA_FOLDER}");
+
+            if (!Directory.Exists($"{Map.MAP_DATA_FOLDER}/{region}"))
+                Directory.CreateDirectory($"{Map.MAP_DATA_FOLDER }/{region}");
+
+            if (Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.json").Count() == 0 ||
+                Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.jpg").Count() == 0 ||
+                Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.json").Count() != Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.jpg").Count())
+            {
+                foreach (string f in Directory.EnumerateFiles($"{Map.MAP_DATA_FOLDER }/{region}", "*.*"))
+                    File.Delete(f);
+
+                if (MessageBoxEx.Show(this, $"It appears that the map data for the current region ({region}) is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data outdated for region {region}", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                    MapGenerator mapGenerator = new MapGenerator(region.ToString());
+                    mapGenerator.Owner = TheMainWindow;
+                    if (mapGenerator.ShowDialog() ?? false)
+                    {
+                        return true;
+                    } else
+                    {
+                        MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {region} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {region}");
+                        return false;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public void RefreshCurrentPlayer()
         {
             //Debug.Print("RefreshCurrentPlayer");
@@ -268,8 +424,28 @@ namespace LoUAM
 
             if (currentPlayer != null)
             {
+                if (CurrentServer != currentPlayer.Server)
+                {
+                    // Handle server change
+                    CurrentServer = currentPlayer.Server;
+                    if (ControlPanel.TrackPlayer || MainMap.CurrentServer == MarkerServerEnum.Unknown)
+                    {
+                        ChangeServer(Marker.URLToServer(CurrentServer));
+                    }
+                }
+                if (CurrentRegion != currentPlayer.Region)
+                {
+                    // Handle region change
+                    CurrentRegion = currentPlayer.Region;
+                    if (ControlPanel.TrackPlayer || MainMap.CurrentRegion == MarkerRegionEnum.Unknown)
+                    {
+                        ChangeRegion(Marker.StringToRegion(CurrentRegion));
+                    }
+                }
                 Marker currentPlayerMarker = new Marker(
-                    MarkerFile.None,
+                    MarkerFileEnum.None,
+                    currentPlayer.Server != "" ? Marker.URLToServer(currentPlayer.Server) : MarkerServerEnum.Unknown,
+                    currentPlayer.Region != "" ? (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), currentPlayer.Region, true) : MarkerRegionEnum.Unknown,
                     MarkerType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
                     MarkerIcon.none,
@@ -327,19 +503,27 @@ namespace LoUAM
                 {
                     if (TheServer.Players != null)
                     {
+                        IEnumerable<Player> OtherPlayers = TheServer.Players.Values;
                         if (currentPlayer != null)
                         {
                             TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
-                            List<Marker> OtherMarkers = TheServer.Players.Values
-                            .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
-                            MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
-                        } else
-                        {
-                            List<Marker> OtherMarkers = TheServer.Players.Values
-                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
-                            MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                            OtherPlayers = OtherPlayers.Where(player => player.ObjectId != currentPlayer.ObjectId);
                         }
+                        List<Marker> OtherMarkers = OtherPlayers?.Select(player =>
+                                new Marker(
+                                    MarkerFileEnum.None,
+                                    Marker.URLToServer(player.Server),
+                                    (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
+                                    MarkerType.OtherPlayer,
+                                    player.ObjectId.ToString(),
+                                    MarkerIcon.none,
+                                    player.DisplayName,
+                                    player.X,
+                                    player.Y,
+                                    player.Z
+                                    )
+                                ).ToList();
+                        MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                     }
                 }
             }
@@ -392,18 +576,24 @@ namespace LoUAM
                 try
                 {
                     IEnumerable<Player> OtherPlayers = await TheClient.RetrievePlayers();
-                    List<Marker> OtherMarkers;
                     if (currentPlayer != null)
                     {
-                        OtherMarkers = OtherPlayers
-                            .Where(player => player.ObjectId != currentPlayer.ObjectId)
-                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
+                        OtherPlayers = OtherPlayers.Where(player => player.ObjectId != currentPlayer.ObjectId);
                     }
-                    else
-                    {
-                        OtherMarkers = OtherPlayers
-                            .Select(player => new Marker(MarkerFile.None, MarkerType.OtherPlayer, player.ObjectId.ToString(), MarkerIcon.none, player.DisplayName, player.X, player.Y, player.Z)).ToList();
-                    }
+                    List<Marker> OtherMarkers = OtherPlayers
+                        .Select(player => new Marker(
+                            MarkerFileEnum.None,
+                            Marker.URLToServer(player.Server),
+                            (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
+                            MarkerType.OtherPlayer,
+                            player.ObjectId.ToString(),
+                            MarkerIcon.none,
+                            player.DisplayName,
+                            player.X,
+                            player.Y,
+                            player.Z
+                            )
+                        ).ToList();
                     MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                 }
                 catch (Exception ex)
@@ -618,113 +808,77 @@ namespace LoUAM
         }
 
         public void DoConnectToLoAClientCommand() {
-            {
-                TargetAriaClientPanel.Visibility = Visibility.Visible;
+            TargetAriaClientPanel.Visibility = Visibility.Visible;
+            TimerRefreshCurrentPlayer.Stop();
 
-                MouseEventCallback handler = null;
-                handler = (MouseEventType type, int x, int y) => {
-                    // Restore cursors
-                    // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
-                    // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-                    MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
-                    TargetAriaClientPanel.Visibility = Visibility.Hidden;
+            MouseEventCallback handler = null;
+            handler = (MouseEventType type, int x, int y) => {
+                // Restore cursors
+                // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
+                // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+                MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
+                TargetAriaClientPanel.Visibility = Visibility.Hidden;
 
-                    // Stop global hook
-                    MouseHook.HookEnd();
-                    MouseHook.MouseDown -= handler;
+                // Stop global hook
+                MouseHook.HookEnd();
+                MouseHook.MouseDown -= handler;
 
-                    // Get clicked coord
-                    MouseHook.POINT p;
-                    p.x = x;
-                    p.y = y;
-                    Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
+                // Get clicked coord
+                MouseHook.POINT p;
+                p.x = x;
+                p.y = y;
+                Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
 
-                    // Get clicked window handler, window title
-                    IntPtr hWnd = MouseHook.WindowFromPoint(p);
-                    int WindowTitleLength = MouseHook.GetWindowTextLength(hWnd);
-                    StringBuilder WindowTitle = new StringBuilder(WindowTitleLength + 1);
-                    MouseHook.GetWindowText(hWnd, WindowTitle, WindowTitle.Capacity);
-                    Debug.WriteLine("Clicked handle=" + hWnd.ToString() + " title=" + WindowTitle);
+                // Get clicked window handler, window title
+                IntPtr hWnd = MouseHook.WindowFromPoint(p);
+                int WindowTitleLength = MouseHook.GetWindowTextLength(hWnd);
+                StringBuilder WindowTitle = new StringBuilder(WindowTitleLength + 1);
+                MouseHook.GetWindowText(hWnd, WindowTitle, WindowTitle.Capacity);
+                Debug.WriteLine("Clicked handle=" + hWnd.ToString() + " title=" + WindowTitle);
 
-                    if (WindowTitle.ToString() != "Legends of Aria")
-                    {
-                        MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
-                        return true;
-                    }
-
-                    // Get the processId, and connect
-                    uint processId;
-                    MouseHook.GetWindowThreadProcessId(hWnd, out processId);
-                    Debug.WriteLine("Clicked pid=" + processId.ToString());
-
-                    // Attempt connection (or injection, if needed)
-                    bool connected = ConnectToLoAClient((int)processId);
-                    if (connected)
-                    {
-                        ExecuteCommand(new ClientCommand(CommandType.LoadMap));
-                        RefreshClientStatus();
-
-                        int TotalTransforms = 0;
-                        int TotalTextures = 0;
-                        lock (MainWindow.ClientStatusLock)
-                        {
-                            TotalTransforms = MainWindow.ClientStatus?.Miscellaneous.MAPTRANSFORMS ?? 0;
-                            TotalTextures = MainWindow.ClientStatus?.Miscellaneous.MAPTEXTURES ?? 0;
-                        }
-                        if (TotalTransforms == 0 || TotalTextures == 0)
-                        {
-                            MessageBoxEx.Show(this, "LoUAM was unable to load the map data from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", "Could not load map data");
-                            return false;
-                        }
-
-                        bool InvalidMapData = false;
-                        if (!Directory.Exists("./MapData"))
-                        {
-                            MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data not found");
-                            Directory.CreateDirectory("./MapData");
-                            InvalidMapData = true;
-                        } else if (Directory.GetFiles("./MapData/", "*.json").Count() != TotalTransforms ||
-                            Directory.GetFiles("./MapData/", "*.jpg").Count() != TotalTextures)
-                        {
-                            MessageBoxEx.Show(this, "It appears that the map data is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nClick OK to continue.", "Map data outdated");
-                            foreach (string f in Directory.EnumerateFiles("./MapData", "*.*"))
-                            {
-                                File.Delete(f);
-                            }
-                            InvalidMapData = true;
-                        }
-
-                        if (InvalidMapData)
-                        {
-                            MapGenerator mapGenerator = new MapGenerator(TotalTransforms, TotalTextures);
-                            mapGenerator.Owner = TheMainWindow;
-                            mapGenerator.ShowDialog();
-                            MainMap.RefreshMapTiles("./MapData");
-                        }
-
-                        ExecuteCommand(new ClientCommand(CommandType.UnloadMap));
-                    }
+                if (WindowTitle.ToString() != "Legends of Aria")
+                {
+                    MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
                     return true;
-                };
+                }
 
-                //// Prepare cursor image
-                //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
-                //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
+                // Get the processId, and connect
+                uint processId;
+                MouseHook.GetWindowThreadProcessId(hWnd, out processId);
+                Debug.WriteLine("Clicked pid=" + processId.ToString());
 
-                ////// Set all cursors
-                ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
-                ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-                //Cursor cursor = new Cursor(image.GetHicon());
-                //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
-                //foreach (uint i in cursors)
-                //{
-                //    MouseHook.SetSystemCursor(cursor.Handle, i);
-                //}
+                // Attempt connection (or injection, if needed)
+                bool connected = ConnectToLoAClient((int)processId);
 
-                // Start mouse global hook
-                MouseHook.MouseDown += handler;
-                MouseHook.HookStart();
-            } 
+                if (connected)
+                {
+                    if (CheckMapData())
+                    {
+                        RefreshMapTiles();
+                    }
+                    TimerRefreshCurrentPlayer.Start();
+                }
+
+                return connected;
+            };
+
+            //// Prepare cursor image
+            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
+            //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
+
+            ////// Set all cursors
+            ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
+            ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+            //Cursor cursor = new Cursor(image.GetHicon());
+            //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
+            //foreach (uint i in cursors)
+            //{
+            //    MouseHook.SetSystemCursor(cursor.Handle, i);
+            //}
+
+            // Start mouse global hook
+            MouseHook.MouseDown += handler;
+            MouseHook.HookStart();
         }
 
         private void ConnectToLoAClientCommand_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -754,6 +908,24 @@ namespace LoUAM
             controlPanel.Owner = this;
             controlPanel.ShowDialog();
             UpdatePlaces();
+        }
+
+        private void MapChangeServerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void MapChangeServerCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ChangeServer(e.Parameter is MarkerServerEnum ? (MarkerServerEnum)e.Parameter : MarkerServerEnum.Unknown);
+        }
+
+        private void MapChangeRegionCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void MapChangeRegionCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ChangeRegion(e.Parameter is MarkerRegionEnum ? (MarkerRegionEnum)e.Parameter : MarkerRegionEnum.Unknown);
         }
 
         private void LinkControlsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -797,7 +969,7 @@ namespace LoUAM
             Point? NewPlaceCoords = e.Parameter as Point?;
             if (NewPlaceCoords != null)
             {
-                EditPlace editPlace = new EditPlace(NewPlaceCoords.Value.X, NewPlaceCoords.Value.Y);
+                EditPlace editPlace = new EditPlace(MainMap.CurrentServer, MainMap.CurrentRegion, NewPlaceCoords.Value.X, NewPlaceCoords.Value.Y);
                 editPlace.Owner = this;
                 editPlace.ShowDialog();
                 UpdatePlaces();
@@ -811,6 +983,8 @@ namespace LoUAM
         public static RoutedCommand ConnectToLoAClientCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand EditPlacesCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MapAdditionalSettingsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MapChangeServerCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MapChangeRegionCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();

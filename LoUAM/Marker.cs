@@ -1,10 +1,36 @@
-﻿namespace LoUAM
+﻿using System;
+
+namespace LoUAM
 {
-    public enum MarkerFile
+    public enum MarkerFileEnum
     {
         None,
         Common,
         Personal
+    }
+
+    public enum MarkerServerEnum
+    {
+        Unknown = 0,
+        HOPE,
+        LoA,
+        LoU
+    }
+
+    public enum MarkerRegionEnum
+    {
+        Unknown = 0,
+        Catacombs,
+        Contempt,
+        Corruption,
+        Deception,
+        Founders,
+        Limbo,
+        Monolith,
+        NewCelador,
+        Perilous,
+        Ruin,
+        TwoTowers
     }
 
     public enum MarkerType
@@ -100,9 +126,11 @@
         market
     }
 
-    public struct Marker
+    public class Marker
     {
-        public MarkerFile File { get; set; }
+        public MarkerFileEnum File { get; set; }
+        public MarkerServerEnum Server { get; set; }
+        public MarkerRegionEnum Region { get; set; }
         public MarkerType Type { get; set; }
         public string Id { get; set; }
         public MarkerIcon Icon { get; set; }
@@ -111,9 +139,11 @@
         public double Y { get; set; }
         public double Z { get; set; }
 
-        public Marker(MarkerFile file, MarkerType type, string id, MarkerIcon Icon, string label, double x, double y, double z)
+        public Marker(MarkerFileEnum file, MarkerServerEnum server, MarkerRegionEnum region, MarkerType type, string id, MarkerIcon Icon, string label, double x, double y, double z)
         {
             this.File = file;
+            this.Server = server;
+            this.Region = region;
             this.Type = type;
             this.Id = id;
             this.Icon = Icon;
@@ -121,6 +151,36 @@
             this.X = x;
             this.Y = y;
             this.Z = z;
+        }
+
+        public static MarkerServerEnum URLToServer(string url)
+        {
+            if (url == "")
+                return MarkerServerEnum.Unknown;
+
+            switch (url)
+            {
+                case "cluster1.shardsonline.com:5148":
+                    return MarkerServerEnum.HOPE;
+                case "84.16.234.196:5001": // Crimson Sea
+                case "23.105.169.78:5001": // Ethereal Moon
+                    return MarkerServerEnum.LoA;
+                case "cluster1.shardsonline.com:5150":
+                    return MarkerServerEnum.LoU;
+                default:
+                    return MarkerServerEnum.Unknown;
+            }
+        }
+
+        public static MarkerRegionEnum StringToRegion(string region)
+        {
+            if (region == "")
+                return MarkerRegionEnum.Unknown;
+
+            if (Enum.TryParse(region, true, out MarkerRegionEnum regionEnum))
+                return regionEnum;
+            else
+                return MarkerRegionEnum.Unknown;
         }
     }
 }

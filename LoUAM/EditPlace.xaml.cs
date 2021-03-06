@@ -27,10 +27,13 @@ namespace LoUAM
             InitializeComponent();
         }
 
-        public EditPlace(double X, double Z) : this()
+        public EditPlace(MarkerServerEnum server, MarkerRegionEnum region, double x, double z) : this()
         {
-            XTextBox.Text = X.ToString("0.00");
-            ZTextBox.Text = Z.ToString("0.00");
+            ServerComboBox.SelectedItem = server;
+            RegionComboBox.SelectedItem = region;
+            FileComboBox.SelectedItem = MarkerFileEnum.Personal;
+            XTextBox.Text = x.ToString("0.00");
+            ZTextBox.Text = z.ToString("0.00");
         }
 
         public EditPlace(string Id) : this()
@@ -40,6 +43,8 @@ namespace LoUAM
             NameTextBox.Text = EditingMarker.Label;
             TypeComboBox.SelectedItem = EditingMarker.Icon;
             FileComboBox.SelectedItem = EditingMarker.File;
+            ServerComboBox.SelectedItem = EditingMarker.Server;
+            RegionComboBox.SelectedItem = EditingMarker.Region;
             XTextBox.Text = EditingMarker.X.ToString();
             ZTextBox.Text = EditingMarker.Z.ToString();
         }
@@ -51,10 +56,20 @@ namespace LoUAM
             {
                 TypeComboBox.Items.Add(icon);
             }
-            var files = Enum.GetValues(typeof(MarkerFile));
+            var files = Enum.GetValues(typeof(MarkerFileEnum));
             foreach (var file in files)
             {
                 FileComboBox.Items.Add(file);
+            }
+            var servers = Enum.GetValues(typeof(MarkerServerEnum));
+            foreach (var server in servers)
+            {
+                ServerComboBox.Items.Add(server);
+            }
+            var regions = Enum.GetValues(typeof(MarkerRegionEnum));
+            foreach (var region in regions)
+            {
+                RegionComboBox.Items.Add(region);
             }
         }
 
@@ -122,7 +137,29 @@ namespace LoUAM
             {
                 ZTextBox.ClearValue(Button.BackgroundProperty);
             }
-            if (!Enum.TryParse(FileComboBox.SelectedItem?.ToString() ?? "", out MarkerFile File))
+            if (!Enum.TryParse(ServerComboBox.SelectedItem?.ToString() ?? "", out MarkerServerEnum Server))
+            {
+                ErrorMessageLabel.Content = "No server selected.";
+                ErrorMessageLabel.Visibility = Visibility.Visible;
+                ServerComboBox.Background = Brushes.Red;
+                return;
+            }
+            else
+            {
+                ServerComboBox.ClearValue(Button.BackgroundProperty);
+            }
+            if (!Enum.TryParse(RegionComboBox.SelectedItem?.ToString() ?? "", out MarkerRegionEnum Region))
+            {
+                ErrorMessageLabel.Content = "No region selected.";
+                ErrorMessageLabel.Visibility = Visibility.Visible;
+                RegionComboBox.Background = Brushes.Red;
+                return;
+            }
+            else
+            {
+                RegionComboBox.ClearValue(Button.BackgroundProperty);
+            }
+            if (!Enum.TryParse(FileComboBox.SelectedItem?.ToString() ?? "", out MarkerFileEnum File))
             {
                 ErrorMessageLabel.Content = "No file selected.";
                 ErrorMessageLabel.Visibility = Visibility.Visible;
@@ -135,10 +172,10 @@ namespace LoUAM
             }
             if (EditingId == null)
             {
-                ControlPanel.Places.Add(new Marker(File, MarkerType.Place, Guid.NewGuid().ToString("N"), Icon, Label, X, 0, Z));
+                ControlPanel.Places.Add(new Marker(File, Server, Region, MarkerType.Place, Guid.NewGuid().ToString("N"), Icon, Label, X, 0, Z));
             } else
             {
-                ControlPanel.Places[ControlPanel.Places.FindIndex(Place => Place.Id == EditingId)] = new Marker(File, MarkerType.Place, EditingId, Icon, Label, X, 0, Z);
+                ControlPanel.Places[ControlPanel.Places.FindIndex(Place => Place.Id == EditingId)] = new Marker(File, Server, Region, MarkerType.Place, EditingId, Icon, Label, X, 0, Z);
             }
             ControlPanel.SavePlaces();
             Close();

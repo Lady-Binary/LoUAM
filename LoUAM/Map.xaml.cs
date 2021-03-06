@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -16,8 +17,16 @@ namespace LoUAM
     /// </summary>
     public partial class Map : UserControl, INotifyPropertyChanged
     {
+        public static readonly string MAP_DATA_FOLDER = Path.GetFullPath("./MapData");
+
         private const int TILE_WIDTH = 256;
         private const int TILE_HEIGHT = 256;
+
+        private MarkerServerEnum currentServer = MarkerServerEnum.Unknown;
+        public MarkerServerEnum CurrentServer { get => currentServer; set { currentServer = value; this.ServerLabel.Content = $"Server: {value}"; } }
+
+        private MarkerRegionEnum currentRegion = MarkerRegionEnum.Unknown;
+        public MarkerRegionEnum CurrentRegion { get { return currentRegion; } set { currentRegion = value; this.RegionLabel.Content = $"Region: {value}"; this.RefreshMapTiles($"{MAP_DATA_FOLDER }/{value}"); } }
 
         public Map()
         {
@@ -348,9 +357,11 @@ namespace LoUAM
                 Markers[markerType] = new Dictionary<string, Marker>();
             }
 
+            IEnumerable<Marker> filteredMarkers = markers.Where(m => m.Server == CurrentServer && m.Region == CurrentRegion);
+
             var markersIds = Markers[markerType].Keys.ToList();
 
-            foreach (Marker marker in markers)
+            foreach (Marker marker in filteredMarkers)
             {
                 // Refresh or add existing markers
                 Markers[markerType][marker.Id] = marker;
@@ -375,26 +386,31 @@ namespace LoUAM
         }
 
         #endregion
-        public void RefreshMapTiles(string folder)
+
+        #region Tiles properties and methods
+        public void RefreshMapTiles()
         {
+            RefreshMapTiles($"{Map.MAP_DATA_FOLDER}/{CurrentRegion}");
+        }
+        private void RefreshMapTiles(string folder)
+        {
+            TilesCanvas.Children.Clear();
+
+            if (!Directory.Exists(folder))
+                return;
+
+            string[] mapTiles = Directory.GetFiles(folder, "*.jpg");
+            if (mapTiles == null || mapTiles.Length == 0)
+                return;
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Mouse.OverrideCursor = Cursors.Wait;
             });
 
-            if (!Directory.Exists(folder))
-                return;
-
-            string[] mapTiles = Directory.GetFiles(folder);
-            if (mapTiles == null || mapTiles.Length == 0)
-                return;
-
-            TilesCanvas.Children.Clear();
-
             foreach (string mapTile in mapTiles)
             {
-                string fileName = Path.GetFileNameWithoutExtension(mapTile);
-                var SubTile = CreateSubTile(fileName);
+                var SubTile = CreateSubTile(mapTile);
                 TilesCanvas.Children.Add(SubTile);
             }
 
@@ -404,25 +420,24 @@ namespace LoUAM
             });
         }
 
-        private Image CreateSubTile(string TileName)
+        private Image CreateSubTile(string tilePath)
         {
             MapImage SubTileImage;
-            string TileFolder;
-            string TilePath;
+            string TileName;
             string TilePrefabPath;
 
-            TileFolder = Path.GetFullPath(@".\MapData");
-            TilePath = TileFolder + "\\" + TileName + ".jpg";
-            TilePrefabPath = TileFolder + "\\" + TileName + ".json";
-            SubTileImage = new MapImage(TilePath, TilePrefabPath, ControlPanel.Brightness);
+            TileName = Path.GetFileNameWithoutExtension(tilePath);
+            TilePrefabPath = tilePath.Replace(".jpg", ".json");
+            SubTileImage = new MapImage(tilePath, TilePrefabPath, ControlPanel.Brightness);
 
-            SubTileImage.Name = TileName.Replace('-', '_');
+            SubTileImage.Name = TileName.Replace(".", "_").Replace(" ", "_").Replace("-", "_");
             SubTileImage.Width = TILE_WIDTH;
             SubTileImage.Height = TILE_HEIGHT;
             SubTileImage.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
 
             return SubTileImage;
         }
+        #endregion
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {

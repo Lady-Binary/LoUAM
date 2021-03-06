@@ -1,4 +1,6 @@
-﻿namespace LoUAM
+﻿using System;
+
+namespace LoUAM
 {
     public enum MarkerFileEnum
     {
@@ -151,8 +153,11 @@
             this.Z = z;
         }
 
-        public static MarkerServerEnum URToMarkerServerEnum(string url)
+        public static MarkerServerEnum URLToServer(string url)
         {
+            if (url == "")
+                return MarkerServerEnum.Unknown;
+
             switch (url)
             {
                 case "cluster1.shardsonline.com:5148":
@@ -165,6 +170,17 @@
                 default:
                     return MarkerServerEnum.Unknown;
             }
+        }
+
+        public static MarkerRegionEnum StringToRegion(string region)
+        {
+            if (region == "")
+                return MarkerRegionEnum.Unknown;
+
+            if (Enum.TryParse(region, true, out MarkerRegionEnum regionEnum))
+                return regionEnum;
+            else
+                return MarkerRegionEnum.Unknown;
         }
     }
 }

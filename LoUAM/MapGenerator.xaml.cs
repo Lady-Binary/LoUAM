@@ -74,7 +74,7 @@ namespace LoUAM
                 UpdateProgress(0, GeneratedTiles, TotalTiles, "tiles");
             }, null, 50, 50);
 
-            MainWindow.ExecuteCommand(new ClientCommand(CommandType.ExportMap, "mapDirectory", mapDirectory));
+            MainWindow.ExecuteCommand(new ClientCommand(CommandType.ExportMap, "mapDirectory", mapDirectory), 120000);
 
             MainWindow.ExecuteCommand(new ClientCommand(CommandType.UnloadMap, "region", Region));
         }

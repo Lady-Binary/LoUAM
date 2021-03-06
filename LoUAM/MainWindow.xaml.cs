@@ -61,7 +61,6 @@ namespace LoUAM
             TimerRefreshCurrentPlayer = new DispatcherTimer();
             TimerRefreshCurrentPlayer.Tick += TimerRefreshCurrentPlayer_Tick;
             TimerRefreshCurrentPlayer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            TimerRefreshCurrentPlayer.Start();
 
             TimerUpdateServer = new DispatcherTimer();
             TimerUpdateServer.Tick += TimerUpdateServer_TickAsync;
@@ -237,6 +236,10 @@ namespace LoUAM
         }
         public static void ExecuteCommand(ClientCommand command)
         {
+            ExecuteCommand(command, 10000);
+        }
+        public static void ExecuteCommand(ClientCommand command, long commandTimeout)
+        {
             if (CurrentClientProcessId == -1 || ClientCommandsMemoryMap == null)
                 return;
 
@@ -246,7 +249,7 @@ namespace LoUAM
             ClientCommand[] ClientCommandsArray;
             Stopwatch timeout = new Stopwatch();
             timeout.Start();
-            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < 60000)
+            while (ClientCommandId < AssignedClientCommandId && timeout.ElapsedMilliseconds < commandTimeout)
             {
                 Debug.WriteLine("Waiting for command to be executed, Current CommandId=" + ClientCommandId.ToString() + ", Assigned CommandId=" + AssignedClientCommandId.ToString());
                 Thread.Sleep(50);
@@ -422,24 +425,24 @@ namespace LoUAM
                 {
                     // Handle server change
                     CurrentServer = currentPlayer.Server;
-                    if (ControlPanel.TrackPlayer)
+                    if (ControlPanel.TrackPlayer || MainMap.CurrentServer == MarkerServerEnum.Unknown)
                     {
-                        ChangeServer(Marker.URToMarkerServerEnum(CurrentServer));
+                        ChangeServer(Marker.URLToServer(CurrentServer));
                     }
                 }
                 if (CurrentRegion != currentPlayer.Region)
                 {
                     // Handle region change
                     CurrentRegion = currentPlayer.Region;
-                    if (ControlPanel.TrackPlayer)
+                    if (ControlPanel.TrackPlayer || MainMap.CurrentRegion == MarkerRegionEnum.Unknown)
                     {
-                        ChangeRegion(Enum.TryParse(CurrentRegion, true, out MarkerRegionEnum Region) ? Region : MarkerRegionEnum.Unknown);
+                        ChangeRegion(Marker.StringToRegion(CurrentRegion));
                     }
                 }
                 Marker currentPlayerMarker = new Marker(
                     MarkerFileEnum.None,
-                    Marker.URToMarkerServerEnum(currentPlayer.Server),
-                    (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), currentPlayer.Region, true),
+                    currentPlayer.Server != "" ? Marker.URLToServer(currentPlayer.Server) : MarkerServerEnum.Unknown,
+                    currentPlayer.Region != "" ? (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), currentPlayer.Region, true) : MarkerRegionEnum.Unknown,
                     MarkerType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
                     MarkerIcon.none,
@@ -506,7 +509,7 @@ namespace LoUAM
                         List<Marker> OtherMarkers = OtherPlayers?.Select(player =>
                                 new Marker(
                                     MarkerFileEnum.None,
-                                    Marker.URToMarkerServerEnum(player.Server),
+                                    Marker.URLToServer(player.Server),
                                     (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
                                     MarkerType.OtherPlayer,
                                     player.ObjectId.ToString(),
@@ -577,7 +580,7 @@ namespace LoUAM
                     List<Marker> OtherMarkers = OtherPlayers
                         .Select(player => new Marker(
                             MarkerFileEnum.None,
-                            Marker.URToMarkerServerEnum(player.Server),
+                            Marker.URLToServer(player.Server),
                             (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
                             MarkerType.OtherPlayer,
                             player.ObjectId.ToString(),
@@ -803,6 +806,7 @@ namespace LoUAM
 
         public void DoConnectToLoAClientCommand() {
             TargetAriaClientPanel.Visibility = Visibility.Visible;
+            TimerRefreshCurrentPlayer.Stop();
 
             MouseEventCallback handler = null;
             handler = (MouseEventType type, int x, int y) => {
@@ -849,6 +853,7 @@ namespace LoUAM
                     {
                         RefreshMapTiles();
                     }
+                    TimerRefreshCurrentPlayer.Start();
                 }
 
                 return connected;

@@ -68,23 +68,13 @@ namespace LoUAM
             }
 
             Directory.CreateDirectory(mapDirectory);
-            MainWindow.ExecuteCommandAsync(new ClientCommand(CommandType.ExportMap, "mapDirectory", mapDirectory));
-
-            Stopwatch timeout = new Stopwatch();
-            timeout.Start();
-            while (GeneratedTiles < TotalTiles &&
-                timeout.ElapsedMilliseconds < 120000)
+            Timer timer = new Timer((state) =>
             {
                 GeneratedTiles = (Directory.GetFiles(mapDirectory, "*.json").Length + Directory.GetFiles(mapDirectory, "*.jpg").Length) / 2;
                 UpdateProgress(0, GeneratedTiles, TotalTiles, "tiles");
+            }, null, 50, 50);
 
-                Thread.Sleep(100);
-            }
-            if (timeout.ElapsedMilliseconds >= 120000)
-            {
-                Debug.WriteLine("Timed out!");
-                return;
-            }
+            MainWindow.ExecuteCommand(new ClientCommand(CommandType.ExportMap, "mapDirectory", mapDirectory));
 
             MainWindow.ExecuteCommand(new ClientCommand(CommandType.UnloadMap, "region", Region));
         }

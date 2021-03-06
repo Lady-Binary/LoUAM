@@ -330,77 +330,81 @@ namespace LoUAM
             return currentPlayer;
         }
 
-        public bool CheckMapData(string region)
+        public bool CheckMapData()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return false;
 
             bool MapDataExported = false;
 
-            if (!Directory.Exists(Map.MAP_DATA_FOLDER) || Directory.GetDirectories(Map.MAP_DATA_FOLDER).Count() == 0)
+            if (!Directory.Exists(Map.MAP_DATA_FOLDER))
+                Directory.CreateDirectory(Map.MAP_DATA_FOLDER);
+
+            if (Directory.GetDirectories(Map.MAP_DATA_FOLDER).Count() == 0)
             {
                 if (MessageBoxEx.Show(this, $"It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data not present", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
-                    Directory.CreateDirectory(Map.MAP_DATA_FOLDER);
-
-                    var regions = Enum.GetValues(typeof(MarkerRegionEnum));
-                    foreach (var r in regions)
+                    var regions = Enum.GetNames(typeof(MarkerRegionEnum));
+                    foreach (var region in regions)
                     {
-                        if (region.ToString() == "Unknown")
+                        if (region == "Unknown")
                             continue;
 
-                        MapGenerator mapGenerator = new MapGenerator(r.ToString());
+                        MapGenerator mapGenerator = new MapGenerator(region);
                         mapGenerator.Owner = TheMainWindow;
                         bool exportSuccessful = mapGenerator.ShowDialog() ?? false;
                         if (!exportSuccessful)
                         {
-                            MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {r} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {r}");
-                        } else
+                            MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {region} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {region}");
+                        }
+                        else
                         {
                             MapDataExported = true;
                         }
                     }
                 }
             }
-            else
+
+            return MapDataExported;
+        }
+
+        public bool CheckMapData(string region)
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+                return false;
+
+            if (region == "Unknown")
+                return false;
+
+            if (!Directory.Exists($"{Map.MAP_DATA_FOLDER}"))
+                Directory.CreateDirectory($"{Map.MAP_DATA_FOLDER}");
+
+            if (!Directory.Exists($"{Map.MAP_DATA_FOLDER}/{region}"))
+                Directory.CreateDirectory($"{Map.MAP_DATA_FOLDER }/{region}");
+
+            if (Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.json").Count() == 0 ||
+                Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.jpg").Count() == 0 ||
+                Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.json").Count() != Directory.GetFiles($"{Map.MAP_DATA_FOLDER}/{region}", "*.jpg").Count())
             {
-                if (region == "Unknown")
-                    return false;
+                foreach (string f in Directory.EnumerateFiles($"{Map.MAP_DATA_FOLDER }/{region}", "*.*"))
+                    File.Delete(f);
 
-                if (!Directory.Exists($"{Map.MAP_DATA_FOLDER }/{region}"))
+                if (MessageBoxEx.Show(this, $"It appears that the map data for the current region ({region}) is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data outdated for region {region}", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
-                    Directory.CreateDirectory($"{Map.MAP_DATA_FOLDER }/{region}");
-                }
-                if (Directory.GetFiles($"{Map.MAP_DATA_FOLDER }/{region}", "*.json").Count() == 0 ||
-                    Directory.GetFiles($"{Map.MAP_DATA_FOLDER }/{region}", "*.jpg").Count() == 0)
-                {
-                    foreach (string f in Directory.EnumerateFiles($"{Map.MAP_DATA_FOLDER }/{region}", "*.*"))
+                    MapGenerator mapGenerator = new MapGenerator(region.ToString());
+                    mapGenerator.Owner = TheMainWindow;
+                    if (mapGenerator.ShowDialog() ?? false)
                     {
-                        File.Delete(f);
-                    }
-
-                    if (MessageBoxEx.Show(this, $"It appears that the map data for the current region ({region}) is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data outdated for region {region}", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                        return true;
+                    } else
                     {
-                        var regions = Enum.GetValues(typeof(MarkerRegionEnum));
-                        foreach (var r in regions)
-                        {
-                            MapGenerator mapGenerator = new MapGenerator(r.ToString());
-                            mapGenerator.Owner = TheMainWindow;
-                            bool exportSuccessful = mapGenerator.ShowDialog() ?? false;
-                            if (!exportSuccessful)
-                            {
-                                MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {r} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {r}");
-                            }
-                            else
-                            {
-                                MapDataExported = true;
-                            }
-                        }
+                        MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {region} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {region}");
+                        return false;
                     }
                 }
             }
 
-            return MapDataExported;
+            return false;
         }
 
         public void RefreshCurrentPlayer()
@@ -841,8 +845,7 @@ namespace LoUAM
 
                 if (connected)
                 {
-                    bool MapDataExported = CheckMapData(MainMap.CurrentRegion.ToString());
-                    if (MapDataExported)
+                    if (CheckMapData())
                     {
                         RefreshMapTiles();
                     }

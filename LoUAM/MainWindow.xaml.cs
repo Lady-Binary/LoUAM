@@ -25,6 +25,8 @@ namespace LoUAM
     /// </summary>
     public partial class MainWindow : Window
     {
+        public const string MINIMUM_LOU_VERSION = "1.3.0.0";
+
         public static MainWindow TheMainWindow;
 
         private static Server theServer;
@@ -336,6 +338,33 @@ namespace LoUAM
             return currentPlayer;
         }
 
+        public bool CheckVersion()
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+                return false;
+
+            RefreshClientStatus();
+
+            if (new Version(ClientStatus.ClientInfo.LOUVER) < new Version(MINIMUM_LOU_VERSION))
+            {
+                MessageBox.Show("This Legends of Aria client was injected with an unsupported version of LoU.dll: " +
+                    "as a result, LoUAM may or may not work as expected.\n" +
+                    "\n" +
+                    "Please close and restart both the Legends of Aria client and LoUAM and re-inject the client.\n" +
+                    "\n" +
+                    "If you are using EasyLoU and LoUAM simultaneously, please make sure they are both up-to-date.\n" +
+                    "\n" +
+                    "The latest versions of EasyLoU and LoUAM can be found at:" +
+                    "\n" +
+                    "https://github.com/Lady-Binary/");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public bool CheckMapData()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
@@ -445,7 +474,7 @@ namespace LoUAM
                 Marker currentPlayerMarker = new Marker(
                     MarkerFileEnum.None,
                     currentPlayer.Server != "" ? Marker.URLToServer(currentPlayer.Server) : MarkerServerEnum.Unknown,
-                    currentPlayer.Region != "" ? (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), currentPlayer.Region, true) : MarkerRegionEnum.Unknown,
+                    currentPlayer.Region != "" && Enum.TryParse<MarkerRegionEnum>(currentPlayer.Region, out MarkerRegionEnum markerRegion) ? markerRegion : MarkerRegionEnum.Unknown,
                     MarkerType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
                     MarkerIcon.none,
@@ -852,6 +881,7 @@ namespace LoUAM
 
                 if (connected)
                 {
+                    CheckVersion();
                     if (CheckMapData())
                     {
                         RefreshMapTiles();

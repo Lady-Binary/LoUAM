@@ -47,25 +47,21 @@ namespace LoUAM
             BackgroundWorker worker = sender as BackgroundWorker;
 
             MainWindow.ExecuteCommand(new ClientCommand(CommandType.LoadMap, "region", Region));
-            MainWindow.RefreshClientStatus();
 
-            lock (MainWindow.ClientStatusLock)
+            // Wait for scene / tiles to be loaded
+            Stopwatch timeout = new Stopwatch();
+            timeout.Start();
+            TotalTiles = 0;
+            while (TotalTiles == 0 && timeout.ElapsedMilliseconds < 3000)
             {
-                TotalTiles = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTILES ?? 0;
-            }
-            if (TotalTiles == 0)
-            {
-                MainWindow.ExecuteCommand(new ClientCommand(CommandType.LoadMap, "region", Region + "Maps"));
                 MainWindow.RefreshClientStatus();
                 lock (MainWindow.ClientStatusLock)
                 {
                     TotalTiles = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTILES ?? 0;
                 }
+                Thread.Sleep(50);
             }
-            if (TotalTiles == 0)
-            {
-                return;
-            }
+            timeout.Stop();
 
             Directory.CreateDirectory(mapDirectory);
             Timer timer = new Timer((state) =>

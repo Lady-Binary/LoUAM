@@ -30,7 +30,9 @@ namespace LoUAM
         NewCelador,
         Perilous,
         Ruin,
-        TwoTowers
+        TwoTowers,
+        britanniamain,
+        loudungeons
     }
 
     public enum MarkerType

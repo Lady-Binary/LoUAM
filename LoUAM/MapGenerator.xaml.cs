@@ -52,14 +52,14 @@ namespace LoUAM
             Stopwatch timeout = new Stopwatch();
             timeout.Start();
             TotalTiles = 0;
-            while (TotalTiles == 0 && timeout.ElapsedMilliseconds < 3000)
+            while (TotalTiles == 0 && timeout.ElapsedMilliseconds < 30000)
             {
                 MainWindow.RefreshClientStatus();
                 lock (MainWindow.ClientStatusLock)
                 {
                     TotalTiles = MainWindow.ClientStatus?.Miscellaneous.LOADEDMAPTILES ?? 0;
                 }
-                Thread.Sleep(50);
+                Thread.Sleep(1000);
             }
             timeout.Stop();
 

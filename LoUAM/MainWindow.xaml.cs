@@ -108,8 +108,9 @@ namespace LoUAM
             ControlPanel.SavePlaces();
             UpdatePlaces();
 
-            if (!Directory.Exists(Map.MAP_DATA_FOLDER)) {
-                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
+            if (!Directory.Exists(Map.MAP_DATA_FOLDER))
+            {
+                MessageBoxEx.Show(this, "Greetings!!\n\nIt appears that this is the first time you run LoUAM.\n\nEvery time you start LoUAM, you need to connect it to your Legends of Aria client first: here on LoUAM click on the LoU Menu -> Connect to LoA game client.\n\nThe first time you connect LoUAM to the client, LoUAM will also generate the necessary map data.\n\nEnjoy!", "Map data not found");
                 return;
             }
         }
@@ -190,7 +191,7 @@ namespace LoUAM
 
             foreach (MenuItem ChangeRegionMenuItem in RegionMenuITem.Items)
             {
-                if (ChangeRegionMenuItem.Header.ToString() == "_"+region.ToString())
+                if (ChangeRegionMenuItem.Header.ToString() == "_" + region.ToString())
                 {
                     ChangeRegionMenuItem.IsChecked = true;
                 }
@@ -246,7 +247,7 @@ namespace LoUAM
                 return;
 
             int AssignedClientCommandId = ExecuteCommandAsync(command);
-            
+
             int ClientCommandId = 0;
             ClientCommand[] ClientCommandsArray;
             Stopwatch timeout = new Stopwatch();
@@ -431,7 +432,8 @@ namespace LoUAM
                     if (mapGenerator.ShowDialog() ?? false)
                     {
                         return true;
-                    } else
+                    }
+                    else
                     {
                         MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {region} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {region}");
                         return false;
@@ -563,7 +565,7 @@ namespace LoUAM
                 {
                     try
                     {
-                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts+1})...");
+                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts + 1})...");
                         await TheClient.ConnectAsync();
                         if (TheClient.ClientState != Client.ClientStateEnum.Connected)
                         {
@@ -836,7 +838,8 @@ namespace LoUAM
             return false;
         }
 
-        public void DoConnectToLoAClientCommand() {
+        public void DoConnectToLoAClientCommand()
+        {
             TargetAriaClientPanel.Visibility = Visibility.Visible;
             TimerRefreshCurrentPlayer.Stop();
 
@@ -846,6 +849,8 @@ namespace LoUAM
                 // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
                 // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
                 MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
+
+                // Hide message
                 TargetAriaClientPanel.Visibility = Visibility.Hidden;
 
                 // Stop global hook
@@ -895,19 +900,17 @@ namespace LoUAM
                 return connected;
             };
 
-            //// Prepare cursor image
-            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
-            //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
+            // Prepare cursor image
+            System.Drawing.Bitmap image = LoUAM.Properties.Resources.uo.ToBitmap();
 
-            ////// Set all cursors
-            ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
-            ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-            //Cursor cursor = new Cursor(image.GetHicon());
-            //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
-            //foreach (uint i in cursors)
-            //{
-            //    MouseHook.SetSystemCursor(cursor.Handle, i);
-            //}
+            // Set all cursors
+            // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
+            // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+            uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
+            foreach (uint i in cursors)
+            {
+                MouseHook.SetSystemCursor(image.GetHicon(), i);
+            }
 
             // Start mouse global hook
             MouseHook.MouseDown += handler;

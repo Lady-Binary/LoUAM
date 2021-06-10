@@ -12,6 +12,8 @@
     <Perilous />
     <Ruin />
     <TwoTowers />
+    <britanniamain />
+    <loudungeons />
   </HOPE>
   <LoA>
     <Catacombs />
@@ -620,6 +622,8 @@
     <Perilous />
     <Ruin />
     <TwoTowers />
+    <britanniamain />
+    <loudungeons />
   </LoA>
   <LoU>
     <Catacombs />
@@ -1420,5 +1424,86 @@
     <Perilous />
     <Ruin />
     <TwoTowers />
+    <britanniamain>
+      <place>
+        <name>Britain Graveyard</name>
+        <type>graveyard</type>
+        <x>-1368.1</x>
+        <z>745.49</z>
+      </place>
+      <place>
+        <name>Britain</name>
+        <type>town</type>
+        <x>-1253.49</x>
+        <z>513.18</z>
+      </place>
+      <place>
+        <name>Britain Moongate</name>
+        <type>moongate</type>
+        <x>-1404.46</x>
+        <z>91.99</z>
+      </place>
+      <place>
+        <name>Hedge Maze</name>
+        <type>point_of_interest</type>
+        <x>-1640.46</x>
+        <z>-200.01</z>
+      </place>
+      <place>
+        <name>Dungeon Despise</name>
+        <type>dungeon</type>
+        <x>-1439.89</x>
+        <z>1242.41</z>
+      </place>
+      <place>
+        <name>Cove</name>
+        <type>town</type>
+        <x>-269.89</x>
+        <z>1084.41</z>
+      </place>
+      <place>
+        <name>Cove Orc Fort</name>
+        <type>point_of_interest</type>
+        <x>-365.89</x>
+        <z>932.41</z>
+      </place>
+      <place>
+        <name>Dungeon Covetous</name>
+        <type>dungeon</type>
+        <x>48.11</x>
+        <z>1432.41</z>
+      </place>
+      <place>
+        <name>Chaos Shrine</name>
+        <type>shrine</type>
+        <x>-1235.89</x>
+        <z>1510.41</z>
+      </place>
+      <place>
+        <name>Yew</name>
+        <type>town</type>
+        <x>-2393.89</x>
+        <z>1356.41</z>
+      </place>
+      <place>
+        <name>Dungeon Shame</name>
+        <type>dungeon</type>
+        <x>-2417.89</x>
+        <z>616.41</z>
+      </place>
+      <place>
+        <name>Minoc</name>
+        <type>town</type>
+        <x>6.11</x>
+        <z>1972.41</z>
+      </place>
+      <place>
+        <name>Buccaneer's Den</name>
+        <type>town</type>
+        <x>282.11</x>
+        <z>-117.59</z>
+      </place>
+    </britanniamain>
+    <loudungeons />
   </LoU>
 </places>

@@ -1503,6 +1503,66 @@
         <x>282.11</x>
         <z>-117.59</z>
       </place>
+      <place>
+        <name>Cotton Fields</name>
+        <type>point_of_interest</type>
+        <x>-1544.81</x>
+        <z>435.92</z>
+      </place>
+      <place>
+        <name>Compassion Desert</name>
+        <type>point_of_interest</type>
+        <x>-657.81</x>
+        <z>1500.93</z>
+      </place>
+      <place>
+        <name>Cove Graveyard</name>
+        <type>graveyard</type>
+        <x>-28.72</x>
+        <z>1206.3</z>
+      </place>
+      <place>
+        <name>Vesper Graveyard</name>
+        <type>graveyard</type>
+        <x>354.69</x>
+        <z>1502.87</z>
+      </place>
+      <place>
+        <name>Minoc Moongate</name>
+        <type>moongate</type>
+        <x>295.26</x>
+        <z>1714.48</z>
+      </place>
+      <place>
+        <name>Yew Moongate</name>
+        <type>moongate</type>
+        <x>-2108.93</x>
+        <z>1646.75</z>
+      </place>
+      <place>
+        <name>Yew Crypts</name>
+        <type>graveyard</type>
+        <x>-1871.08</x>
+        <z>1675.1</z>
+      </place>
+      <place>
+        <name>Dungeon Wrong</name>
+        <type>dungeon</type>
+        <x>-525.65</x>
+        <z>2300.46</z>
+      </place>
+      <place>
+        <name>Dungeon Ice</name>
+        <type>dungeon</type>
+        <x>-586.65</x>
+        <z>2458.46</z>
+      </place>
+      <place>
+        <name>Dungeon Destard</name>
+        <type>dungeon</type>
+        <x>-1811.52</x>
+        <z>809.08</z>
+      </place>
     </britanniamain>
     <loudungeons />
   </LoU>

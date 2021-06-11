@@ -1,5 +1,18 @@
 # Changelog
 
+## LoA 1.4.1.0 - LoUAM 1.0.0.0 (11/06/2021)
+
+#### Bugfixes:
+
+- Fix issue with targeting the Aria client when scaling >100% is enabled [#24](https://github.com/Lady-Binary/LoUAM/issues/24)
+- Check for minimum supported LoU version [#21](https://github.com/Lady-Binary/LoUAM/issues/21)
+
+#### Enhancements:
+
+- Add support for Legends of Ultima Britannia maps [#22](https://github.com/Lady-Binary/LoUAM/issues/22)
+
+---
+
 ## LoA 1.4.0.0 - LoUAM 0.1.0.17 (06/03/2021)
 
 #### Enhancements:

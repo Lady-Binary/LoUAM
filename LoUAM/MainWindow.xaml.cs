@@ -122,7 +122,7 @@ namespace LoUAM
 
             if (!Directory.Exists(Map.MAP_DATA_FOLDER))
             {
-                MessageBoxEx.Show(this, "Greetings!!\n\nIt appears that this is the first time you run LoUAM.\n\nEvery time you start LoUAM, you need to connect it to your Legends of Aria client first: here on LoUAM click on the LoU Menu -> Connect to LoA game client.\n\nThe first time you connect LoUAM to the client, LoUAM will also generate the necessary map data.\n\nEnjoy!", "Map data not found");
+                MessageBoxEx.Show(this, "Greetings!!\n\nIt appears that this is the first time you run LoUAM.\n\nEvery time you start LoUAM, you need to connect it to your Legends of Aria client first: login into your server of choice and enter the world, then here on LoUAM click on the LoU Menu -> Connect to LoA game client.\n\nThe first time you connect LoUAM to the client, LoUAM will also generate the necessary map data.\n\nEnjoy!", "Map data not found");
                 return;
             }
         }

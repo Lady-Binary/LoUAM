@@ -30,7 +30,9 @@ namespace LoUAM
         NewCelador,
         Perilous,
         Ruin,
-        TwoTowers
+        TwoTowers,
+        britanniamain,
+        loudungeons
     }
 
     public enum MarkerType
@@ -165,7 +167,8 @@ namespace LoUAM
                 case "84.16.234.196:5001": // Crimson Sea
                 case "23.105.169.78:5001": // Ethereal Moon
                     return MarkerServerEnum.LoA;
-                case "cluster1.shardsonline.com:5150":
+                case "connect.uo4.life:5001":
+                case "connect.uo4.life:5002":
                     return MarkerServerEnum.LoU;
                 default:
                     return MarkerServerEnum.Unknown;

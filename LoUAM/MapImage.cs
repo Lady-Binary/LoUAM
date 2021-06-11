@@ -138,12 +138,16 @@ namespace LoUAM
 
             double X;
             double Z;
+            double Height = 256;
+            double Width = 256;
             if (File.Exists(this.TilePrefabPath))
             {
                 string prefab = File.ReadAllText(this.TilePrefabPath);
                 Tile tileTransform = JsonConvert.DeserializeObject<Tile>(prefab);
                 X = tileTransform.x;
                 Z = tileTransform.z;
+                Height = tileTransform.height;
+                Width = tileTransform.width;
             } else
             {
                 switch (TileIndex)
@@ -171,6 +175,8 @@ namespace LoUAM
                 }
             }
 
+            this.SetValue(System.Windows.Controls.Image.HeightProperty, Height);
+            this.SetValue(System.Windows.Controls.Image.WidthProperty, Width);
             this.SetValue(Canvas.LeftProperty, X);
             this.SetValue(Canvas.TopProperty, Z);
         }

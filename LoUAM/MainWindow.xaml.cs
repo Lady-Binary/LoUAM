@@ -25,6 +25,8 @@ namespace LoUAM
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static string MINIMUM_LOU_VERSION = "1.3.0.0";
+
         public static MainWindow TheMainWindow;
 
         private static Server theServer;
@@ -70,6 +72,18 @@ namespace LoUAM
             InitializeComponent();
 
             this.Title = "LoUAM - " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            try
+            {
+                var file = ReadDllFromCompressedResources("costura.lou.dll.compressed");
+                var assembly = System.Reflection.Assembly.Load(file);
+                var assemblyVersion = assembly.GetName().Version;
+                MINIMUM_LOU_VERSION = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.MajorRevision}.0";
+            }
+            catch (Exception ex)
+            {
+                MINIMUM_LOU_VERSION = "0.0.0.0";
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -106,8 +120,9 @@ namespace LoUAM
             ControlPanel.SavePlaces();
             UpdatePlaces();
 
-            if (!Directory.Exists(Map.MAP_DATA_FOLDER)) {
-                MessageBoxEx.Show(this, "It appears that this is the first time you run LoUAM.\n\nStart your Legends of Aria Client and then connect to it in order to generate the necessary map data.", "Map data not found");
+            if (!Directory.Exists(Map.MAP_DATA_FOLDER))
+            {
+                MessageBoxEx.Show(this, "Greetings!!\n\nIt appears that this is the first time you run LoUAM.\n\nEvery time you start LoUAM, you need to connect it to your Legends of Aria client first: login into your server of choice and enter the world, then here on LoUAM click on the LoU Menu -> Connect to LoA game client.\n\nThe first time you connect LoUAM to the client, LoUAM will also generate the necessary map data.\n\nEnjoy!", "Map data not found");
                 return;
             }
         }
@@ -188,7 +203,7 @@ namespace LoUAM
 
             foreach (MenuItem ChangeRegionMenuItem in RegionMenuITem.Items)
             {
-                if (ChangeRegionMenuItem.Header.ToString() == "_"+region.ToString())
+                if (ChangeRegionMenuItem.Header.ToString() == "_" + region.ToString())
                 {
                     ChangeRegionMenuItem.IsChecked = true;
                 }
@@ -244,7 +259,7 @@ namespace LoUAM
                 return;
 
             int AssignedClientCommandId = ExecuteCommandAsync(command);
-            
+
             int ClientCommandId = 0;
             ClientCommand[] ClientCommandsArray;
             Stopwatch timeout = new Stopwatch();
@@ -336,6 +351,33 @@ namespace LoUAM
             return currentPlayer;
         }
 
+        public bool CheckVersion()
+        {
+            if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+                return false;
+
+            RefreshClientStatus();
+
+            if (new Version(ClientStatus.ClientInfo.LOUVER) < new Version(MINIMUM_LOU_VERSION))
+            {
+                MessageBox.Show("This Legends of Aria client was injected with an unsupported version of LoU.dll: " +
+                    "as a result, LoUAM may or may not work as expected.\n" +
+                    "\n" +
+                    "Please close and restart both the Legends of Aria client and LoUAM and re-inject the client.\n" +
+                    "\n" +
+                    "If you are using EasyLoU and LoUAM simultaneously, please make sure they are both up-to-date.\n" +
+                    "\n" +
+                    "The latest versions of EasyLoU and LoUAM can be found at:" +
+                    "\n" +
+                    "https://github.com/Lady-Binary/");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public bool CheckMapData()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
@@ -402,7 +444,8 @@ namespace LoUAM
                     if (mapGenerator.ShowDialog() ?? false)
                     {
                         return true;
-                    } else
+                    }
+                    else
                     {
                         MessageBoxEx.Show(this, $"LoUAM was unable to load the map data for region {region} from the Legends of Aria Client. Please make sure you are using the latest version of LoUAM.", $"Could not load map data for region {region}");
                         return false;
@@ -445,7 +488,7 @@ namespace LoUAM
                 Marker currentPlayerMarker = new Marker(
                     MarkerFileEnum.None,
                     currentPlayer.Server != "" ? Marker.URLToServer(currentPlayer.Server) : MarkerServerEnum.Unknown,
-                    currentPlayer.Region != "" ? (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), currentPlayer.Region, true) : MarkerRegionEnum.Unknown,
+                    currentPlayer.Region != "" && Enum.TryParse<MarkerRegionEnum>(currentPlayer.Region, out MarkerRegionEnum markerRegion) ? markerRegion : MarkerRegionEnum.Unknown,
                     MarkerType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
                     MarkerIcon.none,
@@ -534,7 +577,7 @@ namespace LoUAM
                 {
                     try
                     {
-                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts+1})...");
+                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts + 1})...");
                         await TheClient.ConnectAsync();
                         if (TheClient.ClientState != Client.ClientStateEnum.Connected)
                         {
@@ -807,7 +850,8 @@ namespace LoUAM
             return false;
         }
 
-        public void DoConnectToLoAClientCommand() {
+        public void DoConnectToLoAClientCommand()
+        {
             TargetAriaClientPanel.Visibility = Visibility.Visible;
             TimerRefreshCurrentPlayer.Stop();
 
@@ -817,16 +861,21 @@ namespace LoUAM
                 // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa
                 // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
                 MouseHook.SystemParametersInfo(0x57, 0, (IntPtr)0, 0);
+
+                // Hide message
                 TargetAriaClientPanel.Visibility = Visibility.Hidden;
 
                 // Stop global hook
                 MouseHook.HookEnd();
                 MouseHook.MouseDown -= handler;
 
+                // This is for when scaling is >100%
+                double factor = MouseHook.getScalingFactor();
+
                 // Get clicked coord
                 MouseHook.POINT p;
-                p.x = x;
-                p.y = y;
+                p.x = (int)((double)x / factor);
+                p.y = (int)((double)y / factor);
                 Debug.WriteLine("Clicked x=" + x.ToString() + " y=" + y.ToString());
 
                 // Get clicked window handler, window title
@@ -852,6 +901,7 @@ namespace LoUAM
 
                 if (connected)
                 {
+                    CheckVersion();
                     if (CheckMapData())
                     {
                         RefreshMapTiles();
@@ -862,19 +912,17 @@ namespace LoUAM
                 return connected;
             };
 
-            //// Prepare cursor image
-            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
-            //System.Drawing.Bitmap image = ((System.Drawing.Bitmap)(resources.GetObject("connectToClientToolStripMenuItem.Image")));
+            // Prepare cursor image
+            System.Drawing.Bitmap image = LoUAM.Properties.Resources.uo.ToBitmap();
 
-            ////// Set all cursors
-            ////// see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
-            ////// and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
-            //Cursor cursor = new Cursor(image.GetHicon());
-            //uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
-            //foreach (uint i in cursors)
-            //{
-            //    MouseHook.SetSystemCursor(cursor.Handle, i);
-            //}
+            // Set all cursors
+            // see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setsystemcursor
+            // and also https://autohotkey.com/board/topic/32608-changing-the-system-cursor/
+            uint[] cursors = new uint[] { 32512, 32513, 32514, 32515, 32516, 32640, 32641, 32642, 32643, 32644, 32645, 32646, 32648, 32649, 32650, 32651 };
+            foreach (uint i in cursors)
+            {
+                MouseHook.SetSystemCursor(image.GetHicon(), i);
+            }
 
             // Start mouse global hook
             MouseHook.MouseDown += handler;

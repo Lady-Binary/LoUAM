@@ -15,7 +15,7 @@ LoU Auto-Map is a totally free tool inspired by UO Auto-Map, the popular premier
 - From the [Releases](https://github.com/Lady-Binary/LoUAM/releases) tab here on GitHub, download the archive containing the latest build and extract it
 - Launch LoUAM.exe
 - Launch your Legends of Aria Client
-- Wait for your Legends of Aria Client login page to show up
+- Proceed to login into your server of choice and enter the world
 - On LoUAM click on the "LoU"->"Connect to LoA game client..." menu
 - Click on the Legends of Aria Client you want to connect to
 - When asked, click OK to inject

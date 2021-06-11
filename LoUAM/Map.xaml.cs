@@ -19,9 +19,6 @@ namespace LoUAM
     {
         public static readonly string MAP_DATA_FOLDER = Path.GetFullPath("./MapData");
 
-        private const int TILE_WIDTH = 256;
-        private const int TILE_HEIGHT = 256;
-
         private MarkerServerEnum currentServer = MarkerServerEnum.Unknown;
         public MarkerServerEnum CurrentServer { get => currentServer; set { currentServer = value; this.ServerLabel.Content = $"Server: {value}"; } }
 
@@ -113,8 +110,6 @@ namespace LoUAM
 
                 var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
                 LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
-
-                RefreshMapTilesQuality();
             }
         }
 
@@ -173,8 +168,6 @@ namespace LoUAM
             var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
                                                 scrollViewer.ViewportHeight / 2);
             lastCenterPositionOnTarget = scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
-
-            RefreshMapTilesQuality();
         }
 
         void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -231,33 +224,6 @@ namespace LoUAM
 
             centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
             LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
-
-            RefreshMapTilesQuality();
-        }
-
-        private void RefreshMapTilesQuality()
-        {
-            return;
-            int zoom = (int)slider.Value;
-
-            // Set a resolution between 32 and 1024 depending on zoom level
-            int dersiredResoltion = Map.GetRequiredResolution((int)slider.Minimum, (int)slider.Maximum, 16, 1024, zoom);
-
-            foreach (MapImage mapImage in TilesCanvas.Children)
-            {
-                // Check if the current grid item is visible within the scroll viewer
-
-                Point PositionInScrollviewer = mapImage.TranslatePoint(new Point(0, 0), scrollViewer);
-                if (
-                    PositionInScrollviewer.X >= -(TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
-                    PositionInScrollviewer.X <= scrollViewer.ViewportWidth + (TILE_WIDTH * 2 * scaleTransform.ScaleX) &&
-                    PositionInScrollviewer.Y >= -(TILE_HEIGHT * 2 * scaleTransform.ScaleY) &&
-                    PositionInScrollviewer.Y <= scrollViewer.ViewportHeight + (TILE_HEIGHT * 2 * scaleTransform.ScaleY)
-                )
-                {
-                    //mapImage.UpdateResolution(dersiredResoltion);
-                }
-            }
         }
 
         public static int GetRequiredResolution(int SliderMin, int SliderMax, int MinRes, int MaxRes, int SliderValue)
@@ -431,8 +397,6 @@ namespace LoUAM
             SubTileImage = new MapImage(tilePath, TilePrefabPath, ControlPanel.Brightness);
 
             SubTileImage.Name = TileName.Replace(".", "_").Replace(" ", "_").Replace("-", "_");
-            SubTileImage.Width = TILE_WIDTH;
-            SubTileImage.Height = TILE_HEIGHT;
             SubTileImage.LayoutTransform = TilesCanvas.LayoutTransform.Inverse as Transform;
 
             return SubTileImage;

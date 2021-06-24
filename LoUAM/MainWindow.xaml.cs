@@ -556,7 +556,7 @@ namespace LoUAM
                                 new Marker(
                                     MarkerFileEnum.None,
                                     Marker.URLToServer(player.Server),
-                                    (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
+                                    player.Region != "" && Enum.TryParse<MarkerRegionEnum>(player.Region, out MarkerRegionEnum playerRegion) ? playerRegion : MarkerRegionEnum.Unknown,
                                     MarkerType.OtherPlayer,
                                     player.ObjectId.ToString(),
                                     MarkerIcon.none,

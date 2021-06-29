@@ -56,12 +56,14 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0" Margin="10">Brightness:</Label>
-                    <Slider Grid.Row="1" Margin="10" Name="BrightnessSlider" Minimum="0" Maximum="20" Value="1" ValueChanged="BrightnessSlider_ValueChanged"></Slider>
-                    <Label Grid.Row="2" Margin="10" Name="BrightnessLabel" HorizontalAlignment="Center">1</Label>
-                    <Button Grid.Row="3" Margin="10" Name="ApplyBrightnessButton" Width="200" Click="ApplyBrightnessButton_Click">Apply brightness</Button>
+                    <CheckBox Grid.Row="0" Margin="10" Name="AlwaysOnTopCheckbox" Checked="AlwaysOnTopCheckbox_Changed" Unchecked="AlwaysOnTopCheckbox_Changed">Always on top</CheckBox>
+                    <Label Grid.Row="1" Margin="10">Brightness:</Label>
+                    <Slider Grid.Row="2" Margin="10" Name="BrightnessSlider" Minimum="0" Maximum="20" Value="1" ValueChanged="BrightnessSlider_ValueChanged"></Slider>
+                    <Label Grid.Row="3" Margin="10" Name="BrightnessLabel" HorizontalAlignment="Center">1</Label>
+                    <Button Grid.Row="4" Margin="10" Name="ApplyBrightnessButton" Width="200" Click="ApplyBrightnessButton_Click">Apply brightness</Button>
                 </Grid>
             </TabItem>
             <TabItem Header="Link Controls">

@@ -37,6 +37,8 @@ namespace LoUAM
 
         public static List<Marker> Places = new List<Marker>();
 
+        // Map
+        public static bool AlwaysOnTop = false;
         public static float Brightness = 1;
 
         DispatcherTimer RefreshLinkStatusTimer;
@@ -63,6 +65,8 @@ namespace LoUAM
             PasswordTextBox.Text = Password;
             HttpsCheckBox.IsChecked = Https;
 
+            // Map
+            AlwaysOnTopCheckbox.IsChecked = AlwaysOnTop;
             BrightnessSlider.Value = Brightness;
 
             RefreshPlaces();
@@ -70,12 +74,16 @@ namespace LoUAM
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Brightness = (float)BrightnessSlider.Value;
             MyName = MyNameTextBox.Text;
             Host = HostTextBox.Text;
             Port = int.TryParse(PortTextBox.Text, out int i) ? i : 4443;
             Password = PasswordTextBox.Text;
             Https = HttpsCheckBox.IsChecked ?? true;
+
+            // Map
+            AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
+            Brightness = (float)BrightnessSlider.Value;
+
             SaveSettings();
         }
 
@@ -124,7 +132,9 @@ namespace LoUAM
 
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool b) ? b : true;
 
-            Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float f) ? f : 1;
+            // Map
+            AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", true).ToString(), out bool alwaysOnTop) ? alwaysOnTop : true;
+            Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float brightness) ? brightness : 1;
         }
 
         public static void SaveSettings()
@@ -145,6 +155,8 @@ namespace LoUAM
 
             LoUAMKey.SetValue("TrackPlayer", TrackPlayer);
 
+            // Map
+            LoUAMKey.SetValue("AlwaysOnTop", AlwaysOnTop);
             LoUAMKey.SetValue("Brightness", Brightness);
         }
 
@@ -644,6 +656,12 @@ namespace LoUAM
             {
                 BrightnessLabel.Content = e.NewValue.ToString("0.00");
             }
+        }
+
+        private void AlwaysOnTopCheckbox_Changed(object sender, RoutedEventArgs e)
+        {
+            AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
+            MainWindow.TheMainWindow.RefreshAlwaysOnTop();
         }
     }
 }

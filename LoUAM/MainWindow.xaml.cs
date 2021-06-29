@@ -112,13 +112,16 @@ namespace LoUAM
                 RegionMenuITem.Items.Add(newRegionMenuItem);
             }
 
-            ChangeRegion(MarkerRegionEnum.Unknown);
-            ChangeServer(MarkerServerEnum.Unknown);
-
             TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
+
             ControlPanel.LoadPlaces();
             ControlPanel.SavePlaces();
             UpdatePlaces();
+
+            AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
+            RefreshAlwaysOnTop();
+            ChangeRegion(MarkerRegionEnum.Unknown);
+            ChangeServer(MarkerServerEnum.Unknown);
 
             if (!Directory.Exists(Map.MAP_DATA_FOLDER))
             {
@@ -218,6 +221,18 @@ namespace LoUAM
             UpdatePlaces();
         }
 
+        public delegate void RefreshAlwaysOnTopDelegate();
+        public void RefreshAlwaysOnTop()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshAlwaysOnTopDelegate(RefreshAlwaysOnTop));
+                return;
+            }
+
+            AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
+            MainWindow.TheMainWindow.Topmost = ControlPanel.AlwaysOnTop;
+        }
         #region Timers
         public static int ExecuteCommandAsync(ClientCommand command)
         {
@@ -999,6 +1014,17 @@ namespace LoUAM
             ControlPanel.SaveSettings();
         }
 
+        private void AlwaysOnTopCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void AlwaysOnTop_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel.AlwaysOnTop = !AlwaysOnTopMenu.IsChecked;
+            ControlPanel.SaveSettings();
+            RefreshAlwaysOnTop();
+        }
+
         private void MoveCursorHereCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1037,5 +1063,6 @@ namespace LoUAM
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand AlwaysOnTopCommand { get; set; } = new RoutedCommand();
     }
 }

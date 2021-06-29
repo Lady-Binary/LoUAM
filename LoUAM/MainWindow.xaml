@@ -12,11 +12,13 @@
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeRegionCommand}" CanExecute="MapChangeRegionCommand_CanExecute" Executed="MapChangeRegionCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeServerCommand}" CanExecute="MapChangeServerCommand_CanExecute" Executed="MapChangeServerCommand_Executed" />
-        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" CanExecute="MapAdditionalSettingsCommand_CanExecute" Executed="MapAdditionalSettingsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}" CanExecute="MoveCursorHereCommand_CanExecute" Executed="MoveCursorHereCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CanExecute="NewPlaceCommand_CanExecute" Executed="NewPlaceCommand_Executed" />
+        <!-- Map -->
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.AlwaysOnTopCommand}" CanExecute="AlwaysOnTopCommand_CanExecute" Executed="AlwaysOnTop_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" CanExecute="MapAdditionalSettingsCommand_CanExecute" Executed="MapAdditionalSettingsCommand_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}"/>
@@ -45,6 +47,7 @@
                 <MenuItem Header="_Edit Places..." Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" InputGestureText="Ctrl+P" />
             </MenuItem>
             <MenuItem Header="_Map">
+                <MenuItem Name="AlwaysOnTopMenu" Header="_Always On Top" Command="{x:Static local:MainWindowCustomCommands.AlwaysOnTopCommand}" />
                 <MenuItem Header="_Additional settings..." Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" InputGestureText="Ctrl+M" />
                 <Separator/>
                 <MenuItem Header="_Server" Name="ServerMenuItem">

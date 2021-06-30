@@ -1049,6 +1049,19 @@ namespace LoUAM
                 UpdatePlaces();
             }
         }
+
+        private void CopyLocationCoordintesCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void CopyLocationCoordintesCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Point? LocationCoordinates = e.Parameter as Point?;
+            if (LocationCoordinates != null)
+            {
+                Clipboard.SetText($"{LocationCoordinates.Value.X:0.00} {LocationCoordinates.Value.Y:0.00}");
+            }
+        }
         #endregion Commands
     }
 
@@ -1062,6 +1075,7 @@ namespace LoUAM
         public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand CopyLocationCoordintesCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand AlwaysOnTopCommand { get; set; } = new RoutedCommand();
     }

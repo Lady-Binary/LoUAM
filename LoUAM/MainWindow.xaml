@@ -12,20 +12,28 @@
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeRegionCommand}" CanExecute="MapChangeRegionCommand_CanExecute" Executed="MapChangeRegionCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeServerCommand}" CanExecute="MapChangeServerCommand_CanExecute" Executed="MapChangeServerCommand_Executed" />
-        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
-        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}" CanExecute="MoveCursorHereCommand_CanExecute" Executed="MoveCursorHereCommand_Executed" />
+        <!-- Places -->
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CanExecute="NewPlaceCommand_CanExecute" Executed="NewPlaceCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CanExecute="CopyLocationCoordintesCommand_CanExecute" Executed="CopyLocationCoordintesCommand_Executed" />
         <!-- Map -->
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.AlwaysOnTopCommand}" CanExecute="AlwaysOnTopCommand_CanExecute" Executed="AlwaysOnTop_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" CanExecute="MapAdditionalSettingsCommand_CanExecute" Executed="MapAdditionalSettingsCommand_Executed" />
+        <!-- Link Controls -->
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}"/>
-        <KeyBinding Key="M" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}"/>
+        <!-- File -->
+        <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
+        <!-- Places -->
         <KeyBinding Key="N" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" />
         <KeyBinding Key="P" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}"/>
-        <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
+        <KeyBinding Key="C" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" />
+        <!-- Map -->
+        <KeyBinding Key="M" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}"/>
+        <!-- Link Controls -->
+        <KeyBinding Key="K" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}"/>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -45,6 +53,7 @@
             <MenuItem Header="_Places">
                 <MenuItem Header="Add New Place..." Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+N" />
                 <MenuItem Header="_Edit Places..." Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" InputGestureText="Ctrl+P" />
+                <MenuItem Header="Copy Location Coordinates..." Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+C" />
             </MenuItem>
             <MenuItem Header="_Map">
                 <MenuItem Name="AlwaysOnTopMenu" Header="_Always On Top" Command="{x:Static local:MainWindowCustomCommands.AlwaysOnTopCommand}" />
@@ -73,6 +82,13 @@
                         CommandParameter="{Binding Path=PlacementTarget.LastMouseRightButtonUpCoords, RelativeSource={RelativeSource Mode=FindAncestor,  AncestorType={x:Type ContextMenu}}}"
                         CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                         />
+                    <MenuItem
+                        Header="Copy location coordinates"
+                        Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}"
+                        CommandParameter="{Binding Path=PlacementTarget.LastMouseRightButtonUpCoords, RelativeSource={RelativeSource Mode=FindAncestor,  AncestorType={x:Type ContextMenu}}}"
+                        CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                        />
+
                 </ContextMenu>
             </local:Map.ContextMenu>
         </local:Map>

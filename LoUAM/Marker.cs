@@ -14,7 +14,8 @@ namespace LoUAM
         Unknown = 0,
         HOPE,
         LoA,
-        LoU
+        LoU,
+        WhiteWolf
     }
 
     public enum MarkerRegionEnum
@@ -157,22 +158,25 @@ namespace LoUAM
 
         public static MarkerServerEnum URLToServer(string url)
         {
-            if (url == "")
-                return MarkerServerEnum.Unknown;
-
-            switch (url)
+            if (url == "cluster1.shardsonline.com:5148")
             {
-                case "cluster1.shardsonline.com:5148":
-                    return MarkerServerEnum.HOPE;
-                case "84.16.234.196:5001": // Crimson Sea
-                case "23.105.169.78:5001": // Ethereal Moon
-                    return MarkerServerEnum.LoA;
-                case "connect.uo4.life:5001":
-                case "connect.uo4.life:5002":
-                    return MarkerServerEnum.LoU;
-                default:
-                    return MarkerServerEnum.Unknown;
+                return MarkerServerEnum.HOPE;
             }
+            else if (url == "84.16.234.196:5001" // Crimson Sea
+                || url == "23.105.169.78:5001") // Ethereal Moon
+            { 
+                return MarkerServerEnum.LoA;
+            }
+            else if (url.Contains("uo4.life"))
+            {
+                return MarkerServerEnum.LoU;
+            }
+            else if (url == "135.181.132.140:5001")
+            {
+                return MarkerServerEnum.WhiteWolf;
+            }
+
+            return MarkerServerEnum.Unknown;
         }
 
         public static MarkerRegionEnum StringToRegion(string region)

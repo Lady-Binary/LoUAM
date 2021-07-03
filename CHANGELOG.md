@@ -1,5 +1,13 @@
 # Changelog
 
+## LoA 1.4.1.0 - LoUAM 1.0.0.2 (03/07/2021)
+
+#### Bugfixes:
+
+- Issue with LoUAM not correctly recognizing the LoU server anymore [#36](https://github.com/Lady-Binary/LoUAM/issues/36)
+
+---
+
 ## LoA 1.4.1.0 - LoUAM 1.0.0.1 (24/06/2021)
 
 #### Bugfixes:

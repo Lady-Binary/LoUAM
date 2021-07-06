@@ -8,10 +8,11 @@
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
+        public string NearestTown { get; set; }
         public string Region { get; set; }
         public string Server { get; set; }
 
-        public Player(long lastUpdate, ulong objectId, string displayName, float x, float y, float z, string region, string server)
+        public Player(long lastUpdate, ulong objectId, string displayName, float x, float y, float z, string nearestTown, string region, string server)
         {
             this.LastUpdate = lastUpdate;
             this.ObjectId = objectId;
@@ -19,6 +20,7 @@
             this.X = x;
             this.Y = y;
             this.Z = z;
+            this.NearestTown = nearestTown;
             this.Region = region;
             this.Server = server;
         }

@@ -329,6 +329,11 @@ namespace LoUAM
 
                 if (ClientStatus.CharacterInfo.CHARID != null)
                 {
+                    var towns = ControlPanel.Places
+                        .Where(place => place.Icon == MarkerIcon.town)
+                        .OrderBy(town => Math.Sqrt(Math.Pow((town.X - ClientStatus.CharacterInfo.CHARPOSX ?? 0), 2) + Math.Pow((town.Z - ClientStatus.CharacterInfo.CHARPOSZ ?? 0), 2)));
+                    string nearestTown = towns.FirstOrDefault()?.Label ?? "";
+
                     currentPlayer = new Player(
                         ClientStatus.TimeStamp,
                         ClientStatus.CharacterInfo.CHARID ?? 0,
@@ -336,6 +341,7 @@ namespace LoUAM
                         ClientStatus.CharacterInfo.CHARPOSX ?? 0,
                         ClientStatus.CharacterInfo.CHARPOSY ?? 0,
                         ClientStatus.CharacterInfo.CHARPOSZ ?? 0,
+                        nearestTown,
                         ClientStatus.CharacterInfo.REGION,
                         ClientStatus.ClientInfo.SERVER
                         );
@@ -480,9 +486,20 @@ namespace LoUAM
 
                 // Refresh the current player on link
                 if (TheLinkServer != null)
-                    TheLinkServer.CurrentPlayer = currentPlayer;
+                {
+                    lock (TheLinkServer.CurrentPlayerLock)
+                    {
+                        TheLinkServer.CurrentPlayer = currentPlayer;
+                    }
+                }
+
                 if (TheLinkClient != null)
-                    TheLinkClient.CurrentPlayer = currentPlayer;
+                {
+                    lock (TheLinkClient.CurrentPlayerLock)
+                    {
+                        TheLinkClient.CurrentPlayer = currentPlayer;
+                    }
+                }
 
                 if (CurrentServer != currentPlayer.Server)
                 {
@@ -959,6 +976,18 @@ namespace LoUAM
             UpdatePlaces();
         }
 
+        private void PlayersListCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void PlayersListCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.Players);
+            controlPanel.Owner = this;
+            controlPanel.ShowDialog();
+            UpdatePlaces();
+        }
+
         private void TrackPlayerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1029,6 +1058,7 @@ namespace LoUAM
         public static RoutedCommand MapChangeServerCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MapChangeRegionCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand PlayersListCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand CopyLocationCoordintesCommand { get; set; } = new RoutedCommand();

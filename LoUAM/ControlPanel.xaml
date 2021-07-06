@@ -29,7 +29,7 @@
                         <ColumnDefinition Width="20*"></ColumnDefinition>
                         <ColumnDefinition Width="20*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <ListView Name="placesListView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
+                    <ListView Name="PlacesListView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="Name" Width="75" DisplayMemberBinding="{Binding Label}" />
@@ -47,6 +47,31 @@
                     <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Name="EditPlaceButton" Click="EditPlaceButton_Click">Edit..</Button>
                     <Button Grid.Row="1" Grid.Column="3" HorizontalAlignment="Stretch" Name="MarkerPlaceButton" Click="MarkerPlaceButton_Click">Marker</Button>
                     <Button Grid.Row="1" Grid.Column="4" HorizontalAlignment="Stretch" Name="LocatePlaceButton" Click="LocatePlaceButton_Click">Locate</Button>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Players">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        
+                    </Grid.ColumnDefinitions>
+                    <ListView Name="PlayersListView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Name" Width="100" DisplayMemberBinding="{Binding DisplayName}" />
+                                <GridViewColumn Header="Panic!" Width="75" DisplayMemberBinding="{Binding Panic!}" />
+                                <GridViewColumn Header="Nearest Town" Width="75" DisplayMemberBinding="{Binding NearestTown}" />
+                                <GridViewColumn Header="X" Width="75" DisplayMemberBinding="{Binding X}" />
+                                <GridViewColumn Header="Z" Width="75" DisplayMemberBinding="{Binding Z}" />
+                                <GridViewColumn Header="Region" Width="75" DisplayMemberBinding="{Binding Region}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
                 </Grid>
             </TabItem>
             <TabItem Header="Map">

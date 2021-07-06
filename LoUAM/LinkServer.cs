@@ -188,9 +188,9 @@ namespace LoUAM
                                     {
                                         responseCode = HttpResponseCode.Ok;
                                         if (CurrentPlayer != null)
-                                            responseContent = JArray.FromObject(OtherPlayers.Values);
-                                        else
                                             responseContent = JArray.FromObject(OtherPlayers.Values.Union(Enumerable.Repeat(CurrentPlayer, 1)));
+                                        else
+                                            responseContent = JArray.FromObject(OtherPlayers.Values);
                                     }
                                 }
                             }

@@ -23,6 +23,7 @@ namespace LoUAM
         public enum Tab
         {
             Places = 0,
+            Players,
             Map,
             LinkControl
         }
@@ -35,6 +36,7 @@ namespace LoUAM
 
         public static bool TrackPlayer = true;
 
+        public static object PlacesLock = new object();
         public static List<Marker> Places = new List<Marker>();
 
         // Map
@@ -42,14 +44,19 @@ namespace LoUAM
         public static float Brightness = 1;
 
         DispatcherTimer RefreshLinkStatusTimer;
+        DispatcherTimer RefreshPlayersTimer;
 
         public ControlPanel()
         {
             InitializeComponent();
             RefreshLinkStatusTimer = new DispatcherTimer();
             RefreshLinkStatusTimer.Tick += RefreshLinkStatusTimer_Tick;
-            RefreshLinkStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            RefreshLinkStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             RefreshLinkStatusTimer.Start();
+            RefreshPlayersTimer = new DispatcherTimer();
+            RefreshPlayersTimer.Tick += RefreshPlayersTimer_Tick;
+            RefreshPlayersTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            RefreshPlayersTimer.Start();
         }
 
         public ControlPanel(Tab TabIndex) : this()
@@ -70,6 +77,7 @@ namespace LoUAM
             BrightnessSlider.Value = Brightness;
 
             RefreshPlaces();
+            RefreshPlayers();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -89,12 +97,13 @@ namespace LoUAM
 
         private void RefreshLinkStatusTimer_Tick(object sender, EventArgs e)
         {
-            if (MainWindow.TheMainWindow != null)
+            if (this.Owner as MainWindow != null)
             {
-                LinkStatus.Content = MainWindow.TheMainWindow.LinkStatusLabel.Content;
-                LinkStatus.Foreground = MainWindow.TheMainWindow.LinkStatusLabel.Foreground;
+                MainWindow mainWindow = this.Owner as MainWindow;
+                LinkStatus.Content = mainWindow.LinkStatusLabel.Content;
+                LinkStatus.Foreground = mainWindow.LinkStatusLabel.Foreground;
             }
-            if (MainWindow.TheServer != null || MainWindow.TheClient != null)
+            if (MainWindow.TheLinkServer != null || MainWindow.TheLinkClient != null)
             {
                 StartServer.IsEnabled = false;
                 LinkToServer.IsEnabled = false;
@@ -106,6 +115,57 @@ namespace LoUAM
                 LinkToServer.IsEnabled = true;
                 BreakConnection.IsEnabled = false;
             }
+        }
+
+        private delegate void RefreshPlayersDelegate();
+        private void RefreshPlayers()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshPlayersDelegate(RefreshPlayers));
+                return;
+            }
+            IEnumerable<Player> Players = null;
+            if (MainWindow.TheLinkClient != null)
+            {
+                lock (MainWindow.TheLinkClient.OtherPlayersLock)
+                {
+                    Players = MainWindow.TheLinkClient.OtherPlayers;
+                    lock (MainWindow.TheLinkClient.CurrentPlayerLock)
+                    {
+                        if (MainWindow.TheLinkClient.CurrentPlayer != null)
+                        {
+                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkClient.CurrentPlayer, 1));
+                        }
+                    }
+                }
+            }
+            if (MainWindow.TheLinkServer != null)
+            {
+                lock (MainWindow.TheLinkServer.OtherPlayersLock)
+                {
+                    Players = MainWindow.TheLinkServer.OtherPlayers.Values;
+                    lock (MainWindow.TheLinkServer.CurrentPlayerLock)
+                    {
+                        if (MainWindow.TheLinkServer.CurrentPlayer != null)
+                        {
+                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkServer.CurrentPlayer, 1));
+                        }
+                    }
+                }
+            }
+            if (Players != null)
+            {
+                PlayersListView.ItemsSource = Players.Where(player => player != null).OrderBy(player => player.DisplayName);
+            } else
+            {
+                PlayersListView.ItemsSource = null;
+            }
+        }
+
+        private void RefreshPlayersTimer_Tick(object sender, EventArgs e)
+        {
+            RefreshPlayers();
         }
 
         private void PortTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -195,7 +255,7 @@ namespace LoUAM
                 Dispatcher.Invoke(new RefreshPlacesDelegate(RefreshPlaces));
                 return;
             }
-            placesListView.ItemsSource = Places.OrderBy(place => place.Label);
+            PlacesListView.ItemsSource = Places.OrderBy(place => place.Label);
         }
 
         #endregion
@@ -443,7 +503,7 @@ namespace LoUAM
             var ip = await httpClient.GetStringAsync("https://api.ipify.org");
             HostTextBox.Text = ip;
 
-            if (MainWindow.TheServer == null)
+            if (MainWindow.TheLinkServer == null)
             {
                 if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
                 {
@@ -473,8 +533,8 @@ namespace LoUAM
 
                 try
                 {
-                    MainWindow.TheServer = new Server(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                    MainWindow.TheServer.StartServer();
+                    MainWindow.TheLinkServer = new LinkServer(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+                    MainWindow.TheLinkServer.StartServer();
                 }
                 catch (Exception ex)
                 {
@@ -493,7 +553,7 @@ namespace LoUAM
         {
             SaveSettings();
 
-            if (MainWindow.TheClient == null)
+            if (MainWindow.TheLinkClient == null)
             {
                 if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
                 {
@@ -534,8 +594,8 @@ namespace LoUAM
                         TheMainWindow.LinkStatusLabel.Content = string.Format(
                         "LoUAM Link connecting...");
                     }
-                    MainWindow.TheClient = new Client(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                    await MainWindow.TheClient.ConnectAsync();
+                    MainWindow.TheLinkClient = new LinkClient(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+                    await MainWindow.TheLinkClient.ConnectAsync();
                 } catch (Exception ex)
                 {
                     StartServer.IsEnabled = true;
@@ -558,19 +618,19 @@ namespace LoUAM
 
         private void BreakConnection_Click(object sender, RoutedEventArgs e)
         {
-            if (MainWindow.TheServer != null)
+            if (MainWindow.TheLinkServer != null)
             {
-                MainWindow.TheServer.StopServer();
-                MainWindow.TheServer = null;
+                MainWindow.TheLinkServer.StopServer();
+                MainWindow.TheLinkServer = null;
 
                 StartServer.IsEnabled = true;
                 LinkToServer.IsEnabled = true;
                 BreakConnection.IsEnabled = false;
             }
-            else if (MainWindow.TheClient != null)
+            else if (MainWindow.TheLinkClient != null)
             {
-                MainWindow.TheClient.Disconnect();
-                MainWindow.TheClient = null;
+                MainWindow.TheLinkClient.Disconnect();
+                MainWindow.TheLinkClient = null;
 
                 StartServer.IsEnabled = true;
                 LinkToServer.IsEnabled = true;
@@ -602,12 +662,12 @@ namespace LoUAM
 
         private void RemovePlaceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (placesListView.SelectedItem is Marker == false)
+            if (PlacesListView.SelectedItem is Marker == false)
             {
                 MessageBoxEx.Show(this, "No place selected.", "Remove place", MessageBoxButton.OK);
                 return;
             }
-            Marker SelectedPlace = (Marker)placesListView.SelectedItem;
+            Marker SelectedPlace = (Marker)PlacesListView.SelectedItem;
 
             String message = $"Do you really want to remove the place {SelectedPlace.Label}?";
             if (MessageBoxEx.Show(this, message, "Remove place", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
@@ -620,12 +680,12 @@ namespace LoUAM
 
         private void EditPlaceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (placesListView.SelectedItem is Marker == false)
+            if (PlacesListView.SelectedItem is Marker == false)
             {
                 MessageBoxEx.Show(this, "No place selected.", "Edit place", MessageBoxButton.OK);
                 return;
             }
-            Marker SelectedPlace = (Marker)placesListView.SelectedItem;
+            Marker SelectedPlace = (Marker)PlacesListView.SelectedItem;
 
             EditPlace editPlace = new EditPlace(SelectedPlace.Id);
             editPlace.Owner = this;
@@ -661,7 +721,8 @@ namespace LoUAM
         private void AlwaysOnTopCheckbox_Changed(object sender, RoutedEventArgs e)
         {
             AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
-            MainWindow.TheMainWindow.RefreshAlwaysOnTop();
+            MainWindow mainWindow = this.Owner as MainWindow;
+            if (mainWindow != null) mainWindow.RefreshAlwaysOnTop();
         }
     }
 }

@@ -122,7 +122,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Client.cs" />
+    <Compile Include="LinkClient.cs" />
     <Compile Include="EditPlace.xaml.cs">
       <DependentUpon>EditPlace.xaml</DependentUpon>
     </Compile>
@@ -135,7 +135,7 @@
     </Compile>
     <Compile Include="MapImage.cs" />
     <Compile Include="MapMarker.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="LinkServer.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

@@ -1,11 +1,13 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace LoUAM
 {
@@ -69,7 +71,7 @@ namespace LoUAM
         }
     }
 
-    public class Client
+    public class LinkClient
     {
         private readonly bool https;
         private readonly string host;
@@ -79,25 +81,38 @@ namespace LoUAM
         private HttpClientHandler handler;
         private HttpClient client;
 
+        private DispatcherTimer updateTimer;
+
         public enum ClientStateEnum
         {
             Disconnected,
             Connecting,
-            Connected
+            Connected,
+            ConnectionFailed
         }
-        private ClientStateEnum clientState;
-        public ClientStateEnum ClientState { get => clientState; set => clientState = value; }
+        public ClientStateEnum ClientState { get; set; }
 
-        public const int MAX_CONNECTION_ATTEMPTS = 3;
-        private int connectionAttempts = 0;
-        public int ConnectionAttempts { get => connectionAttempts; set => connectionAttempts = value; }
+        private const int MAX_CONNECTION_ATTEMPTS = 3;
+        public int ConnectionAttempts { get; private set; } = 0;
+        public string ConnectionError { get; set; } = "";
 
-        public Client(bool https, string host, int port, string password)
+        public readonly object CurrentPlayerLock = new object();
+        public Player CurrentPlayer { get; set; }
+
+        public readonly object OtherPlayersLock = new object();
+        public IEnumerable<Player> OtherPlayers { get; set; } = new List<Player>();
+
+        public LinkClient(bool https, string host, int port, string password)
         {
             this.https = https;
             this.host = host;
             this.port = port;
             this.password = password;
+
+            updateTimer = new DispatcherTimer();
+            updateTimer.Tick += TimerUpdate_TickAsync;
+            updateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            updateTimer.Start();
         }
 
         public void ResetConnectionAttempts()
@@ -111,6 +126,7 @@ namespace LoUAM
             {
                 throw new TooManyAttemptsException("Too many attempts.");
             }
+            this.ClientState = ClientStateEnum.Connecting;
             ConnectionAttempts++;
             handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback =
@@ -177,13 +193,17 @@ namespace LoUAM
             }
             catch (Exception ex)
             {
-                Disconnect();
-                throw new ConnectionErrorException("Connection failed.", ex);
+                if (ex.InnerException != null)
+                    ConnectionError = ex.InnerException.Message;
+                else
+                    ConnectionError = ex.Message;   
+                ClientState = ClientStateEnum.ConnectionFailed;
             }
         }
 
         public void Disconnect()
         {
+            this.updateTimer.IsEnabled = false;
             this.ClientState = ClientStateEnum.Disconnected;
             this.client = null;
             this.handler = null;
@@ -257,5 +277,82 @@ namespace LoUAM
                 throw new CommunicationErrorException("Cannot retrieve other players info.", ex);
             }
         }
+
+        public async Task UpdateServerAsync()
+        {
+            if (this.ClientState == ClientStateEnum.ConnectionFailed && ConnectionAttempts<MAX_CONNECTION_ATTEMPTS)
+            {
+                try
+                {
+                    this.ConnectionError = "";
+                    await this.ConnectAsync();
+                }
+                catch (TooManyAttemptsException ex)
+                {
+                    if (ex.InnerException != null)
+                        ConnectionError = ex.InnerException.Message;
+                    else
+                        ConnectionError = ex.Message;
+                    this.ClientState = ClientStateEnum.ConnectionFailed;
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null)
+                        ConnectionError = ex.InnerException.Message;
+                    else
+                        ConnectionError = ex.Message;
+                    this.ClientState = ClientStateEnum.ConnectionFailed;
+                    return;
+                }
+            }
+
+            if (ClientState == ClientStateEnum.Connected)
+            {
+                if (CurrentPlayer != null)
+                {
+                    try
+                    {
+                        await this.UpdatePlayer(CurrentPlayer);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.InnerException != null)
+                            ConnectionError = ex.InnerException.Message;
+                        else
+                            ConnectionError = ex.Message;
+                        this.ClientState = ClientStateEnum.ConnectionFailed;
+                        return;
+                    }
+                }
+
+                try
+                {
+                    OtherPlayers = await this.RetrievePlayers();
+                    if (CurrentPlayer != null)
+                    {
+                        OtherPlayers = OtherPlayers.Where(player => player != null && player.ObjectId != CurrentPlayer.ObjectId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null)
+                        ConnectionError = ex.InnerException.Message;
+                    else
+                        ConnectionError = ex.Message;
+                    this.ClientState = ClientStateEnum.ConnectionFailed;
+                    return;
+                }
+            }
+        }
+        private async void TimerUpdate_TickAsync(object sender, EventArgs e)
+        {
+            updateTimer.Stop();
+
+            await UpdateServerAsync();
+
+            updateTimer.Start();
+        }
+
     }
 }

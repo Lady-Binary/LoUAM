@@ -37,7 +37,7 @@ namespace LoUAM
         }
     }
 
-    public class Server
+    public class LinkServer
     {
         private readonly bool https;
         private readonly int port;
@@ -45,14 +45,17 @@ namespace LoUAM
         private bool isRunning = false;
         public bool IsRunning { get => isRunning; set => isRunning = value; }
 
-        public object PlayersLock { get; set; } = new object();
-        public IDictionary<ulong, Player> Players { get; } = new Dictionary<ulong, Player>();
+        public readonly object CurrentPlayerLock = new object();
+        public Player CurrentPlayer;
 
-        public Server() : this(true, 4443, "s3cr3t")
+        public readonly object OtherPlayersLock = new object();
+        public IDictionary<ulong, Player> OtherPlayers { get; } = new Dictionary<ulong, Player>();
+
+        public LinkServer() : this(true, 4443, "s3cr3t")
         {
         }
 
-        public Server(bool https, int port, string password)
+        public LinkServer(bool https, int port, string password)
         {
             this.https = https;
             this.port = port;
@@ -149,35 +152,46 @@ namespace LoUAM
                         if (context.Request.Method == HttpMethods.Get)
                         {
                             var urlParts = context.Request.Uri.OriginalString.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                            lock (PlayersLock)
+                            lock (OtherPlayersLock)
                             {
-                                if (urlParts.Length >= 2)
+                                lock (CurrentPlayerLock)
                                 {
-                                    if (ulong.TryParse(urlParts[1], out ulong ObjectId))
+                                    if (urlParts.Length >= 2)
                                     {
-                                        if (Players.ContainsKey(ObjectId))
+                                        if (ulong.TryParse(urlParts[1], out ulong ObjectId))
                                         {
-                                            responseCode = HttpResponseCode.Ok;
-                                            responseContent = JObject.FromObject(Players[ObjectId]);
+                                            if (CurrentPlayer.ObjectId == ObjectId)
+                                            {
+                                                responseCode = HttpResponseCode.Ok;
+                                                responseContent = JObject.FromObject(CurrentPlayer);
+                                            }
+                                            else if (OtherPlayers.ContainsKey(ObjectId))
+                                            {
+                                                responseCode = HttpResponseCode.Ok;
+                                                responseContent = JObject.FromObject(OtherPlayers[ObjectId]);
+                                            }
+                                            else
+                                            {
+                                                responseCode = HttpResponseCode.BadRequest;
+                                                responseContent = new JObject();
+                                                responseContent["err"] = "ObjectId specified not found.";
+                                            }
                                         }
                                         else
                                         {
                                             responseCode = HttpResponseCode.BadRequest;
                                             responseContent = new JObject();
-                                            responseContent["err"] = "ObjectId specified not found.";
+                                            responseContent["err"] = "Invalid ObjectId specified.";
                                         }
                                     }
                                     else
                                     {
-                                        responseCode = HttpResponseCode.BadRequest;
-                                        responseContent = new JObject();
-                                        responseContent["err"] = "Invalid ObjectId specified.";
+                                        responseCode = HttpResponseCode.Ok;
+                                        if (CurrentPlayer != null)
+                                            responseContent = JArray.FromObject(OtherPlayers.Values);
+                                        else
+                                            responseContent = JArray.FromObject(OtherPlayers.Values.Union(Enumerable.Repeat(CurrentPlayer, 1)));
                                     }
-                                }
-                                else
-                                {
-                                    responseCode = HttpResponseCode.Ok;
-                                    responseContent = JArray.FromObject(Players.Values);
                                 }
                             }
 
@@ -189,9 +203,9 @@ namespace LoUAM
                             {
                                 var player = JsonConvert.DeserializeObject<Player>(json);
                                 player.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                                lock (PlayersLock)
+                                lock (OtherPlayersLock)
                                 {
-                                    Players[player.ObjectId] = player;
+                                    OtherPlayers[player.ObjectId] = player;
                                 }
                                 responseCode = HttpResponseCode.Ok;
                                 responseContent = new JObject();
@@ -244,14 +258,14 @@ namespace LoUAM
                     {
                         lastCleanup = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                         // Remove outdated players, i.e. players not seen within the last 5 seconds
-                        lock (PlayersLock)
+                        lock (OtherPlayersLock)
                         {
-                            var PlayerIds = Players.Keys.ToList();
+                            var PlayerIds = OtherPlayers.Keys.ToList();
                             foreach (var PlayerId in PlayerIds)
                             {
-                                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Players[PlayerId].LastUpdate >= 5000)
+                                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - OtherPlayers[PlayerId].LastUpdate >= 5000)
                                 {
-                                    Players.Remove(PlayerId);
+                                    OtherPlayers.Remove(PlayerId);
                                 }
                             }
                         }
@@ -266,7 +280,7 @@ namespace LoUAM
         public void StopServer()
         {
             IsRunning = false;
-            Players.Clear();
+            OtherPlayers.Clear();
         }
     }
 }

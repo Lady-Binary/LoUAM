@@ -27,13 +27,10 @@ namespace LoUAM
     {
         public static string MINIMUM_LOU_VERSION = "1.3.0.0";
 
-        public static MainWindow TheMainWindow;
+        //public static MainWindow TheMainWindow;
 
-        private static Server theServer;
-        public static Server TheServer { get => theServer; set => theServer = value; }
-
-        private static Client theClient;
-        public static Client TheClient { get => theClient; set => theClient = value; }
+        public static LinkServer TheLinkServer { get; set; }
+        public static LinkClient TheLinkClient { get; set; }
 
         public static int CurrentClientProcessId = -1;
 
@@ -52,22 +49,13 @@ namespace LoUAM
 
         private string CurrentServer;
         private string CurrentRegion;
-        DispatcherTimer TimerRefreshCurrentPlayer;
-
-        DispatcherTimer TimerUpdateServer;
+        DispatcherTimer RefreshStatusTimer;
 
         public MainWindow()
         {
-            MainWindow.TheMainWindow = this;
-
-            TimerRefreshCurrentPlayer = new DispatcherTimer();
-            TimerRefreshCurrentPlayer.Tick += TimerRefreshCurrentPlayer_Tick;
-            TimerRefreshCurrentPlayer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-
-            TimerUpdateServer = new DispatcherTimer();
-            TimerUpdateServer.Tick += TimerUpdateServer_TickAsync;
-            TimerUpdateServer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            TimerUpdateServer.Start();
+            RefreshStatusTimer = new DispatcherTimer();
+            RefreshStatusTimer.Tick += RefreshStatusTimer_Tick;
+            RefreshStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
 
             InitializeComponent();
 
@@ -218,6 +206,7 @@ namespace LoUAM
 
             CheckMapData(region.ToString());
             MainMap.CurrentRegion = region;
+            CurrentRegion = region.ToString();
             UpdatePlaces();
         }
 
@@ -231,8 +220,9 @@ namespace LoUAM
             }
 
             AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
-            MainWindow.TheMainWindow.Topmost = ControlPanel.AlwaysOnTop;
+            this.Topmost = ControlPanel.AlwaysOnTop;
         }
+
         #region Timers
         public static int ExecuteCommandAsync(ClientCommand command)
         {
@@ -315,11 +305,14 @@ namespace LoUAM
         //        "NewCelador",
         //        "cluster1.shardsonline.com:5150"
         //        );
+        //private Player GetMockPlayer()
+        //{
+        //    MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        //    return MockPlayer;
+        //}
+
         private Player GetCurrentPlayer()
         {
-            //MockPlayer.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            //return MockPlayer;
-
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return null;
 
@@ -339,7 +332,7 @@ namespace LoUAM
                     currentPlayer = new Player(
                         ClientStatus.TimeStamp,
                         ClientStatus.CharacterInfo.CHARID ?? 0,
-                        TheClient != null || TheServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
+                        TheLinkClient != null || TheLinkServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
                         ClientStatus.CharacterInfo.CHARPOSX ?? 0,
                         ClientStatus.CharacterInfo.CHARPOSY ?? 0,
                         ClientStatus.CharacterInfo.CHARPOSZ ?? 0,
@@ -366,7 +359,7 @@ namespace LoUAM
             return currentPlayer;
         }
 
-        public bool CheckVersion()
+        private bool CheckVersion()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return false;
@@ -393,7 +386,7 @@ namespace LoUAM
             }
         }
 
-        public bool CheckMapData()
+        private bool CheckMapData()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return false;
@@ -414,7 +407,7 @@ namespace LoUAM
                             continue;
 
                         MapGenerator mapGenerator = new MapGenerator(region);
-                        mapGenerator.Owner = TheMainWindow;
+                        mapGenerator.Owner = this;
                         bool exportSuccessful = mapGenerator.ShowDialog() ?? false;
                         if (!exportSuccessful)
                         {
@@ -430,8 +423,7 @@ namespace LoUAM
 
             return MapDataExported;
         }
-
-        public bool CheckMapData(string region)
+        private bool CheckMapData(string region)
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
                 return false;
@@ -455,7 +447,7 @@ namespace LoUAM
                 if (MessageBoxEx.Show(this, $"It appears that the map data for the current region ({region}) is outdated.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data outdated for region {region}", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
                     MapGenerator mapGenerator = new MapGenerator(region.ToString());
-                    mapGenerator.Owner = TheMainWindow;
+                    mapGenerator.Owner = this;
                     if (mapGenerator.ShowDialog() ?? false)
                     {
                         return true;
@@ -471,10 +463,8 @@ namespace LoUAM
             return false;
         }
 
-        public void RefreshCurrentPlayer()
+        private void RefreshCurrentPlayerStatus()
         {
-            //Debug.Print("RefreshCurrentPlayer");
-
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -482,6 +472,18 @@ namespace LoUAM
 
             if (currentPlayer != null)
             {
+                if (ControlPanel.MyName.Trim() != "" && ControlPanel.MyName.Trim() != "(your name)")
+                {
+                    // Enforce display name, if set
+                    currentPlayer.DisplayName = ControlPanel.MyName;
+                }
+
+                // Refresh the current player on link
+                if (TheLinkServer != null)
+                    TheLinkServer.CurrentPlayer = currentPlayer;
+                if (TheLinkClient != null)
+                    TheLinkClient.CurrentPlayer = currentPlayer;
+
                 if (CurrentServer != currentPlayer.Server)
                 {
                     // Handle server change
@@ -522,158 +524,114 @@ namespace LoUAM
             else
             {
                 MainMap.RemoveAllMarkersOfType(MarkerType.CurrentPlayer);
+                // Refresh the current player on link
+                if (TheLinkServer != null)
+                    TheLinkServer.CurrentPlayer = null;
+                if (TheLinkClient != null)
+                    TheLinkClient.CurrentPlayer = null;
             }
-
-            stopwatch.Stop();
-            //Console.WriteLine("RefreshClientStatus completed in {0} ms", stopwatch.ElapsedMilliseconds);
         }
-        private void TimerRefreshCurrentPlayer_Tick(object sender, EventArgs e)
+        private void RefreshLinkStatus()
         {
-            //Debug.Print("TimerRefreshCurrentPlayer_Tick()");
-
-            //Debug.Print("this.TimerRefreshCurrentPlayer.Stop();");
-            TimerRefreshCurrentPlayer.Stop();
-
-            //Debug.Print("RefreshCurrentPlayer()");
-            RefreshCurrentPlayer();
-
-            //Debug.Print("TimerRefreshCurrentPlayer.Start();");
-            TimerRefreshCurrentPlayer.Start();
-        }
-
-        public async Task UpdateServerAsync()
-        {
-            if (TheClient == null && TheServer == null)
+            if (TheLinkServer != null)
             {
+                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
+
+                lock (TheLinkServer.OtherPlayersLock)
+                {
+                    if (TheLinkServer.OtherPlayers != null)
+                    {
+                        IEnumerable<Player> OtherPlayers = TheLinkServer.OtherPlayers.Values;
+                        if (OtherPlayers != null)
+                        {
+                            List<Marker> OtherMarkers = OtherPlayers.Select(player =>
+                                    new Marker(
+                                        MarkerFileEnum.None,
+                                        Marker.URLToServer(player.Server),
+                                        player.Region != "" && Enum.TryParse<MarkerRegionEnum>(player.Region, out MarkerRegionEnum playerRegion) ? playerRegion : MarkerRegionEnum.Unknown,
+                                        MarkerType.OtherPlayer,
+                                        player.ObjectId.ToString(),
+                                        MarkerIcon.none,
+                                        player.DisplayName,
+                                        player.X,
+                                        player.Y,
+                                        player.Z
+                                        )
+                                    ).ToList();
+                         
+   MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        }
+                    }
+                }
+
                 return;
             }
 
-            Player currentPlayer = GetCurrentPlayer();
-            if (currentPlayer != null && ControlPanel.MyName.Trim() != "" && ControlPanel.MyName.Trim() != "(your name)")
+            if (TheLinkClient != null)
             {
-                currentPlayer.DisplayName = ControlPanel.MyName;
-            }
-
-            if (TheServer != null)
-            {
-                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
-                lock (TheServer.PlayersLock)
+                switch (TheLinkClient.ClientState)
                 {
-                    if (TheServer.Players != null)
-                    {
-                        IEnumerable<Player> OtherPlayers = TheServer.Players.Values;
-                        if (currentPlayer != null)
+                    case LinkClient.ClientStateEnum.Disconnected:
                         {
-                            TheServer.Players[currentPlayer.ObjectId] = currentPlayer;
-                            OtherPlayers = OtherPlayers.Where(player => player.ObjectId != currentPlayer.ObjectId);
+                            if (TheLinkClient.ConnectionError != "")
+                                UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {TheLinkClient.ConnectionError}");
+                            else
+                                UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected.");
                         }
-                        List<Marker> OtherMarkers = OtherPlayers?.Select(player =>
-                                new Marker(
-                                    MarkerFileEnum.None,
-                                    Marker.URLToServer(player.Server),
-                                    player.Region != "" && Enum.TryParse<MarkerRegionEnum>(player.Region, out MarkerRegionEnum playerRegion) ? playerRegion : MarkerRegionEnum.Unknown,
-                                    MarkerType.OtherPlayer,
-                                    player.ObjectId.ToString(),
-                                    MarkerIcon.none,
-                                    player.DisplayName,
-                                    player.X,
-                                    player.Y,
-                                    player.Z
-                                    )
-                                ).ToList();
+                        break;
+                    case LinkClient.ClientStateEnum.Connecting:
+                        {
+                            UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheLinkClient.ConnectionAttempts})...");
+                        }
+                        break;
+                    case LinkClient.ClientStateEnum.Connected:
+                        {
+                            UpdateLinkStatus(Colors.Green, $"LoUAM Link connected to {ControlPanel.Host} on port {ControlPanel.Port}");
+                        }
+                        break;
+                    case LinkClient.ClientStateEnum.ConnectionFailed:
+                        {
+                            UpdateLinkStatus(Colors.Red, $"LoUAM Link connection to {ControlPanel.Host} on port {ControlPanel.Port} failed: {TheLinkClient.ConnectionError}");
+                        }
+                        break;
+                }
+
+                lock (TheLinkClient.OtherPlayersLock)
+                {
+                    if (TheLinkClient.OtherPlayers != null)
+                    {
+                        List<Marker> OtherMarkers = TheLinkClient.OtherPlayers
+                            .Where(player => player != null)
+                            .Select(player => new Marker(
+                                MarkerFileEnum.None,
+                                Marker.URLToServer(player.Server),
+                                (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
+                                MarkerType.OtherPlayer,
+                                player.ObjectId.ToString(),
+                                MarkerIcon.none,
+                                player.DisplayName,
+                                player.X,
+                                player.Y,
+                                player.Z
+                                )
+                            ).ToList();
                         MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
                     }
                 }
+
+                return;
             }
 
-            if (TheClient != null)
-            {
-                if (TheClient.ClientState != Client.ClientStateEnum.Connected)
-                {
-                    try
-                    {
-                        UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheClient.ConnectionAttempts + 1})...");
-                        await TheClient.ConnectAsync();
-                        if (TheClient.ClientState != Client.ClientStateEnum.Connected)
-                        {
-                            UpdateLinkStatus(Colors.Red, "LoUAM Link disconnected, could not connect!");
-                            TheClient.Disconnect();
-                            return;
-                        }
-                    }
-                    catch (TooManyAttemptsException ex)
-                    {
-                        UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {ex.Message}");
-                        TheClient.Disconnect();
-                        TheClient = null;
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {ex.Message}");
-                        TheClient.Disconnect();
-                        return;
-                    }
-                }
-                UpdateLinkStatus(Colors.Green, $"LoUAM Link connected to {ControlPanel.Host} on port {ControlPanel.Port}");
-
-                if (currentPlayer != null)
-                {
-                    try
-                    {
-                        await TheClient.UpdatePlayer(currentPlayer);
-                    }
-                    catch (Exception ex)
-                    {
-                        UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {ex.Message}");
-                        TheClient.Disconnect();
-                        return;
-                    }
-                }
-
-                try
-                {
-                    IEnumerable<Player> OtherPlayers = await TheClient.RetrievePlayers();
-                    if (currentPlayer != null)
-                    {
-                        OtherPlayers = OtherPlayers.Where(player => player.ObjectId != currentPlayer.ObjectId);
-                    }
-                    List<Marker> OtherMarkers = OtherPlayers
-                        .Select(player => new Marker(
-                            MarkerFileEnum.None,
-                            Marker.URLToServer(player.Server),
-                            (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
-                            MarkerType.OtherPlayer,
-                            player.ObjectId.ToString(),
-                            MarkerIcon.none,
-                            player.DisplayName,
-                            player.X,
-                            player.Y,
-                            player.Z
-                            )
-                        ).ToList();
-                    MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
-                }
-                catch (Exception ex)
-                {
-                    UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {ex.Message}");
-                    TheClient.Disconnect();
-                    return;
-                }
-            }
+            UpdateLinkStatus(Colors.Black, $"LoUAM Link not connected.");
         }
-        private async void TimerUpdateServer_TickAsync(object sender, EventArgs e)
+        private void RefreshStatusTimer_Tick(object sender, EventArgs e)
         {
-            //Debug.Print("UpdateServer_Tick()");
+            RefreshStatusTimer.Stop();
 
-            //Debug.Print("TimerUpdateServer.Stop();");
-            TimerUpdateServer.Stop();
+            RefreshCurrentPlayerStatus();
+            RefreshLinkStatus();
 
-            //Debug.Print("UpdateServer()");
-            await UpdateServerAsync();
-
-            //Debug.Print("TimerUpdateServer.Start();");
-            TimerUpdateServer.Start();
+            RefreshStatusTimer.Start();
         }
         #endregion
 
@@ -801,7 +759,7 @@ namespace LoUAM
         }
         private bool CheckForUnsavedChanges()
         {
-            if (MessageBoxEx.Show(TheMainWindow, "Are you sure you want to exit?", "Exit", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+            if (MessageBoxEx.Show(this, "Are you sure you want to exit?", "Exit", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
             {
                 return false;
             }
@@ -842,7 +800,7 @@ namespace LoUAM
                 return true;
             }
 
-            if (MessageBoxEx.Show(MainWindow.TheMainWindow, "Game client " + ProcessId.ToString() + " not yet injected. Inject now?", "Game client not yet injected", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+            if (MessageBoxEx.Show(this, "Game client " + ProcessId.ToString() + " not yet injected. Inject now?", "Game client not yet injected", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
             {
                 UpdateMainStatus(Colors.Black, "Connection to Legends of Aria game client aborted.");
                 return false;
@@ -864,11 +822,10 @@ namespace LoUAM
             UpdateMainStatus(Colors.Red, "Connection to Legends of Aria game client failed!");
             return false;
         }
-
         public void DoConnectToLoAClientCommand()
         {
             TargetAriaClientPanel.Visibility = Visibility.Visible;
-            TimerRefreshCurrentPlayer.Stop();
+            RefreshStatusTimer.Stop();
 
             MouseEventCallback handler = null;
             handler = (MouseEventType type, int x, int y) => {
@@ -902,7 +859,7 @@ namespace LoUAM
 
                 if (WindowTitle.ToString() != "Legends of Aria")
                 {
-                    MessageBoxEx.Show(MainWindow.TheMainWindow, "The selected window is not a Legends of Aria game client!");
+                    MessageBoxEx.Show(this, "The selected window is not a Legends of Aria game client!");
                     return true;
                 }
 
@@ -921,7 +878,7 @@ namespace LoUAM
                     {
                         RefreshMapTiles();
                     }
-                    TimerRefreshCurrentPlayer.Start();
+                    RefreshStatusTimer.Start();
                 }
 
                 return connected;
@@ -943,7 +900,6 @@ namespace LoUAM
             MouseHook.MouseDown += handler;
             MouseHook.HookStart();
         }
-
         private void ConnectToLoAClientCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             DoConnectToLoAClientCommand();

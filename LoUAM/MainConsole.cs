@@ -16,7 +16,7 @@ namespace LoUAM
         [DllImport("Kernel32")]
         static extern void FreeConsole();
 
-        static Server TheServer;
+        static LinkServer TheServer;
 
         static void PrintUsage()
         {
@@ -134,7 +134,7 @@ Example:
                     arg++;
                 }
 
-                TheServer = new Server(Https, Port, Password);
+                TheServer = new LinkServer(Https, Port, Password);
                 TheServer.StartServer();
 
                 Console.WriteLine("LoUAM Server started...");

@@ -99,7 +99,7 @@
         </DockPanel>
         <DockPanel Grid.Row="3" >
             <StatusBar>
-                <Label Name="LinkStatusLabel">LoUAM Link not connected</Label>
+                <Label Name="LinkStatusLabel">LoUAM Link not connected.</Label>
             </StatusBar>
         </DockPanel>
         <DockPanel Grid.Row="1" Name="TargetAriaClientPanel" Background="White" Visibility="Hidden" >

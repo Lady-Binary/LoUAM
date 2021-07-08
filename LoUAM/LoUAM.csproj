@@ -134,7 +134,7 @@
       <DependentUpon>ControlPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="MapImage.cs" />
-    <Compile Include="MapMarker.cs" />
+    <Compile Include="MapPlace.cs" />
     <Compile Include="LinkServer.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -149,7 +149,7 @@
     <Compile Include="Map.xaml.cs">
       <DependentUpon>Map.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Marker.cs" />
+    <Compile Include="Place.cs" />
     <Compile Include="MessageBoxEx.cs" />
     <Compile Include="MouseHook.cs" />
     <Compile Include="Player.cs" />

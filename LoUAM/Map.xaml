@@ -37,7 +37,7 @@
                             </TransformGroup>
                         </Canvas.LayoutTransform>
                     </Canvas>
-                    <Canvas Name="MarkersCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">
+                    <Canvas Name="PlacesCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">
                         <Canvas.LayoutTransform>
                             <TransformGroup>
                                 <ScaleTransform ScaleX="1" ScaleY="-1" />

@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 
 namespace LoUAM
 {
-    public partial class MapMarker : System.Windows.Controls.Grid
+    public partial class MapPlace : System.Windows.Controls.Grid
     {
         private const double DEFAULT_MARKER_WIDTH = 16;
         private const double DEFAULT_MARKER_HEIGHT = 16;
@@ -19,23 +19,23 @@ namespace LoUAM
         private TranslateTransform centerTransform;
         public TranslateTransform TranslateTransform { get => centerTransform; set => centerTransform = value; }
 
-        private TextBlock topMarkerLabel;
-        private FrameworkElement markerElement;
-        private TextBlock bottomMarkerLabel;
+        private TextBlock topPlaceLabel;
+        private FrameworkElement placeElement;
+        private TextBlock bottomPlaceLabel;
 
-        public MapMarker(Marker marker)
+        public MapPlace(Place place)
         {
             TransformGroup transformGroup = new TransformGroup();
 
-            // Center the marker exactly on its coordinates,
-            // and catch if/when the marker resizes so that we re-center
+            // Center the place exactly on its coordinates,
+            // and catch if/when the place resizes so that we re-center
             TranslateTransform = new TranslateTransform
             {
                 X = -this.ActualWidth / 2,
                 Y = -this.ActualHeight / 2
             };
             transformGroup.Children.Add(TranslateTransform);
-            this.SizeChanged += MapMarker_SizeChanged;
+            this.SizeChanged += MapPlace_SizeChanged;
 
             // And prepare a scale transform, can be used for example to keep aspect ratio
             ScaleTransform = new ScaleTransform
@@ -53,54 +53,54 @@ namespace LoUAM
             this.RowDefinitions.Add(new RowDefinition() { MinHeight = 20 });
 
             // Top label
-            this.topMarkerLabel = new TextBlock
+            this.topPlaceLabel = new TextBlock
             {
-                Name = "TopLabel_" + marker.Id,
+                Name = "TopLabel_" + place.Id,
                 Text = "",
                 FontSize = 12,
                 Foreground = Brushes.Yellow,
-                Tag = marker.Type
+                Tag = place.Type
             };
-            this.topMarkerLabel.SetValue(Grid.RowProperty, 0);
-            this.Children.Add(this.topMarkerLabel);
+            this.topPlaceLabel.SetValue(Grid.RowProperty, 0);
+            this.Children.Add(this.topPlaceLabel);
 
             // Icon
-            switch (marker.Type)
+            switch (place.Type)
             {
-                case MarkerType.CurrentPlayer:
-                    this.markerElement = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
+                case PlaceType.CurrentPlayer:
+                    this.placeElement = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
                     break;
 
-                case MarkerType.OtherPlayer:
-                    this.markerElement = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
+                case PlaceType.OtherPlayer:
+                    this.placeElement = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
                     break;
 
                 default:
-                    this.markerElement = new Image
+                    this.placeElement = new Image
                     {
-                        Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)marker.Icon}.png", UriKind.Absolute)),
+                        Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)place.Icon}.png", UriKind.Absolute)),
                     };
                     break;
             }
-            markerElement.SetValue(Grid.RowProperty, 1);
-            this.Children.Add(this.markerElement);
+            placeElement.SetValue(Grid.RowProperty, 1);
+            this.Children.Add(this.placeElement);
 
             // Bottom label
-            this.bottomMarkerLabel = new TextBlock
+            this.bottomPlaceLabel = new TextBlock
             {
-                Name = "BottomLabel_" + marker.Id,
-                Text = marker.Label,
+                Name = "BottomLabel_" + place.Id,
+                Text = place.Label,
                 FontSize = 12,
                 Foreground = Brushes.Yellow,
-                Tag = marker.Type
+                Tag = place.Type
             };
-            this.bottomMarkerLabel.SetValue(Grid.RowProperty, 2);
-            this.Children.Add(this.bottomMarkerLabel);
+            this.bottomPlaceLabel.SetValue(Grid.RowProperty, 2);
+            this.Children.Add(this.bottomPlaceLabel);
         }
 
-        private void MapMarker_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void MapPlace_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // Re-center the marker exactly on its coordinates
+            // Re-center the place exactly on its coordinates
             TranslateTransform.X = -this.ActualWidth / 2;
             TranslateTransform.Y = -this.ActualHeight / 2;
         }

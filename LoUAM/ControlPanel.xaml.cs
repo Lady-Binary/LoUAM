@@ -37,7 +37,7 @@ namespace LoUAM
         public static bool TrackPlayer = true;
 
         public static object PlacesLock = new object();
-        public static List<Marker> Places = new List<Marker>();
+        public static List<Place> Places = new List<Place>();
 
         // Map
         public static bool AlwaysOnTop = false;
@@ -259,7 +259,7 @@ namespace LoUAM
         }
 
         #endregion
-        private static Marker LoadPlace(MarkerFileEnum file, MarkerServerEnum server, MarkerRegionEnum region, XmlNode placeNode)
+        private static Place LoadPlace(PlaceFileEnum file, PlaceServerEnum server, PlaceRegionEnum region, XmlNode placeNode)
         {
             try
             {
@@ -267,7 +267,7 @@ namespace LoUAM
                 string name = nameNode.InnerText;
 
                 XmlNode typeNode = placeNode.SelectSingleNode("type");
-                MarkerIcon type = Enum.TryParse<MarkerIcon>(typeNode.InnerText, true, out type) ? type : MarkerIcon.none;
+                PlaceIcon type = Enum.TryParse<PlaceIcon>(typeNode.InnerText, true, out type) ? type : PlaceIcon.none;
 
                 XmlNode zNode = placeNode.SelectSingleNode("z");
                 double z = double.TryParse(zNode.InnerText, out z) ? z : 0;
@@ -275,9 +275,9 @@ namespace LoUAM
                 XmlNode xNode = placeNode.SelectSingleNode("x");
                 double x = double.TryParse(xNode.InnerText, out x) ? x : 0;
 
-                Marker marker = new Marker(file, server, region, MarkerType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
+                Place place = new Place(file, server, region, PlaceType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
 
-                return marker;
+                return place;
             }
             catch (Exception ex)
             {
@@ -287,16 +287,16 @@ namespace LoUAM
         }
         public static void LoadPlaces()
         {
-            List<Marker> CommonPlaces = LoadPlaces(MarkerFileEnum.Common, "common-places.xml");
-            List<Marker> PersonalPlaces = LoadPlaces(MarkerFileEnum.Personal, "personal-places.xml");
+            List<Place> CommonPlaces = LoadPlaces(PlaceFileEnum.Common, "common-places.xml");
+            List<Place> PersonalPlaces = LoadPlaces(PlaceFileEnum.Personal, "personal-places.xml");
 
             Places = CommonPlaces
                     .Union(PersonalPlaces)
                     .ToList();
         }
-        public static List<Marker> LoadPlaces(MarkerFileEnum file, string fileName)
+        public static List<Place> LoadPlaces(PlaceFileEnum file, string fileName)
         {
-            List<Marker> LoadedPlaces = new List<Marker>();
+            List<Place> LoadedPlaces = new List<Place>();
 
             if (!File.Exists(fileName))
             {
@@ -318,16 +318,16 @@ namespace LoUAM
 
             foreach(XmlNode ServerNode in doc.DocumentElement.ChildNodes)
             {
-                Enum.TryParse(ServerNode.Name, true, out MarkerServerEnum Server);
+                Enum.TryParse(ServerNode.Name, true, out PlaceServerEnum Server);
                 foreach (XmlNode RegionNode in ServerNode.ChildNodes)
                 {
-                    Enum.TryParse(RegionNode.Name, true, out MarkerRegionEnum Region);
+                    Enum.TryParse(RegionNode.Name, true, out PlaceRegionEnum Region);
                     foreach (XmlNode PlaceNode in RegionNode.ChildNodes)
                     {
-                        Marker marker = LoadPlace(file, Server, Region, PlaceNode);
-                        if (marker != null)
+                        Place place = LoadPlace(file, Server, Region, PlaceNode);
+                        if (place != null)
                         {
-                            LoadedPlaces.Add(marker);
+                            LoadedPlaces.Add(place);
                         }
                     }
                 }
@@ -335,12 +335,12 @@ namespace LoUAM
 
             return LoadedPlaces;
         }
-        public static List<Marker> LoadPlacesFromLoACSV(string fileName)
+        public static List<Place> LoadPlacesFromLoACSV(string fileName)
         {
             // This is only a helper method we've used to import places from the following map
             // https://legendsofaria.gamepedia.com/Celador_Locations
 
-            List<Marker> LoadedPlaces = new List<Marker>();
+            List<Place> LoadedPlaces = new List<Place>();
 
             string[] tokens;
             char[] separators = { ',' };
@@ -360,42 +360,42 @@ namespace LoUAM
                 string x = tokens[2];
                 string y = tokens[3];
 
-                MarkerIcon _icon = MarkerIcon.point_of_interest;
+                PlaceIcon _icon = PlaceIcon.point_of_interest;
                 switch (type)
                 {
                     case "City":
-                        _icon = MarkerIcon.town;
+                        _icon = PlaceIcon.town;
                         break;
 
                     case "Transport":
-                        _icon = MarkerIcon.teleporter;
+                        _icon = PlaceIcon.teleporter;
                         break;
 
                     case "Mine":
-                        _icon = MarkerIcon.miners_guild;
+                        _icon = PlaceIcon.miners_guild;
                         break;
 
                     case "Monsters":
-                        _icon = MarkerIcon.graveyard;
+                        _icon = PlaceIcon.graveyard;
                         break;
 
                     case "Dungeons":
-                        _icon = MarkerIcon.dungeon;
+                        _icon = PlaceIcon.dungeon;
                         break;
 
                     case "Taming":
-                        _icon = MarkerIcon.point_of_interest;
+                        _icon = PlaceIcon.point_of_interest;
                         break;
                 }
 
                 double _x = double.Parse(x);
                 double _z = double.Parse(y);
 
-                Marker marker = new Marker(
-                    MarkerFileEnum.Common,
-                    MarkerServerEnum.LoA,
-                     MarkerRegionEnum.NewCelador,
-                      MarkerType.Place,
+                Place place = new Place(
+                    PlaceFileEnum.Common,
+                    PlaceServerEnum.LoA,
+                     PlaceRegionEnum.NewCelador,
+                      PlaceType.Place,
                      Guid.NewGuid().ToString("N"),
                      _icon,
                      name,
@@ -404,7 +404,7 @@ namespace LoUAM
                      _z)
                      ;
 
-                LoadedPlaces.Add(marker);
+                LoadedPlaces.Add(place);
             }
 
             return LoadedPlaces;
@@ -412,13 +412,13 @@ namespace LoUAM
 
         public static void SavePlaces()
         {
-            List<Marker> CommonPlaces = Places.Where(place => place.File == MarkerFileEnum.Common).ToList();
+            List<Place> CommonPlaces = Places.Where(place => place.File == PlaceFileEnum.Common).ToList();
             SavePlaces("common-places.xml", CommonPlaces);
 
-            List<Marker> PersonalPlaces = Places.Where(place => place.File == MarkerFileEnum.Personal).ToList();
+            List<Place> PersonalPlaces = Places.Where(place => place.File == PlaceFileEnum.Personal).ToList();
             SavePlaces("personal-places.xml", PersonalPlaces);
         }
-        public static void SavePlaces(string fileName, List<Marker> places)
+        public static void SavePlaces(string fileName, List<Place> places)
         {
             XmlDocument doc;
             doc = new XmlDocument();
@@ -430,19 +430,19 @@ namespace LoUAM
             XmlElement placesNode = doc.CreateElement(string.Empty, "places", string.Empty);
             doc.AppendChild(placesNode);
 
-            var servers = Enum.GetValues(typeof(MarkerServerEnum));
-            foreach (MarkerServerEnum server in servers)
+            var servers = Enum.GetValues(typeof(PlaceServerEnum));
+            foreach (PlaceServerEnum server in servers)
             {
-                if (server == MarkerServerEnum.Unknown)
+                if (server == PlaceServerEnum.Unknown)
                     continue;
 
                 XmlElement serverNode = doc.CreateElement(string.Empty, server.ToString(), string.Empty);
                 placesNode.AppendChild(serverNode);
 
-                var regions = Enum.GetValues(typeof(MarkerRegionEnum));
-                foreach (MarkerRegionEnum region in regions)
+                var regions = Enum.GetValues(typeof(PlaceRegionEnum));
+                foreach (PlaceRegionEnum region in regions)
                 {
-                    if (region == MarkerRegionEnum.Unknown)
+                    if (region == PlaceRegionEnum.Unknown)
                         continue;
 
                     XmlElement regionNode = doc.CreateElement(string.Empty, region.ToString(), string.Empty);
@@ -662,12 +662,12 @@ namespace LoUAM
 
         private void RemovePlaceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (PlacesListView.SelectedItem is Marker == false)
+            if (PlacesListView.SelectedItem is Place == false)
             {
                 MessageBoxEx.Show(this, "No place selected.", "Remove place", MessageBoxButton.OK);
                 return;
             }
-            Marker SelectedPlace = (Marker)PlacesListView.SelectedItem;
+            Place SelectedPlace = (Place)PlacesListView.SelectedItem;
 
             String message = $"Do you really want to remove the place {SelectedPlace.Label}?";
             if (MessageBoxEx.Show(this, message, "Remove place", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
@@ -680,12 +680,12 @@ namespace LoUAM
 
         private void EditPlaceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (PlacesListView.SelectedItem is Marker == false)
+            if (PlacesListView.SelectedItem is Place == false)
             {
                 MessageBoxEx.Show(this, "No place selected.", "Edit place", MessageBoxButton.OK);
                 return;
             }
-            Marker SelectedPlace = (Marker)PlacesListView.SelectedItem;
+            Place SelectedPlace = (Place)PlacesListView.SelectedItem;
 
             EditPlace editPlace = new EditPlace(SelectedPlace.Id);
             editPlace.Owner = this;
@@ -693,9 +693,9 @@ namespace LoUAM
             RefreshPlaces();
         }
 
-        private void MarkerPlaceButton_Click(object sender, RoutedEventArgs e)
+        private void PlacePlaceButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxEx.Show(this, "Not implemented!", "Marker Place", MessageBoxButton.OK);
+            MessageBoxEx.Show(this, "Not implemented!", "Place Place", MessageBoxButton.OK);
         }
 
         private void LocatePlaceButton_Click(object sender, RoutedEventArgs e)

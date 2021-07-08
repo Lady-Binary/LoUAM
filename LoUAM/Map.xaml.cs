@@ -19,11 +19,11 @@ namespace LoUAM
     {
         public static readonly string MAP_DATA_FOLDER = Path.GetFullPath("./MapData");
 
-        private MarkerServerEnum currentServer = MarkerServerEnum.Unknown;
-        public MarkerServerEnum CurrentServer { get => currentServer; set { currentServer = value; this.ServerLabel.Content = $"Server: {value}"; } }
+        private PlaceServerEnum currentServer = PlaceServerEnum.Unknown;
+        public PlaceServerEnum CurrentServer { get => currentServer; set { currentServer = value; this.ServerLabel.Content = $"Server: {value}"; } }
 
-        private MarkerRegionEnum currentRegion = MarkerRegionEnum.Unknown;
-        public MarkerRegionEnum CurrentRegion { get { return currentRegion; } set { currentRegion = value; this.RegionLabel.Content = $"Region: {value}"; this.RefreshMapTiles($"{MAP_DATA_FOLDER }/{value}"); } }
+        private PlaceRegionEnum currentRegion = PlaceRegionEnum.Unknown;
+        public PlaceRegionEnum CurrentRegion { get { return currentRegion; } set { currentRegion = value; this.RegionLabel.Content = $"Region: {value}"; this.RefreshMapTiles($"{MAP_DATA_FOLDER }/{value}"); } }
 
         public Map()
         {
@@ -162,8 +162,8 @@ namespace LoUAM
             scaleTransform.ScaleX = e.NewValue;
             scaleTransform.ScaleY = e.NewValue;
 
-            // But resize markers so that they preserve their aspect and position
-            RefreshMarkers(this.Markers);
+            // But resize places so that they preserve their aspect and position
+            RefreshPlaces(this.Places);
 
             var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
                                                 scrollViewer.ViewportHeight / 2);
@@ -236,35 +236,35 @@ namespace LoUAM
 
         #endregion
 
-        #region Marker properties and methods
-        private Dictionary<MarkerType, Dictionary<string, Marker>> Markers = new Dictionary<MarkerType, Dictionary<string, Marker>>();
+        #region Place properties and methods
+        private Dictionary<PlaceType, Dictionary<string, Place>> Places = new Dictionary<PlaceType, Dictionary<string, Place>>();
 
-        private void AddMarker(Marker marker)
+        private void AddPlace(Place place)
         {
-            MapMarker mapMarker = new MapMarker(marker);
+            MapPlace mapPlace = new MapPlace(place);
             TransformGroup transformGroup = new TransformGroup();
             Binding b = new Binding("scaleTransform");
-            //mapMarker.LayoutTransform = transformGroup;
-            mapMarker.SetBinding(MapMarker.LayoutTransformProperty, b);
-            mapMarker.Name = "Marker_" + marker.Id;
-            mapMarker.Tag = marker.Type;
-            mapMarker.PreviewMouseWheel += OnPreviewMouseWheel;
+            //mapPlace.LayoutTransform = transformGroup;
+            mapPlace.SetBinding(MapPlace.LayoutTransformProperty, b);
+            mapPlace.Name = "Place_" + place.Id;
+            mapPlace.Tag = place.Type;
+            mapPlace.PreviewMouseWheel += OnPreviewMouseWheel;
 
-            MarkersCanvas.Children.Add(
-                mapMarker
+            PlacesCanvas.Children.Add(
+                mapPlace
                 );
-            RefreshMarker(marker, mapMarker);
+            RefreshPlace(place, mapPlace);
         }
 
-        private void RefreshMarker(Marker marker, FrameworkElement element)
+        private void RefreshPlace(Place place, FrameworkElement element)
         {
             if (element != null)
             {
-                Canvas.SetLeft(element, marker.X);
-                Canvas.SetTop(element, marker.Z);
+                Canvas.SetLeft(element, place.X);
+                Canvas.SetTop(element, place.Z);
 
                 // scale back so that it preserves aspect ratio
-                ScaleTransform scaleTransform = (element as MapMarker).ScaleTransform;
+                ScaleTransform scaleTransform = (element as MapPlace).ScaleTransform;
                 scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
                 scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
             }
@@ -272,7 +272,7 @@ namespace LoUAM
 
         public void Center(double X, double Z)
         {
-            Point ScrollLocation = MarkersCanvas.TranslatePoint(new Point(X, Z), MapGrid);
+            Point ScrollLocation = PlacesCanvas.TranslatePoint(new Point(X, Z), MapGrid);
 
             double offsetX = (ScrollLocation.X * scaleTransform.ScaleX - (scrollViewer.ViewportWidth / 2));
             double offsetY = (ScrollLocation.Y * scaleTransform.ScaleY - (scrollViewer.ViewportHeight / 2));
@@ -281,73 +281,73 @@ namespace LoUAM
             scrollViewer.ScrollToVerticalOffset(offsetY);
         }
 
-        private void RefreshMarkers(Dictionary<MarkerType, Dictionary<string, Marker>> markers)
+        private void RefreshPlaces(Dictionary<PlaceType, Dictionary<string, Place>> places)
         {
-            foreach (var markerType in markers.Keys)
+            foreach (var placeType in places.Keys)
             {
-                RefreshMarkers(markerType, markers[markerType]);
+                RefreshPlaces(placeType, places[placeType]);
             }
         }
-        private void RefreshMarkers(MarkerType markerType, Dictionary<string, Marker> markers)
+        private void RefreshPlaces(PlaceType placeType, Dictionary<string, Place> places)
         {
             // Get all the elements
-            var elements = MarkersCanvas.Children.OfType<FrameworkElement>().Where(i => i.Tag.ToString() == markerType.ToString()).ToDictionary(i => i.Name, i => i);
+            var elements = PlacesCanvas.Children.OfType<FrameworkElement>().Where(i => i.Tag.ToString() == placeType.ToString()).ToDictionary(i => i.Name, i => i);
 
-            foreach (var marker in markers.Values)
+            foreach (var place in places.Values)
             {
-                if (elements.Keys.Contains("Marker_" + marker.Id))
+                if (elements.Keys.Contains("Place_" + place.Id))
                 {
-                    // Refresh existing markers
-                    RefreshMarker(marker, elements["Marker_" + marker.Id]);
-                    elements.Remove("Marker_" + marker.Id);
+                    // Refresh existing places
+                    RefreshPlace(place, elements["Place_" + place.Id]);
+                    elements.Remove("Place_" + place.Id);
                 }
                 else
                 {
-                    // Add missing markers
-                    AddMarker(marker);
+                    // Add missing places
+                    AddPlace(place);
                 }
             }
 
-            // And remove images that are left of this type, i.e. markers and labels that have no corresponding marker anymore
+            // And remove images that are left of this type, i.e. places and labels that have no corresponding place anymore
             foreach (var element in elements)
             {
-                MarkersCanvas.Children.Remove(element.Value);
+                PlacesCanvas.Children.Remove(element.Value);
             }
         }
 
-        public void UpdateAllMarkersOfType(MarkerType markerType, IEnumerable<Marker> markers)
+        public void UpdateAllPlacesOfType(PlaceType placeType, IEnumerable<Place> places)
         {
-            if (!Markers.Keys.Contains(markerType))
+            if (!Places.Keys.Contains(placeType))
             {
-                // First marker of this type
-                Markers[markerType] = new Dictionary<string, Marker>();
+                // First place of this type
+                Places[placeType] = new Dictionary<string, Place>();
             }
 
-            IEnumerable<Marker> filteredMarkers = markers.Where(m => m.Server == CurrentServer && m.Region == CurrentRegion);
+            IEnumerable<Place> filteredPlaces = places.Where(m => m.Server == CurrentServer && m.Region == CurrentRegion);
 
-            var markersIds = Markers[markerType].Keys.ToList();
+            var placesIds = Places[placeType].Keys.ToList();
 
-            foreach (Marker marker in filteredMarkers)
+            foreach (Place place in filteredPlaces)
             {
-                // Refresh or add existing markers
-                Markers[markerType][marker.Id] = marker;
-                if (markersIds.Contains(marker.Id)) markersIds.Remove(marker.Id);
+                // Refresh or add existing places
+                Places[placeType][place.Id] = place;
+                if (placesIds.Contains(place.Id)) placesIds.Remove(place.Id);
             }
 
-            // Remove orphan markers left
-            foreach (var markerId in markersIds)
+            // Remove orphan places left
+            foreach (var placeId in placesIds)
             {
-                Markers[markerType].Remove(markerId);
+                Places[placeType].Remove(placeId);
             }
 
-            RefreshMarkers(markerType, Markers[markerType]);
+            RefreshPlaces(placeType, Places[placeType]);
         }
-        public void RemoveAllMarkersOfType(MarkerType markerType)
+        public void RemoveAllPlacesOfType(PlaceType placeType)
         {
-            if (Markers != null && Markers.ContainsKey(markerType))
+            if (Places != null && Places.ContainsKey(placeType))
             {
-                Markers[markerType].Clear();
-                RefreshMarkers(Markers);
+                Places[placeType].Clear();
+                RefreshPlaces(Places);
             }
         }
 

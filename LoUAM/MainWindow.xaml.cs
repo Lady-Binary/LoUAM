@@ -79,7 +79,7 @@ namespace LoUAM
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
 
-            var servers = Enum.GetValues(typeof(MarkerServerEnum));
+            var servers = Enum.GetValues(typeof(PlaceServerEnum));
             foreach (var server in servers)
             {
                 MenuItem newServerMenuItem = new MenuItem();
@@ -89,7 +89,7 @@ namespace LoUAM
                 if (ServerMenuItem.Items.Count == 0) newServerMenuItem.IsChecked = true;
                 ServerMenuItem.Items.Add(newServerMenuItem);
             }
-            var regions = Enum.GetValues(typeof(MarkerRegionEnum));
+            var regions = Enum.GetValues(typeof(PlaceRegionEnum));
             foreach (var region in regions)
             {
                 MenuItem newRegionMenuItem = new MenuItem();
@@ -108,8 +108,8 @@ namespace LoUAM
 
             AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
             RefreshAlwaysOnTop();
-            ChangeRegion(MarkerRegionEnum.Unknown);
-            ChangeServer(MarkerServerEnum.Unknown);
+            ChangeRegion(PlaceRegionEnum.Unknown);
+            ChangeServer(PlaceServerEnum.Unknown);
 
             if (!Directory.Exists(Map.MAP_DATA_FOLDER))
             {
@@ -144,7 +144,7 @@ namespace LoUAM
                 Dispatcher.Invoke(new UpdatePlacesDelegate(UpdatePlaces));
                 return;
             }
-            MainMap.UpdateAllMarkersOfType(MarkerType.Place, ControlPanel.Places);
+            MainMap.UpdateAllPlacesOfType(PlaceType.Place, ControlPanel.Places);
         }
 
         public delegate void RefreshMapTilesDelegate();
@@ -158,8 +158,8 @@ namespace LoUAM
             MainMap.RefreshMapTiles();
         }
 
-        public delegate void ChangeServerDelegate(MarkerServerEnum server);
-        public void ChangeServer(MarkerServerEnum server)
+        public delegate void ChangeServerDelegate(PlaceServerEnum server);
+        public void ChangeServer(PlaceServerEnum server)
         {
             if (!Dispatcher.CheckAccess())
             {
@@ -183,8 +183,8 @@ namespace LoUAM
             UpdatePlaces();
         }
 
-        public delegate void ChangeRegionDelegate(MarkerRegionEnum region);
-        public void ChangeRegion(MarkerRegionEnum region)
+        public delegate void ChangeRegionDelegate(PlaceRegionEnum region);
+        public void ChangeRegion(PlaceRegionEnum region)
         {
             if (!Dispatcher.CheckAccess())
             {
@@ -330,7 +330,7 @@ namespace LoUAM
                 if (ClientStatus.CharacterInfo.CHARID != null)
                 {
                     var towns = ControlPanel.Places
-                        .Where(place => place.Icon == MarkerIcon.town)
+                        .Where(place => place.Icon == PlaceIcon.town)
                         .OrderBy(town => Math.Sqrt(Math.Pow((town.X - ClientStatus.CharacterInfo.CHARPOSX ?? 0), 2) + Math.Pow((town.Z - ClientStatus.CharacterInfo.CHARPOSZ ?? 0), 2)));
                     string nearestTown = towns.FirstOrDefault()?.Label ?? "";
 
@@ -406,7 +406,7 @@ namespace LoUAM
             {
                 if (MessageBoxEx.Show(this, $"It appears that this is the first time you run LoUAM.\n\nLoUAM will now extract the map images from the Legends of Aria Client: this operation is required and might take several minutes, depending on your computer.\n\nYour Legends of Aria client will become unresponsive while the export is in progress, so please make sure your character is in a safe spot.\n\nClick OK when ready to continue.", $"Map data not present", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
-                    var regions = Enum.GetNames(typeof(MarkerRegionEnum));
+                    var regions = Enum.GetNames(typeof(PlaceRegionEnum));
                     foreach (var region in regions)
                     {
                         if (region == "Unknown")
@@ -505,42 +505,42 @@ namespace LoUAM
                 {
                     // Handle server change
                     CurrentServer = currentPlayer.Server;
-                    if (ControlPanel.TrackPlayer || MainMap.CurrentServer == MarkerServerEnum.Unknown)
+                    if (ControlPanel.TrackPlayer || MainMap.CurrentServer == PlaceServerEnum.Unknown)
                     {
-                        ChangeServer(Marker.URLToServer(CurrentServer));
+                        ChangeServer(Place.URLToServer(CurrentServer));
                     }
                 }
                 if (CurrentRegion != currentPlayer.Region)
                 {
                     // Handle region change
                     CurrentRegion = currentPlayer.Region;
-                    if (ControlPanel.TrackPlayer || MainMap.CurrentRegion == MarkerRegionEnum.Unknown)
+                    if (ControlPanel.TrackPlayer || MainMap.CurrentRegion == PlaceRegionEnum.Unknown)
                     {
-                        ChangeRegion(Marker.StringToRegion(CurrentRegion));
+                        ChangeRegion(Place.StringToRegion(CurrentRegion));
                     }
                 }
-                Marker currentPlayerMarker = new Marker(
-                    MarkerFileEnum.None,
-                    currentPlayer.Server != "" ? Marker.URLToServer(currentPlayer.Server) : MarkerServerEnum.Unknown,
-                    currentPlayer.Region != "" && Enum.TryParse<MarkerRegionEnum>(currentPlayer.Region, out MarkerRegionEnum markerRegion) ? markerRegion : MarkerRegionEnum.Unknown,
-                    MarkerType.CurrentPlayer,
+                Place currentPlayerPlace = new Place(
+                    PlaceFileEnum.None,
+                    currentPlayer.Server != "" ? Place.URLToServer(currentPlayer.Server) : PlaceServerEnum.Unknown,
+                    currentPlayer.Region != "" && Enum.TryParse<PlaceRegionEnum>(currentPlayer.Region, out PlaceRegionEnum placeRegion) ? placeRegion : PlaceRegionEnum.Unknown,
+                    PlaceType.CurrentPlayer,
                     currentPlayer.ObjectId.ToString(),
-                    MarkerIcon.none,
+                    PlaceIcon.none,
                     currentPlayer.DisplayName,
                     currentPlayer.X,
                     currentPlayer.Y,
                     currentPlayer.Z
                     );
-                MainMap.UpdateAllMarkersOfType(MarkerType.CurrentPlayer, new[] { currentPlayerMarker });
+                MainMap.UpdateAllPlacesOfType(PlaceType.CurrentPlayer, new[] { currentPlayerPlace });
 
                 if (ControlPanel.TrackPlayer)
                 {
-                    MainMap.Center(currentPlayerMarker.X, currentPlayerMarker.Z);
+                    MainMap.Center(currentPlayerPlace.X, currentPlayerPlace.Z);
                 }
             }
             else
             {
-                MainMap.RemoveAllMarkersOfType(MarkerType.CurrentPlayer);
+                MainMap.RemoveAllPlacesOfType(PlaceType.CurrentPlayer);
                 // Refresh the current player on link
                 if (TheLinkServer != null)
                     TheLinkServer.CurrentPlayer = null;
@@ -561,14 +561,14 @@ namespace LoUAM
                         IEnumerable<Player> OtherPlayers = TheLinkServer.OtherPlayers.Values;
                         if (OtherPlayers != null)
                         {
-                            List<Marker> OtherMarkers = OtherPlayers.Select(player =>
-                                    new Marker(
-                                        MarkerFileEnum.None,
-                                        Marker.URLToServer(player.Server),
-                                        player.Region != "" && Enum.TryParse<MarkerRegionEnum>(player.Region, out MarkerRegionEnum playerRegion) ? playerRegion : MarkerRegionEnum.Unknown,
-                                        MarkerType.OtherPlayer,
+                            List<Place> OtherPlaces = OtherPlayers.Select(player =>
+                                    new Place(
+                                        PlaceFileEnum.None,
+                                        Place.URLToServer(player.Server),
+                                        player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum playerRegion) ? playerRegion : PlaceRegionEnum.Unknown,
+                                        PlaceType.OtherPlayer,
                                         player.ObjectId.ToString(),
-                                        MarkerIcon.none,
+                                        PlaceIcon.none,
                                         player.DisplayName,
                                         player.X,
                                         player.Y,
@@ -576,7 +576,7 @@ namespace LoUAM
                                         )
                                     ).ToList();
                          
-   MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+   MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
                         }
                     }
                 }
@@ -617,22 +617,22 @@ namespace LoUAM
                 {
                     if (TheLinkClient.OtherPlayers != null)
                     {
-                        List<Marker> OtherMarkers = TheLinkClient.OtherPlayers
+                        List<Place> OtherPlaces = TheLinkClient.OtherPlayers
                             .Where(player => player != null)
-                            .Select(player => new Marker(
-                                MarkerFileEnum.None,
-                                Marker.URLToServer(player.Server),
-                                (MarkerRegionEnum)Enum.Parse(typeof(MarkerRegionEnum), player.Region, true),
-                                MarkerType.OtherPlayer,
+                            .Select(player => new Place(
+                                PlaceFileEnum.None,
+                                Place.URLToServer(player.Server),
+                                (PlaceRegionEnum)Enum.Parse(typeof(PlaceRegionEnum), player.Region, true),
+                                PlaceType.OtherPlayer,
                                 player.ObjectId.ToString(),
-                                MarkerIcon.none,
+                                PlaceIcon.none,
                                 player.DisplayName,
                                 player.X,
                                 player.Y,
                                 player.Z
                                 )
                             ).ToList();
-                        MainMap.UpdateAllMarkersOfType(MarkerType.OtherPlayer, OtherMarkers);
+                        MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
                     }
                 }
 
@@ -952,7 +952,7 @@ namespace LoUAM
         }
         private void MapChangeServerCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ChangeServer(e.Parameter is MarkerServerEnum ? (MarkerServerEnum)e.Parameter : MarkerServerEnum.Unknown);
+            ChangeServer(e.Parameter is PlaceServerEnum ? (PlaceServerEnum)e.Parameter : PlaceServerEnum.Unknown);
         }
 
         private void MapChangeRegionCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -961,7 +961,7 @@ namespace LoUAM
         }
         private void MapChangeRegionCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ChangeRegion(e.Parameter is MarkerRegionEnum ? (MarkerRegionEnum)e.Parameter : MarkerRegionEnum.Unknown);
+            ChangeRegion(e.Parameter is PlaceRegionEnum ? (PlaceRegionEnum)e.Parameter : PlaceRegionEnum.Unknown);
         }
 
         private void LinkControlsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)

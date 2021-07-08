@@ -56,6 +56,7 @@ namespace LoUAM
             RefreshStatusTimer = new DispatcherTimer();
             RefreshStatusTimer.Tick += RefreshStatusTimer_Tick;
             RefreshStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            RefreshStatusTimer.IsEnabled = true;
 
             InitializeComponent();
 
@@ -576,7 +577,7 @@ namespace LoUAM
                                         )
                                     ).ToList();
                          
-   MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
+                            MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
                         }
                     }
                 }
@@ -842,7 +843,6 @@ namespace LoUAM
         public void DoConnectToLoAClientCommand()
         {
             TargetAriaClientPanel.Visibility = Visibility.Visible;
-            RefreshStatusTimer.Stop();
 
             MouseEventCallback handler = null;
             handler = (MouseEventType type, int x, int y) => {
@@ -895,7 +895,6 @@ namespace LoUAM
                     {
                         RefreshMapTiles();
                     }
-                    RefreshStatusTimer.Start();
                 }
 
                 return connected;

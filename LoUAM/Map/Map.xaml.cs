@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using Path = System.IO.Path;
 
 namespace LoUAM
@@ -24,6 +25,8 @@ namespace LoUAM
 
         private PlaceRegionEnum currentRegion = PlaceRegionEnum.Unknown;
         public PlaceRegionEnum CurrentRegion { get { return currentRegion; } set { currentRegion = value; this.RegionLabel.Content = $"Region: {value}"; this.RefreshMapTiles($"{MAP_DATA_FOLDER }/{value}"); } }
+
+        public string MarkerPlaceId { get; set; } = "";
 
         public Map()
         {
@@ -268,6 +271,14 @@ namespace LoUAM
                 scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
                 scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
             }
+
+            // If we are updating the current player, we may need to update the marker line
+            if (MarkerPlaceId != "" && place.Type == PlaceType.CurrentPlayer)
+                UpdateMarker();
+
+            // If we are updating the marked place, we may need to update the marker line
+            if (MarkerPlaceId != "" && place.Id == MarkerPlaceId)
+                UpdateMarker();
         }
 
         public void Center(double X, double Z)
@@ -291,7 +302,7 @@ namespace LoUAM
         private void RefreshPlaces(PlaceType placeType, Dictionary<string, Place> places)
         {
             // Get all the elements
-            var elements = PlacesCanvas.Children.OfType<FrameworkElement>().Where(i => i.Tag.ToString() == placeType.ToString()).ToDictionary(i => i.Name, i => i);
+            var elements = PlacesCanvas.Children.OfType<FrameworkElement>().Where(i => i != null && i.Tag != null && i.Tag.ToString() == placeType.ToString()).ToDictionary(i => i.Name, i => i);
 
             foreach (var place in places.Values)
             {
@@ -323,7 +334,7 @@ namespace LoUAM
                 Places[placeType] = new Dictionary<string, Place>();
             }
 
-            IEnumerable<Place> filteredPlaces = places.Where(m => m.Server == CurrentServer && m.Region == CurrentRegion);
+            IEnumerable<Place> filteredPlaces = places.Where(m => m != null && m.Server == CurrentServer && m.Region == CurrentRegion);
 
             var placesIds = Places[placeType].Keys.ToList();
 
@@ -349,6 +360,74 @@ namespace LoUAM
                 Places[placeType].Clear();
                 RefreshPlaces(Places);
             }
+        }
+
+        public void AddMarker(double x, double y, double z)
+        {
+            if (this.MarkerPlaceId != "") RemoveMarker();
+
+            if (!Places.Keys.Contains(PlaceType.Marker))
+                Places[PlaceType.Marker] = new Dictionary<string, Place>();
+
+            Place marker = new Place(PlaceFileEnum.None, currentServer, currentRegion, PlaceType.Marker, "_Marker", PlaceIcon.none, "", x, y, z);
+            this.Places[PlaceType.Marker].Add(marker.Id, marker);
+            RefreshPlaces(PlaceType.Marker, this.Places[PlaceType.Marker]);
+
+            AddMarker(marker.Id);
+        }
+        public void AddMarker(string MarkerPlaceId)
+        {
+            if (this.MarkerPlaceId != "") RemoveMarker();
+
+            this.MarkerPlaceId = MarkerPlaceId;
+
+            UpdateMarker();
+        }
+        public void UpdateMarker()
+        {
+            Place currentPlayerPlace = Places.ContainsKey(PlaceType.CurrentPlayer) ? Places[PlaceType.CurrentPlayer]?.Values?.FirstOrDefault() : null;
+            Place markerPlace = Places.Values?.SelectMany(places => places.Values)?.Where(place => place.Id == MarkerPlaceId)?.FirstOrDefault();
+            Line markerLine = PlacesCanvas.Children?.OfType<Line>()?.FirstOrDefault();
+
+            if (currentPlayerPlace == null || markerPlace == null)
+                return;
+
+            if (currentPlayerPlace.Server != currentServer ||
+                currentPlayerPlace.Region != currentRegion ||
+                markerPlace.Server != currentServer ||
+                markerPlace.Region != currentRegion
+                )
+            {
+                if (markerLine != null) PlacesCanvas.Children.Remove(markerLine);
+                return;
+            }
+
+            if (markerLine == null)
+            {
+                markerLine = new Line();
+                PlacesCanvas.Children.Add(markerLine);
+            }
+
+            markerLine.Stroke = System.Windows.Media.Brushes.White;
+            markerLine.StrokeThickness = 4; 
+            markerLine.X1 = currentPlayerPlace.X;
+            markerLine.Y1 = currentPlayerPlace.Z;
+            markerLine.X2 = markerPlace.X;
+            markerLine.Y2 = markerPlace.Z;
+        }
+        public void RemoveMarker()
+        {
+            Line markerLine = PlacesCanvas.Children?.OfType<Line>()?.FirstOrDefault();
+            if (markerLine != null)
+                PlacesCanvas.Children.Remove(markerLine);
+
+            if (Places.ContainsKey(PlaceType.Marker) && Places[PlaceType.Marker].ContainsKey("_Marker"))
+            {
+                Places[PlaceType.Marker].Remove("_Marker");
+                RefreshPlaces(PlaceType.Marker, this.Places[PlaceType.Marker]);
+            }
+
+            this.MarkerPlaceId = "";
         }
 
         #endregion

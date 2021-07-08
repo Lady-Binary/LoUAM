@@ -693,9 +693,14 @@ namespace LoUAM
             RefreshPlaces();
         }
 
-        private void PlacePlaceButton_Click(object sender, RoutedEventArgs e)
+        private void MarkerPlaceButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxEx.Show(this, "Not implemented!", "Place Place", MessageBoxButton.OK);
+            MainWindow mainWindow = this.Owner as MainWindow;
+            if (mainWindow != null)
+            {
+                Place SelectedPlace = PlacesListView.SelectedItem as Place;
+                mainWindow.AddMarker(SelectedPlace.Id);
+            }
         }
 
         private void LocatePlaceButton_Click(object sender, RoutedEventArgs e)

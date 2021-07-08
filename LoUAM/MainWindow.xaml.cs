@@ -146,6 +146,7 @@ namespace LoUAM
                 return;
             }
             MainMap.UpdateAllPlacesOfType(PlaceType.Place, ControlPanel.Places);
+            MainMap.UpdateMarker();
         }
 
         public delegate void RefreshMapTilesDelegate();
@@ -1018,6 +1019,68 @@ namespace LoUAM
             MainMap.Center(MainMap.LastMouseRightButtonUpCoords.X, MainMap.LastMouseRightButtonUpCoords.Y);
         }
 
+        private void DropOrPickupMarkerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void DropOrPickupMarkerCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            MenuItem DropOrPickupMarkerMenuItem = MainMap.ContextMenu.Items[1] as MenuItem;
+            if (DropOrPickupMarkerMenuItem.IsChecked)
+            {
+                RemoveMarker();
+            }
+            else
+            {
+                AddMarker(MainMap.LastMouseRightButtonUpCoords.X, 0, MainMap.LastMouseRightButtonUpCoords.Y);
+            }
+        }
+        public void AddMarker(double x, double y, double z)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new Action<double, double, double>(AddMarker), new object[] { x, y, z });
+                return;
+            }
+
+            MainMap.AddMarker(MainMap.LastMouseRightButtonUpCoords.X, 0, MainMap.LastMouseRightButtonUpCoords.Y);
+
+            MenuItem DropOrPickupMarkerMenuItem = MainMap.ContextMenu.Items[1] as MenuItem;
+            if (DropOrPickupMarkerMenuItem == null)
+                return;
+            DropOrPickupMarkerMenuItem.IsChecked = true;
+        }
+        public void AddMarker(string id)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new Action<string>(AddMarker), new object[] { id });
+                return;
+            }
+
+            MainMap.AddMarker(id);
+
+            MenuItem DropOrPickupMarkerMenuItem = MainMap.ContextMenu.Items[1] as MenuItem;
+            if (DropOrPickupMarkerMenuItem == null)
+                return;
+            DropOrPickupMarkerMenuItem.IsChecked = true;
+        }
+        public void RemoveMarker()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new Action(RemoveMarker));
+                return;
+            }
+
+            MainMap.RemoveMarker();
+
+            MenuItem DropOrPickupMarkerMenuItem = MainMap.ContextMenu.Items[1] as MenuItem;
+            if (DropOrPickupMarkerMenuItem == null)
+                return;
+            DropOrPickupMarkerMenuItem.IsChecked = false;
+        }
+
         private void NewPlaceCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1059,6 +1122,7 @@ namespace LoUAM
         public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand PlayersListCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand DropOrPickupMarkerCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand CopyLocationCoordintesCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();

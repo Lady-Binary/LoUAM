@@ -12,7 +12,6 @@
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TrackPlayerCommand}" CanExecute="TrackPlayerCommand_CanExecute" Executed="TrackPlayerCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeRegionCommand}" CanExecute="MapChangeRegionCommand_CanExecute" Executed="MapChangeRegionCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeServerCommand}" CanExecute="MapChangeServerCommand_CanExecute" Executed="MapChangeServerCommand_Executed" />
-        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}" CanExecute="MoveCursorHereCommand_CanExecute" Executed="MoveCursorHereCommand_Executed" />
         <!-- Places -->
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CanExecute="NewPlaceCommand_CanExecute" Executed="NewPlaceCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
@@ -23,6 +22,9 @@
         <!-- Link -->
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.LinkControlsCommand}" CanExecute="LinkControlsCommand_CanExecute" Executed="LinkControlsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.PlayersListCommand}" CanExecute="PlayersListCommand_CanExecute" Executed="PlayersListCommand_Executed" />
+        <!-- Right-click Context Menu -->
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}" CanExecute="MoveCursorHereCommand_CanExecute" Executed="MoveCursorHereCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.DropOrPickupMarkerCommand}" CanExecute="DropOrPickupMarkerCommand_CanExecute" Executed="DropOrPickupMarkerCommand_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <!-- File -->
@@ -77,6 +79,11 @@
                     <MenuItem
                         Header="Move Cursor Here"
                         Command="{x:Static local:MainWindowCustomCommands.MoveCursorHereCommand}"
+                        CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                        />
+                    <MenuItem
+                        Header="Drop or Pickup Marker"
+                        Command="{x:Static local:MainWindowCustomCommands.DropOrPickupMarkerCommand}"
                         CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                         />
                     <MenuItem

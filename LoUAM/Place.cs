@@ -41,7 +41,8 @@ namespace LoUAM
         CurrentPlayer = 0,
         OtherPlayer = 1,
         MOB = 2,
-        Place = 3
+        Place = 3,
+        Marker = 4
     }
 
     public enum PlaceIcon

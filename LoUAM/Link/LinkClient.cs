@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -96,10 +97,10 @@ namespace LoUAM
         public int ConnectionAttempts { get; private set; } = 0;
         public string ConnectionError { get; set; } = "";
 
-        public readonly object CurrentPlayerLock = new object();
+        public SemaphoreSlim CurrentPlayerSemaphoreSlim = new SemaphoreSlim(1, 1);
         public Player CurrentPlayer { get; set; }
 
-        public readonly object OtherPlayersLock = new object();
+        public SemaphoreSlim OtherPlayersSemaphoreSlim = new SemaphoreSlim(1, 1);
         public IEnumerable<Player> OtherPlayers { get; set; } = new List<Player>();
 
         public LinkClient(bool https, string host, int port, string password)
@@ -309,11 +310,13 @@ namespace LoUAM
 
             if (ClientState == ClientStateEnum.Connected)
             {
-                if (CurrentPlayer != null)
+                await OtherPlayersSemaphoreSlim.WaitAsync();
+                await CurrentPlayerSemaphoreSlim.WaitAsync();
+                try
                 {
                     try
                     {
-                        await this.UpdatePlayer(CurrentPlayer);
+                        OtherPlayers = await this.RetrievePlayers();
                     }
                     catch (Exception ex)
                     {
@@ -324,24 +327,30 @@ namespace LoUAM
                         this.ClientState = ClientStateEnum.ConnectionFailed;
                         return;
                     }
-                }
 
-                try
-                {
-                    OtherPlayers = await this.RetrievePlayers();
                     if (CurrentPlayer != null)
                     {
                         OtherPlayers = OtherPlayers.Where(player => player != null && player.ObjectId != CurrentPlayer.ObjectId);
+
+                        try
+                        {
+                            await UpdatePlayer(CurrentPlayer);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.InnerException != null)
+                                ConnectionError = ex.InnerException.Message;
+                            else
+                                ConnectionError = ex.Message;
+                            this.ClientState = ClientStateEnum.ConnectionFailed;
+                            return;
+                        }
                     }
                 }
-                catch (Exception ex)
+                finally
                 {
-                    if (ex.InnerException != null)
-                        ConnectionError = ex.InnerException.Message;
-                    else
-                        ConnectionError = ex.Message;
-                    this.ClientState = ClientStateEnum.ConnectionFailed;
-                    return;
+                    CurrentPlayerSemaphoreSlim.Release();
+                    OtherPlayersSemaphoreSlim.Release();    
                 }
             }
         }

@@ -54,7 +54,7 @@ namespace LoUAM
         public MainWindow()
         {
             RefreshStatusTimer = new DispatcherTimer();
-            RefreshStatusTimer.Tick += RefreshStatusTimer_Tick;
+            RefreshStatusTimer.Tick += RefreshStatusTimer_TickAsync;
             RefreshStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             RefreshStatusTimer.IsEnabled = true;
 
@@ -325,7 +325,7 @@ namespace LoUAM
             if (ClientStatus == null)
                 return null;
 
-            if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 60000)
+            if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 10000)
             {
                 UpdateMainStatus(Colors.Green, $"Connected to Legends of Aria game client {MainWindow.CurrentClientProcessId.ToString()}.");
 
@@ -471,7 +471,7 @@ namespace LoUAM
             return false;
         }
 
-        private void RefreshCurrentPlayerStatus()
+        private async Task RefreshCurrentPlayerStatusAsync()
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -489,17 +489,27 @@ namespace LoUAM
                 // Refresh the current player on link
                 if (TheLinkServer != null)
                 {
-                    lock (TheLinkServer.CurrentPlayerLock)
+                    await TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+                    try
                     {
                         TheLinkServer.CurrentPlayer = currentPlayer;
+                    }
+                    finally
+                    {
+                        TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
                     }
                 }
 
                 if (TheLinkClient != null)
                 {
-                    lock (TheLinkClient.CurrentPlayerLock)
+                    await TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+                    try
                     {
                         TheLinkClient.CurrentPlayer = currentPlayer;
+                    }
+                    finally
+                    {
+                        TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
                     }
                 }
 
@@ -545,18 +555,39 @@ namespace LoUAM
                 MainMap.RemoveAllPlacesOfType(PlaceType.CurrentPlayer);
                 // Refresh the current player on link
                 if (TheLinkServer != null)
-                    TheLinkServer.CurrentPlayer = null;
+                {
+                    await TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+                    try
+                    {
+                        TheLinkServer.CurrentPlayer = null;
+                    }
+                    finally
+                    {
+                        TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                    }
+                }
                 if (TheLinkClient != null)
-                    TheLinkClient.CurrentPlayer = null;
+                {
+                    await TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+                    try
+                    {
+                        TheLinkClient.CurrentPlayer = null;
+                    }
+                    finally
+                    {
+                        TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
+                    }
+                }
             }
         }
-        private void RefreshLinkStatus()
+        private async Task RefreshLinkStatusAsync()
         {
             if (TheLinkServer != null)
             {
                 UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
 
-                lock (TheLinkServer.OtherPlayersLock)
+                await TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+                try
                 {
                     if (TheLinkServer.OtherPlayers != null)
                     {
@@ -577,10 +608,14 @@ namespace LoUAM
                                         player.Z
                                         )
                                     ).ToList();
-                         
+
                             MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
                         }
                     }
+                }
+                finally
+                {
+                    TheLinkServer.OtherPlayersSemaphoreSlim.Release();
                 }
 
                 return;
@@ -615,7 +650,8 @@ namespace LoUAM
                         break;
                 }
 
-                lock (TheLinkClient.OtherPlayersLock)
+                await TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                try
                 {
                     if (TheLinkClient.OtherPlayers != null)
                     {
@@ -637,18 +673,22 @@ namespace LoUAM
                         MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
                     }
                 }
+                finally
+                {
+                    TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                }
 
                 return;
             }
 
             UpdateLinkStatus(Colors.Black, $"LoUAM Link not connected.");
         }
-        private void RefreshStatusTimer_Tick(object sender, EventArgs e)
+        private async void RefreshStatusTimer_TickAsync(object sender, EventArgs e)
         {
             RefreshStatusTimer.Stop();
 
-            RefreshCurrentPlayerStatus();
-            RefreshLinkStatus();
+            await RefreshCurrentPlayerStatusAsync();
+            await RefreshLinkStatusAsync();
 
             RefreshStatusTimer.Start();
         }

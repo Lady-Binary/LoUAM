@@ -54,7 +54,7 @@ namespace LoUAM
             RefreshLinkStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             RefreshLinkStatusTimer.Start();
             RefreshPlayersTimer = new DispatcherTimer();
-            RefreshPlayersTimer.Tick += RefreshPlayersTimer_Tick;
+            RefreshPlayersTimer.Tick += RefreshPlayersTimer_TickAsync;
             RefreshPlayersTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             RefreshPlayersTimer.Start();
         }
@@ -77,7 +77,6 @@ namespace LoUAM
             BrightnessSlider.Value = Brightness;
 
             RefreshPlaces();
-            RefreshPlayers();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -117,41 +116,49 @@ namespace LoUAM
             }
         }
 
-        private delegate void RefreshPlayersDelegate();
-        private void RefreshPlayers()
+        private async System.Threading.Tasks.Task RefreshPlayersAsync()
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(new RefreshPlayersDelegate(RefreshPlayers));
+                await Dispatcher.InvokeAsync(RefreshPlayersAsync);
                 return;
             }
             IEnumerable<Player> Players = null;
             if (MainWindow.TheLinkClient != null)
             {
-                lock (MainWindow.TheLinkClient.OtherPlayersLock)
+                await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                await MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+
+                try
                 {
                     Players = MainWindow.TheLinkClient.OtherPlayers;
-                    lock (MainWindow.TheLinkClient.CurrentPlayerLock)
+                    if (MainWindow.TheLinkClient.CurrentPlayer != null)
                     {
-                        if (MainWindow.TheLinkClient.CurrentPlayer != null)
-                        {
-                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkClient.CurrentPlayer, 1));
-                        }
+                        Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkClient.CurrentPlayer, 1));
                     }
+                }
+                finally
+                {
+                    MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
+                    MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
                 }
             }
             if (MainWindow.TheLinkServer != null)
             {
-                lock (MainWindow.TheLinkServer.OtherPlayersLock)
+                await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+                await MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+
+                try
                 {
                     Players = MainWindow.TheLinkServer.OtherPlayers.Values;
-                    lock (MainWindow.TheLinkServer.CurrentPlayerLock)
+                    if (MainWindow.TheLinkServer.CurrentPlayer != null)
                     {
-                        if (MainWindow.TheLinkServer.CurrentPlayer != null)
-                        {
-                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkServer.CurrentPlayer, 1));
-                        }
+                        Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkServer.CurrentPlayer, 1));
                     }
+                } finally
+                {
+                    MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                    MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
                 }
             }
             if (Players != null)
@@ -163,9 +170,13 @@ namespace LoUAM
             }
         }
 
-        private void RefreshPlayersTimer_Tick(object sender, EventArgs e)
+        private async void RefreshPlayersTimer_TickAsync(object sender, EventArgs e)
         {
-            RefreshPlayers();
+            RefreshPlayersTimer.Stop();
+
+            await RefreshPlayersAsync();
+
+            RefreshPlayersTimer.Start();
         }
 
         private void PortTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)

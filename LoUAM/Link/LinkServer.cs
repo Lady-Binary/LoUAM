@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace LoUAM
 {
@@ -45,10 +46,10 @@ namespace LoUAM
         private bool isRunning = false;
         public bool IsRunning { get => isRunning; set => isRunning = value; }
 
-        public readonly object CurrentPlayerLock = new object();
+        public SemaphoreSlim CurrentPlayerSemaphoreSlim = new SemaphoreSlim(1, 1);
         public Player CurrentPlayer;
 
-        public readonly object OtherPlayersLock = new object();
+        public SemaphoreSlim OtherPlayersSemaphoreSlim = new SemaphoreSlim(1, 1);
         public IDictionary<ulong, Player> OtherPlayers { get; } = new Dictionary<ulong, Player>();
 
         public LinkServer() : this(true, 4443, "s3cr3t")
@@ -152,49 +153,53 @@ namespace LoUAM
                         if (context.Request.Method == HttpMethods.Get)
                         {
                             var urlParts = context.Request.Uri.OriginalString.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                            lock (OtherPlayersLock)
+
+                            await OtherPlayersSemaphoreSlim.WaitAsync();
+                            await CurrentPlayerSemaphoreSlim.WaitAsync();
+                            try
                             {
-                                lock (CurrentPlayerLock)
+                                if (urlParts.Length >= 2)
                                 {
-                                    if (urlParts.Length >= 2)
+                                    if (ulong.TryParse(urlParts[1], out ulong ObjectId))
                                     {
-                                        if (ulong.TryParse(urlParts[1], out ulong ObjectId))
+                                        if (CurrentPlayer.ObjectId == ObjectId)
                                         {
-                                            if (CurrentPlayer.ObjectId == ObjectId)
-                                            {
-                                                responseCode = HttpResponseCode.Ok;
-                                                responseContent = JObject.FromObject(CurrentPlayer);
-                                            }
-                                            else if (OtherPlayers.ContainsKey(ObjectId))
-                                            {
-                                                responseCode = HttpResponseCode.Ok;
-                                                responseContent = JObject.FromObject(OtherPlayers[ObjectId]);
-                                            }
-                                            else
-                                            {
-                                                responseCode = HttpResponseCode.BadRequest;
-                                                responseContent = new JObject();
-                                                responseContent["err"] = "ObjectId specified not found.";
-                                            }
+                                            responseCode = HttpResponseCode.Ok;
+                                            responseContent = JObject.FromObject(CurrentPlayer);
+                                        }
+                                        else if (OtherPlayers.ContainsKey(ObjectId))
+                                        {
+                                            responseCode = HttpResponseCode.Ok;
+                                            responseContent = JObject.FromObject(OtherPlayers[ObjectId]);
                                         }
                                         else
                                         {
                                             responseCode = HttpResponseCode.BadRequest;
                                             responseContent = new JObject();
-                                            responseContent["err"] = "Invalid ObjectId specified.";
+                                            responseContent["err"] = "ObjectId specified not found.";
                                         }
                                     }
                                     else
                                     {
-                                        responseCode = HttpResponseCode.Ok;
-                                        if (CurrentPlayer != null)
-                                            responseContent = JArray.FromObject(OtherPlayers.Values.Union(Enumerable.Repeat(CurrentPlayer, 1)));
-                                        else
-                                            responseContent = JArray.FromObject(OtherPlayers.Values);
+                                        responseCode = HttpResponseCode.BadRequest;
+                                        responseContent = new JObject();
+                                        responseContent["err"] = "Invalid ObjectId specified.";
                                     }
                                 }
+                                else
+                                {
+                                    responseCode = HttpResponseCode.Ok;
+                                    if (CurrentPlayer != null)
+                                        responseContent = JArray.FromObject(OtherPlayers.Values.Union(Enumerable.Repeat(CurrentPlayer, 1)));
+                                    else
+                                        responseContent = JArray.FromObject(OtherPlayers.Values);
+                                }
                             }
-
+                            finally
+                            {
+                                CurrentPlayerSemaphoreSlim.Release();
+                                OtherPlayersSemaphoreSlim.Release();
+                            }
                         }
                         else if (context.Request.Method == HttpMethods.Post)
                         {
@@ -203,9 +208,14 @@ namespace LoUAM
                             {
                                 var player = JsonConvert.DeserializeObject<Player>(json);
                                 player.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                                lock (OtherPlayersLock)
+                                await OtherPlayersSemaphoreSlim.WaitAsync();
+                                try
                                 {
                                     OtherPlayers[player.ObjectId] = player;
+                                }
+                                finally
+                                {
+                                    OtherPlayersSemaphoreSlim.Release();
                                 }
                                 responseCode = HttpResponseCode.Ok;
                                 responseContent = new JObject();
@@ -258,7 +268,8 @@ namespace LoUAM
                     {
                         lastCleanup = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                         // Remove outdated players, i.e. players not seen within the last 5 seconds
-                        lock (OtherPlayersLock)
+                        await OtherPlayersSemaphoreSlim.WaitAsync();
+                        try
                         {
                             var PlayerIds = OtherPlayers.Keys.ToList();
                             foreach (var PlayerId in PlayerIds)
@@ -268,6 +279,10 @@ namespace LoUAM
                                     OtherPlayers.Remove(PlayerId);
                                 }
                             }
+                        }
+                        finally
+                        {
+                            OtherPlayersSemaphoreSlim.Release();
                         }
                     }
                     await Task.Delay(100);

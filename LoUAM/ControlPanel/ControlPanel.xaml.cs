@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -280,11 +281,16 @@ namespace LoUAM
                 XmlNode typeNode = placeNode.SelectSingleNode("type");
                 PlaceIcon type = Enum.TryParse<PlaceIcon>(typeNode.InnerText, true, out type) ? type : PlaceIcon.none;
 
+                // Palaces from XML file might come in a different decimal separator,
+                // (i.e. if the file has just been extracted or if a friend shared their file),
+                // so we are enforcing the decimal separator of the current locale
+                string NumberDecimalSeparator = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+
                 XmlNode zNode = placeNode.SelectSingleNode("z");
-                double z = double.TryParse(zNode.InnerText, out z) ? z : 0;
+                double z = double.TryParse(zNode.InnerText.Replace(",", NumberDecimalSeparator).Replace(".", NumberDecimalSeparator), out z) ? z : 0;
 
                 XmlNode xNode = placeNode.SelectSingleNode("x");
-                double x = double.TryParse(xNode.InnerText, out x) ? x : 0;
+                double x = double.TryParse(xNode.InnerText.Replace(",", NumberDecimalSeparator).Replace(".", NumberDecimalSeparator), out x) ? x : 0;
 
                 Place place = new Place(file, server, region, PlaceType.Place, Guid.NewGuid().ToString("N"), type, name, x, 0, z);
 

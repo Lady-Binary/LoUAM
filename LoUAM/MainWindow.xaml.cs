@@ -584,38 +584,61 @@ namespace LoUAM
         {
             if (TheLinkServer != null)
             {
-                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
-
-                await TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
-                try
+                switch (TheLinkServer.ServerState)
                 {
-                    if (TheLinkServer.OtherPlayers != null)
-                    {
-                        IEnumerable<Player> OtherPlayers = TheLinkServer.OtherPlayers.Values;
-                        if (OtherPlayers != null)
+                    case LinkServer.ServerStateEnum.Idle:
                         {
-                            List<Place> OtherPlaces = OtherPlayers.Select(player =>
-                                    new Place(
-                                        PlaceFileEnum.None,
-                                        Place.URLToServer(player.Server),
-                                        player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum playerRegion) ? playerRegion : PlaceRegionEnum.Unknown,
-                                        PlaceType.OtherPlayer,
-                                        player.ObjectId.ToString(),
-                                        PlaceIcon.none,
-                                        player.DisplayName,
-                                        player.X,
-                                        player.Y,
-                                        player.Z
-                                        )
-                                    ).ToList();
+                            UpdateLinkStatus(Colors.Black, $"LoUAM Link not connected.");
+                        }
+                        break;
 
-                            MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
+                    case LinkServer.ServerStateEnum.Listening:
+                        {
+                            UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
+                        }
+                        break;
+
+                    case LinkServer.ServerStateEnum.ListenFailed:
+                        {
+                            UpdateLinkStatus(Colors.Red, $"LoUAM Link Server on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")} failed: {TheLinkServer.ListenError}.");
+                        }
+                        break;
+                }
+
+                if (TheLinkServer.ServerState == LinkServer.ServerStateEnum.Listening)
+                {
+                    await TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+                    try
+                    {
+                        if (TheLinkServer.OtherPlayers != null)
+                        {
+                            IEnumerable<Player> OtherPlayers = TheLinkServer.OtherPlayers.Values;
+                            if (OtherPlayers != null)
+                            {
+                                List<Place> OtherPlaces = OtherPlayers.Select(player =>
+                                        new Place(
+                                            PlaceFileEnum.None,
+                                            Place.URLToServer(player.Server),
+                                            player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum playerRegion) ? playerRegion : PlaceRegionEnum.Unknown,
+                                            PlaceType.OtherPlayer,
+                                            player.ObjectId.ToString(),
+                                            PlaceIcon.none,
+                                            player.DisplayName,
+                                            player.X,
+                                            player.Y,
+                                            player.Z
+                                            )
+                                        ).ToList();
+
+                                MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
+                            }
                         }
                     }
-                }
-                finally
-                {
-                    TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                    finally
+                    {
+                        TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                    }
+
                 }
 
                 return;
@@ -650,32 +673,35 @@ namespace LoUAM
                         break;
                 }
 
-                await TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
-                try
+                if (TheLinkClient.ClientState == LinkClient.ClientStateEnum.Connected)
                 {
-                    if (TheLinkClient.OtherPlayers != null)
+                    await TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                    try
                     {
-                        List<Place> OtherPlaces = TheLinkClient.OtherPlayers
-                            .Where(player => player != null)
-                            .Select(player => new Place(
-                                PlaceFileEnum.None,
-                                Place.URLToServer(player.Server),
-                                (PlaceRegionEnum)Enum.Parse(typeof(PlaceRegionEnum), player.Region, true),
-                                PlaceType.OtherPlayer,
-                                player.ObjectId.ToString(),
-                                PlaceIcon.none,
-                                player.DisplayName,
-                                player.X,
-                                player.Y,
-                                player.Z
-                                )
-                            ).ToList();
-                        MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
+                        if (TheLinkClient.OtherPlayers != null)
+                        {
+                            List<Place> OtherPlaces = TheLinkClient.OtherPlayers
+                                .Where(player => player != null)
+                                .Select(player => new Place(
+                                    PlaceFileEnum.None,
+                                    Place.URLToServer(player.Server),
+                                    (PlaceRegionEnum)Enum.Parse(typeof(PlaceRegionEnum), player.Region, true),
+                                    PlaceType.OtherPlayer,
+                                    player.ObjectId.ToString(),
+                                    PlaceIcon.none,
+                                    player.DisplayName,
+                                    player.X,
+                                    player.Y,
+                                    player.Z
+                                    )
+                                ).ToList();
+                            MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
+                        }
                     }
-                }
-                finally
-                {
-                    TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                    finally
+                    {
+                        TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                    }
                 }
 
                 return;

@@ -545,7 +545,7 @@ namespace LoUAM
                 try
                 {
                     MainWindow.TheLinkServer = new LinkServer(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                    MainWindow.TheLinkServer.StartServer();
+                    await MainWindow.TheLinkServer.StartServer();
                 }
                 catch (Exception ex)
                 {

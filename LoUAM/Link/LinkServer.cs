@@ -46,6 +46,16 @@ namespace LoUAM
         private bool isRunning = false;
         public bool IsRunning { get => isRunning; set => isRunning = value; }
 
+        public enum ServerStateEnum
+        {
+            Idle,
+            Listening,
+            ListenFailed
+        }
+        public ServerStateEnum ServerState { get; set; }
+
+        public string ListenError { get; set; } = "";
+
         public SemaphoreSlim CurrentPlayerSemaphoreSlim = new SemaphoreSlim(1, 1);
         public Player CurrentPlayer;
 
@@ -63,232 +73,250 @@ namespace LoUAM
             this.password = password;
         }
 
-        public async void StartServer()
+        public async Task StartServer()
         {
-            X509Certificate2 serverCertificate = null;
-            if (https)
-            {
-                var rsa = RSA.Create(2048);
-                var req = new CertificateRequest("CN=LoUAM", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-                var certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(2));
-                serverCertificate = new X509Certificate2(certificate.Export(X509ContentType.Pfx, ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh"), ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh", X509KeyStorageFlags.MachineKeySet);
-            }
+            ListenError = "";
 
-            using (var httpServer = new HttpServer(new HttpRequestProvider()))
+            try
             {
-                var listener = new TcpListener(IPAddress.Any, this.port);
-
+                X509Certificate2 serverCertificate = null;
                 if (https)
                 {
-                    // Https decorator
-                    httpServer.Use(new ListenerSslDecorator(new TcpListenerAdapter(listener), serverCertificate));
-                } else
-                {
-                    // Http only
-                    httpServer.Use(new TcpListenerAdapter(listener));
+                    var rsa = RSA.Create(2048);
+                    var req = new CertificateRequest("CN=LoUAM", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                    var certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(2));
+                    serverCertificate = new X509Certificate2(certificate.Export(X509ContentType.Pfx, ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh"), ":d,LpC)Uwx@QkRx9ePOBQau]OfT+Dh", X509KeyStorageFlags.MachineKeySet);
                 }
 
-                // Exception handling (must be the first handler)
-                httpServer.Use(async (context, next) =>
+                using (var httpServer = new HttpServer(new HttpRequestProvider()))
                 {
-                    try
+                    var listener = new TcpListener(IPAddress.Any, this.port);
+
+                    if (https)
                     {
-                        await next().ConfigureAwait(false);
+                        // Https decorator
+                        httpServer.Use(new ListenerSslDecorator(new TcpListenerAdapter(listener), serverCertificate));
                     }
-                    catch (Exception e)
+                    else
                     {
-                        context.Response = new HttpResponse(HttpResponseCode.InternalServerError, "Error while handling your request. " + e.Message, false);
+                        // Http only
+                        httpServer.Use(new TcpListenerAdapter(listener));
                     }
-                });
 
-                // Enable authentication, if needed
-                if (!String.IsNullOrEmpty(password))
-                {
-                    httpServer.Use(new SessionHandler<dynamic>(() => new ExpandoObject(), TimeSpan.FromMinutes(20)));
-                    httpServer.Use(new BasicAuthenticationHandler("LoUAM", "LoUAM", password));
-                }
-
-                // Enable compression
-                httpServer.Use(new CompressionHandler(DeflateCompressor.Default, GZipCompressor.Default));
-
-                // Requests debugger
-                //httpServer.Use((context, next) =>
-                //{
-                //    Console.WriteLine("Got Request!");
-                //    return next();
-                //});
-
-                httpServer.Use(
-                    new HttpRouter()
-                    .With("", new AnonymousHttpRequestHandler(async (context, next) =>
+                    // Exception handling (must be the first handler)
+                    httpServer.Use(async (context, next) =>
                     {
-                        HttpResponseCode responseCode;
-                        JContainer responseContent;
-
-                        if (context.Request.Method == HttpMethods.Get)
+                        try
                         {
-                            responseCode = HttpResponseCode.Ok;
-                            responseContent = new JObject();
-                            responseContent["ver"] = "LoUAM v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                            await next().ConfigureAwait(false);
                         }
-                        else
+                        catch (Exception e)
                         {
-                            responseCode = HttpResponseCode.BadRequest;
-                            responseContent = new JObject();
-                            responseContent["err"] = "Method not supported.";
+                            context.Response = new HttpResponse(HttpResponseCode.InternalServerError, "Error while handling your request. " + e.Message, false);
                         }
+                    });
 
-                        context.Response = new HttpResponse(
-                            code: responseCode,
-                            contentType: "application/json",
-                            contentStream: new MemoryStream(Encoding.UTF8.GetBytes(responseContent.ToString())),
-                            keepAliveConnection: false
-                            );
-                    }))
-                    .With("players", new AnonymousHttpRequestHandler(async (context, next) =>
+                    // Enable authentication, if needed
+                    if (!String.IsNullOrEmpty(password))
                     {
-                        HttpResponseCode responseCode;
-                        JContainer responseContent = new JObject();
+                        httpServer.Use(new SessionHandler<dynamic>(() => new ExpandoObject(), TimeSpan.FromMinutes(20)));
+                        httpServer.Use(new BasicAuthenticationHandler("LoUAM", "LoUAM", password));
+                    }
 
-                        if (context.Request.Method == HttpMethods.Get)
+                    // Enable compression
+                    httpServer.Use(new CompressionHandler(DeflateCompressor.Default, GZipCompressor.Default));
+
+                    // Requests debugger
+                    //httpServer.Use((context, next) =>
+                    //{
+                    //    Console.WriteLine("Got Request!");
+                    //    return next();
+                    //});
+
+                    httpServer.Use(
+                        new HttpRouter()
+                        .With("", new AnonymousHttpRequestHandler(async (context, next) =>
                         {
-                            var urlParts = context.Request.Uri.OriginalString.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                            HttpResponseCode responseCode;
+                            JContainer responseContent;
 
-                            await OtherPlayersSemaphoreSlim.WaitAsync();
-                            await CurrentPlayerSemaphoreSlim.WaitAsync();
-                            try
+                            if (context.Request.Method == HttpMethods.Get)
                             {
-                                if (urlParts.Length >= 2)
+                                responseCode = HttpResponseCode.Ok;
+                                responseContent = new JObject();
+                                responseContent["ver"] = "LoUAM v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                            }
+                            else
+                            {
+                                responseCode = HttpResponseCode.BadRequest;
+                                responseContent = new JObject();
+                                responseContent["err"] = "Method not supported.";
+                            }
+
+                            context.Response = new HttpResponse(
+                                code: responseCode,
+                                contentType: "application/json",
+                                contentStream: new MemoryStream(Encoding.UTF8.GetBytes(responseContent.ToString())),
+                                keepAliveConnection: false
+                                );
+                        }))
+                        .With("players", new AnonymousHttpRequestHandler(async (context, next) =>
+                        {
+                            HttpResponseCode responseCode;
+                            JContainer responseContent = new JObject();
+
+                            if (context.Request.Method == HttpMethods.Get)
+                            {
+                                var urlParts = context.Request.Uri.OriginalString.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                                await OtherPlayersSemaphoreSlim.WaitAsync();
+                                await CurrentPlayerSemaphoreSlim.WaitAsync();
+                                try
                                 {
-                                    if (ulong.TryParse(urlParts[1], out ulong ObjectId))
+                                    if (urlParts.Length >= 2)
                                     {
-                                        if (CurrentPlayer.ObjectId == ObjectId)
+                                        if (ulong.TryParse(urlParts[1], out ulong ObjectId))
                                         {
-                                            responseCode = HttpResponseCode.Ok;
-                                            responseContent = JObject.FromObject(CurrentPlayer);
-                                        }
-                                        else if (OtherPlayers.ContainsKey(ObjectId))
-                                        {
-                                            responseCode = HttpResponseCode.Ok;
-                                            responseContent = JObject.FromObject(OtherPlayers[ObjectId]);
+                                            if (CurrentPlayer.ObjectId == ObjectId)
+                                            {
+                                                responseCode = HttpResponseCode.Ok;
+                                                responseContent = JObject.FromObject(CurrentPlayer);
+                                            }
+                                            else if (OtherPlayers.ContainsKey(ObjectId))
+                                            {
+                                                responseCode = HttpResponseCode.Ok;
+                                                responseContent = JObject.FromObject(OtherPlayers[ObjectId]);
+                                            }
+                                            else
+                                            {
+                                                responseCode = HttpResponseCode.BadRequest;
+                                                responseContent = new JObject();
+                                                responseContent["err"] = "ObjectId specified not found.";
+                                            }
                                         }
                                         else
                                         {
                                             responseCode = HttpResponseCode.BadRequest;
                                             responseContent = new JObject();
-                                            responseContent["err"] = "ObjectId specified not found.";
+                                            responseContent["err"] = "Invalid ObjectId specified.";
                                         }
                                     }
                                     else
                                     {
-                                        responseCode = HttpResponseCode.BadRequest;
-                                        responseContent = new JObject();
-                                        responseContent["err"] = "Invalid ObjectId specified.";
+                                        responseCode = HttpResponseCode.Ok;
+                                        if (CurrentPlayer != null)
+                                            responseContent = JArray.FromObject(OtherPlayers.Values.Union(Enumerable.Repeat(CurrentPlayer, 1)));
+                                        else
+                                            responseContent = JArray.FromObject(OtherPlayers.Values);
                                     }
                                 }
-                                else
+                                finally
                                 {
+                                    CurrentPlayerSemaphoreSlim.Release();
+                                    OtherPlayersSemaphoreSlim.Release();
+                                }
+                            }
+                            else if (context.Request.Method == HttpMethods.Post)
+                            {
+                                var json = Encoding.UTF8.GetString(context.Request.Post.Raw);
+                                try
+                                {
+                                    var player = JsonConvert.DeserializeObject<Player>(json);
+                                    player.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                                    await OtherPlayersSemaphoreSlim.WaitAsync();
+                                    try
+                                    {
+                                        OtherPlayers[player.ObjectId] = player;
+                                    }
+                                    finally
+                                    {
+                                        OtherPlayersSemaphoreSlim.Release();
+                                    }
                                     responseCode = HttpResponseCode.Ok;
-                                    if (CurrentPlayer != null)
-                                        responseContent = JArray.FromObject(OtherPlayers.Values.Union(Enumerable.Repeat(CurrentPlayer, 1)));
-                                    else
-                                        responseContent = JArray.FromObject(OtherPlayers.Values);
+                                    responseContent = new JObject();
+                                }
+                                catch (Exception ex)
+                                {
+                                    responseCode = HttpResponseCode.BadRequest;
+                                    responseContent = new JObject();
+                                    responseContent["err"] = "Invalid payload.";
+                                }
+                            }
+                            else
+                            {
+                                responseCode = HttpResponseCode.BadRequest;
+                                responseContent = new JObject();
+                                responseContent["err"] = "Method not supported.";
+                            }
+
+                            context.Response = new HttpResponse(
+                                code: responseCode,
+                                contentType: "application/json",
+                                contentStream: new MemoryStream(Encoding.UTF8.GetBytes(responseContent.ToString())),
+                                keepAliveConnection: false
+                                );
+                        }))
+                    );
+
+                    httpServer.Use((context, next) =>
+                    {
+                        context.Response = HttpResponse.CreateWithMessage(HttpResponseCode.NotFound, "not found", false);
+                        return Task.Factory.GetCompleted();
+                    });
+
+                    try
+                    {
+                        httpServer.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new CannotStartServerException($"Cannot start server on port {port}.", ex);
+                    }
+
+                    IsRunning = true;
+
+                    long lastCleanup = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    while (IsRunning)
+                    {
+                        ServerState = ServerStateEnum.Listening;
+
+                        // Every second
+                        if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastCleanup >= 1000)
+                        {
+                            lastCleanup = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                            // Remove outdated players, i.e. players not seen within the last 5 seconds
+                            await OtherPlayersSemaphoreSlim.WaitAsync();
+                            try
+                            {
+                                var PlayerIds = OtherPlayers.Keys.ToList();
+                                foreach (var PlayerId in PlayerIds)
+                                {
+                                    if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - OtherPlayers[PlayerId].LastUpdate >= 5000)
+                                    {
+                                        OtherPlayers.Remove(PlayerId);
+                                    }
                                 }
                             }
                             finally
                             {
-                                CurrentPlayerSemaphoreSlim.Release();
                                 OtherPlayersSemaphoreSlim.Release();
                             }
                         }
-                        else if (context.Request.Method == HttpMethods.Post)
-                        {
-                            var json = Encoding.UTF8.GetString(context.Request.Post.Raw);
-                            try
-                            {
-                                var player = JsonConvert.DeserializeObject<Player>(json);
-                                player.LastUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                                await OtherPlayersSemaphoreSlim.WaitAsync();
-                                try
-                                {
-                                    OtherPlayers[player.ObjectId] = player;
-                                }
-                                finally
-                                {
-                                    OtherPlayersSemaphoreSlim.Release();
-                                }
-                                responseCode = HttpResponseCode.Ok;
-                                responseContent = new JObject();
-                            }
-                            catch (Exception ex)
-                            {
-                                responseCode = HttpResponseCode.BadRequest;
-                                responseContent = new JObject();
-                                responseContent["err"] = "Invalid payload.";
-                            }
-                        }
-                        else
-                        {
-                            responseCode = HttpResponseCode.BadRequest;
-                            responseContent = new JObject();
-                            responseContent["err"] = "Method not supported.";
-                        }
-
-                        context.Response = new HttpResponse(
-                            code: responseCode,
-                            contentType: "application/json",
-                            contentStream: new MemoryStream(Encoding.UTF8.GetBytes(responseContent.ToString())),
-                            keepAliveConnection: false
-                            );
-                    }))
-                );
-
-                httpServer.Use((context, next) =>
-                {
-                    context.Response = HttpResponse.CreateWithMessage(HttpResponseCode.NotFound, "not found", false);
-                    return Task.Factory.GetCompleted();
-                });
-
-                try
-                {
-                    httpServer.Start();
-                }
-                catch (Exception ex)
-                {
-                    throw new CannotStartServerException($"Cannot start server on port {port}.", ex);
-                }
-
-                IsRunning = true;
-
-                long lastCleanup  = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                while (IsRunning)
-                {
-                    // Every second
-                    if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - lastCleanup >= 1000)
-                    {
-                        lastCleanup = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                        // Remove outdated players, i.e. players not seen within the last 5 seconds
-                        await OtherPlayersSemaphoreSlim.WaitAsync();
-                        try
-                        {
-                            var PlayerIds = OtherPlayers.Keys.ToList();
-                            foreach (var PlayerId in PlayerIds)
-                            {
-                                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - OtherPlayers[PlayerId].LastUpdate >= 5000)
-                                {
-                                    OtherPlayers.Remove(PlayerId);
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            OtherPlayersSemaphoreSlim.Release();
-                        }
+                        await Task.Delay(100);
                     }
-                    await Task.Delay(100);
-                }
 
-                listener.Stop();
+                    listener.Stop();
+
+                    ServerState = ServerStateEnum.Idle;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    ListenError = ex.InnerException.Message;
+                else
+                    ListenError = ex.Message;
+                ServerState = ServerStateEnum.ListenFailed;
             }
         }
 

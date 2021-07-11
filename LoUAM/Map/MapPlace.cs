@@ -19,9 +19,32 @@ namespace LoUAM
         private TranslateTransform centerTransform;
         public TranslateTransform TranslateTransform { get => centerTransform; set => centerTransform = value; }
 
-        private TextBlock topPlaceLabel;
         private FrameworkElement placeElement;
+
+        private TextBlock topPlaceLabel;
+        public string TopLabel
+        {
+            get { return topPlaceLabel.Text; }
+            set { topPlaceLabel.Text = value; }
+        }
+
         private TextBlock bottomPlaceLabel;
+        public string BottomLabel
+        {
+            get { return bottomPlaceLabel.Text; }
+            set { bottomPlaceLabel.Text = value; }
+        }
+
+        public double X
+        {
+            get { return Canvas.GetLeft(this); }
+            set { Canvas.SetLeft(this, value); }
+        }
+        public double Z
+        {
+            get { return Canvas.GetTop(this); }
+            set { Canvas.SetTop(this, value); }
+        }
 
         public MapPlace(Place place)
         {

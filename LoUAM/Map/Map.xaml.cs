@@ -259,18 +259,25 @@ namespace LoUAM
             RefreshPlace(place, mapPlace);
         }
 
-        private void RefreshPlace(Place place, FrameworkElement element)
+        private void RefreshPlace(Place place, MapPlace mapPlace)
         {
-            if (element != null)
-            {
-                Canvas.SetLeft(element, place.X);
-                Canvas.SetTop(element, place.Z);
+            if (place == null || mapPlace == null)
+                return;
 
-                // scale back so that it preserves aspect ratio
-                ScaleTransform scaleTransform = (element as MapPlace).ScaleTransform;
-                scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
-                scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
-            }
+            // Update its position, if necessary
+            if (mapPlace.X != place.X)
+                mapPlace.X = place.X;
+            if (mapPlace.Z != place.Z)
+                mapPlace.Z = place.Z;
+
+            // Update its label, if necessary
+            if (mapPlace.BottomLabel != place.Label)
+                mapPlace.BottomLabel = place.Label;
+
+            // Always scale back so that it preserves aspect ratio
+            ScaleTransform scaleTransform = mapPlace.ScaleTransform;
+            scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
+            scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
 
             // If we are updating the current player, we may need to update the marker line
             if (MarkerPlaceId != "" && place.Type == PlaceType.CurrentPlayer)
@@ -302,15 +309,15 @@ namespace LoUAM
         private void RefreshPlaces(PlaceType placeType, Dictionary<string, Place> places)
         {
             // Get all the elements
-            var elements = PlacesCanvas.Children.OfType<FrameworkElement>().Where(i => i != null && i.Tag != null && i.Tag.ToString() == placeType.ToString()).ToDictionary(i => i.Name, i => i);
+            var mapPlaces = PlacesCanvas.Children.OfType<MapPlace>().Where(i => i != null && i.Tag != null && i.Tag.ToString() == placeType.ToString()).ToDictionary(i => i.Name, i => i);
 
             foreach (var place in places.Values)
             {
-                if (elements.Keys.Contains("Place_" + place.Id))
+                if (mapPlaces.Keys.Contains("Place_" + place.Id))
                 {
                     // Refresh existing places
-                    RefreshPlace(place, elements["Place_" + place.Id]);
-                    elements.Remove("Place_" + place.Id);
+                    RefreshPlace(place, mapPlaces["Place_" + place.Id]);
+                    mapPlaces.Remove("Place_" + place.Id);
                 }
                 else
                 {
@@ -320,9 +327,9 @@ namespace LoUAM
             }
 
             // And remove images that are left of this type, i.e. places and labels that have no corresponding place anymore
-            foreach (var element in elements)
+            foreach (var mapPlace in mapPlaces)
             {
-                PlacesCanvas.Children.Remove(element.Value);
+                PlacesCanvas.Children.Remove(mapPlace.Value);
             }
         }
 

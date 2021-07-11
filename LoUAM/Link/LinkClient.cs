@@ -330,7 +330,11 @@ namespace LoUAM
 
                     if (CurrentPlayer != null)
                     {
-                        OtherPlayers = OtherPlayers.Where(player => player != null && player.ObjectId != CurrentPlayer.ObjectId);
+                        if (OtherPlayers != null)
+                        {
+                            // Make sure our player is not duplicated in the "OtherPlayers" list too
+                            OtherPlayers = OtherPlayers.Where(player => player != null && player.ObjectId != CurrentPlayer.ObjectId);
+                        }
 
                         try
                         {

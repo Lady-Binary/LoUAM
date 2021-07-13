@@ -317,7 +317,10 @@ namespace LoUAM
                     try
                     {
                         OtherPlayers = await this.RetrievePlayers();
-                        OtherPlayers = OtherPlayers.ToList();
+                        if (OtherPlayers != null)
+                        {
+                            OtherPlayers = OtherPlayers.ToList(); // .ToList() to force immediate execution
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -334,7 +337,11 @@ namespace LoUAM
                         if (OtherPlayers != null)
                         {
                             // Make sure our player is not duplicated in the "OtherPlayers" list too
-                            OtherPlayers = OtherPlayers.Where(player => player != null && player.ObjectId != CurrentPlayer.ObjectId).ToList();
+                            OtherPlayers = OtherPlayers
+                                .Where(player =>
+                                        player != null &&
+                                        player.ObjectId != CurrentPlayer.ObjectId
+                                ).ToList();  // .ToList() to force immediate execution
                         }
 
                         try

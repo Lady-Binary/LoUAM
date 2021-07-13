@@ -23,602 +23,7 @@
     <Founders />
     <Limbo />
     <Monolith />
-    <NewCelador>
-      <place>
-        <name>Eldeir</name>
-        <type>town</type>
-        <x>292.46</x>
-        <z>987.24</z>
-      </place>
-      <place>
-        <name>Valus</name>
-        <type>town</type>
-        <x>866.04</x>
-        <z>-1134.45</z>
-      </place>
-      <place>
-        <name>Trinit</name>
-        <type>town</type>
-        <x>542.01</x>
-        <z>-194.79</z>
-      </place>
-      <place>
-        <name>Pyros' Landing</name>
-        <type>town</type>
-        <x>-2748.62</x>
-        <z>-2225.12</z>
-      </place>
-      <place>
-        <name>Helm</name>
-        <type>town</type>
-        <x>2845.63</x>
-        <z>830.63</z>
-      </place>
-      <place>
-        <name>Oasis</name>
-        <type>town</type>
-        <x>-2264.43</x>
-        <z>-824.96</z>
-      </place>
-      <place>
-        <name>Black Forest Outpost</name>
-        <type>town</type>
-        <x>2141.69</x>
-        <z>-435.3</z>
-      </place>
-      <place>
-        <name>Asper</name>
-        <type>town</type>
-        <x>1531</x>
-        <z>1751.5</z>
-      </place>
-      <place>
-        <name>Valdheim Outpost</name>
-        <type>town</type>
-        <x>-199.39</x>
-        <z>2141.88</z>
-      </place>
-      <place>
-        <name>Belhaven</name>
-        <type>town</type>
-        <x>-27.85</x>
-        <z>-1816.82</z>
-      </place>
-      <place>
-        <name>Tethys Lake Bank</name>
-        <type>town</type>
-        <x>-579.08</x>
-        <z>-157.5</z>
-      </place>
-      <place>
-        <name>Bailey the Shopkeeper</name>
-        <type>town</type>
-        <x>-111.55</x>
-        <z>-118.22</z>
-      </place>
-      <place>
-        <name>Lake Petra</name>
-        <type>town</type>
-        <x>1220.5</x>
-        <z>1341</z>
-      </place>
-      <place>
-        <name>The Hole</name>
-        <type>town</type>
-        <x>353.9</x>
-        <z>1709</z>
-      </place>
-      <place>
-        <name>Eldeir Arena</name>
-        <type>town</type>
-        <x>113.4</x>
-        <z>832.7</z>
-      </place>
-      <place>
-        <name>Pyros Landing Arena</name>
-        <type>town</type>
-        <x>-2702.8</x>
-        <z>-2223</z>
-      </place>
-      <place>
-        <name>The Dead Gate</name>
-        <type>town</type>
-        <x>-60.11</x>
-        <z>195.37</z>
-      </place>
-      <place>
-        <name>Eldeir Mage Tower</name>
-        <type>teleporter</type>
-        <x>257.08</x>
-        <z>802.66</z>
-      </place>
-      <place>
-        <name>Valus Mage Tower</name>
-        <type>teleporter</type>
-        <x>983.36</x>
-        <z>-1270.55</z>
-      </place>
-      <place>
-        <name>Pyros Mage Tower</name>
-        <type>teleporter</type>
-        <x>-2642.47</x>
-        <z>-2077.93</z>
-      </place>
-      <place>
-        <name>Helm Mage Tower</name>
-        <type>teleporter</type>
-        <x>2454.55</x>
-        <z>636.73</z>
-      </place>
-      <place>
-        <name>Oasis Mage Tower</name>
-        <type>teleporter</type>
-        <x>-2100.55</x>
-        <z>-679.53</z>
-      </place>
-      <place>
-        <name>Black Forest Mage Tower</name>
-        <type>teleporter</type>
-        <x>1853.04</x>
-        <z>-368.18</z>
-      </place>
-      <place>
-        <name>Crossroad Mage Tower</name>
-        <type>teleporter</type>
-        <x>-655.43</x>
-        <z>-1598.68</z>
-      </place>
-      <place>
-        <name>Frozen Tundra Mage Tower</name>
-        <type>teleporter</type>
-        <x>677.31</x>
-        <z>2149.72</z>
-      </place>
-      <place>
-        <name>Tethys Lake Pier</name>
-        <type>teleporter</type>
-        <x>-266.22</x>
-        <z>-53.09</z>
-      </place>
-      <place>
-        <name>Sacred Island Pier</name>
-        <type>teleporter</type>
-        <x>-310.91</x>
-        <z>53.18</z>
-      </place>
-      <place>
-        <name>Bootstrap Crevice</name>
-        <type>miners_guild</type>
-        <x>-1771.95</x>
-        <z>-2360.46</z>
-      </place>
-      <place>
-        <name>Helm Mine</name>
-        <type>miners_guild</type>
-        <x>2687.2</x>
-        <z>727.54</z>
-      </place>
-      <place>
-        <name>Iron Peak Caverns West</name>
-        <type>miners_guild</type>
-        <x>2657</x>
-        <z>1217</z>
-      </place>
-      <place>
-        <name>Iron Peak Caverns East</name>
-        <type>miners_guild</type>
-        <x>2923</x>
-        <z>1342</z>
-      </place>
-      <place>
-        <name>Denir Mine</name>
-        <type>miners_guild</type>
-        <x>2137.97</x>
-        <z>476.39</z>
-      </place>
-      <place>
-        <name>Mount Aris Mine</name>
-        <type>miners_guild</type>
-        <x>2538.66</x>
-        <z>302.54</z>
-      </place>
-      <place>
-        <name>Misty Caverns</name>
-        <type>miners_guild</type>
-        <x>154.66</x>
-        <z>-637.26</z>
-      </place>
-      <place>
-        <name>West Spiritwood Mine</name>
-        <type>miners_guild</type>
-        <x>1338.66</x>
-        <z>-118.35</z>
-      </place>
-      <place>
-        <name>East Spiritwood Mine</name>
-        <type>miners_guild</type>
-        <x>1975.75</x>
-        <z>-196.26</z>
-      </place>
-      <place>
-        <name>Breca Mines</name>
-        <type>miners_guild</type>
-        <x>400.47</x>
-        <z>-1552.07</z>
-      </place>
-      <place>
-        <name>Pirate's Grotto Mine</name>
-        <type>miners_guild</type>
-        <x>1611.17</x>
-        <z>-2272.3</z>
-      </place>
-      <place>
-        <name>Belhaven Mine</name>
-        <type>miners_guild</type>
-        <x>117.41</x>
-        <z>-1831.73</z>
-      </place>
-      <place>
-        <name>Fremen Quarry</name>
-        <type>miners_guild</type>
-        <x>-338.83</x>
-        <z>1174.74</z>
-      </place>
-      <place>
-        <name>Southern Rim Mine</name>
-        <type>miners_guild</type>
-        <x>-1181.32</x>
-        <z>-2098.76</z>
-      </place>
-      <place>
-        <name>Gold Coast Mine</name>
-        <type>miners_guild</type>
-        <x>-2781.83</x>
-        <z>78.74</z>
-      </place>
-      <place>
-        <name>Grim's Cavern</name>
-        <type>miners_guild</type>
-        <x>892.52</x>
-        <z>530.12</z>
-      </place>
-      <place>
-        <name>Jhalir Mine</name>
-        <type>miners_guild</type>
-        <x>-2000</x>
-        <z>-1200</z>
-      </place>
-      <place>
-        <name>Valus Mine</name>
-        <type>miners_guild</type>
-        <x>701.04</x>
-        <z>-605.42</z>
-      </place>
-      <place>
-        <name>Lost Valdheim Cave</name>
-        <type>miners_guild</type>
-        <x>-460.28</x>
-        <z>2094.83</z>
-      </place>
-      <place>
-        <name>Trolls</name>
-        <type>graveyard</type>
-        <x>2296.26</x>
-        <z>-14.21</z>
-      </place>
-      <place>
-        <name>Trolls</name>
-        <type>graveyard</type>
-        <x>1513</x>
-        <z>-1333</z>
-      </place>
-      <place>
-        <name>Trolls</name>
-        <type>graveyard</type>
-        <x>1257.12</x>
-        <z>407.14</z>
-      </place>
-      <place>
-        <name>Trolls</name>
-        <type>graveyard</type>
-        <x>1061</x>
-        <z>1270</z>
-      </place>
-      <place>
-        <name>Swamp</name>
-        <type>graveyard</type>
-        <x>2404.27</x>
-        <z>-707.77</z>
-      </place>
-      <place>
-        <name>Huntress &amp; Vile Spiders</name>
-        <type>graveyard</type>
-        <x>2907.08</x>
-        <z>-1110.48</z>
-      </place>
-      <place>
-        <name>Harpies Nest</name>
-        <type>graveyard</type>
-        <x>1415.41</x>
-        <z>-497.09</z>
-      </place>
-      <place>
-        <name>Tree Lords</name>
-        <type>graveyard</type>
-        <x>1718.96</x>
-        <z>-776.75</z>
-      </place>
-      <place>
-        <name>Goblin Camp</name>
-        <type>graveyard</type>
-        <x>-2445.07</x>
-        <z>-2242.17</z>
-      </place>
-      <place>
-        <name>Abandoned Mage Tower</name>
-        <type>graveyard</type>
-        <x>1444</x>
-        <z>1123</z>
-      </place>
-      <place>
-        <name>Destroyed Town</name>
-        <type>graveyard</type>
-        <x>1736</x>
-        <z>969</z>
-      </place>
-      <place>
-        <name>Pyros Graveyard</name>
-        <type>graveyard</type>
-        <x>-2972.09</x>
-        <z>-2106.07</z>
-      </place>
-      <place>
-        <name>Rebel HQ</name>
-        <type>graveyard</type>
-        <x>-1412.87</x>
-        <z>-2213.96</z>
-      </place>
-      <place>
-        <name>Gazers</name>
-        <type>graveyard</type>
-        <x>-1139.62</x>
-        <z>-1434.89</z>
-      </place>
-      <place>
-        <name>Wyverns</name>
-        <type>graveyard</type>
-        <x>-2543.77</x>
-        <z>-793.53</z>
-      </place>
-      <place>
-        <name>Giant &amp; Emperor Scorpions</name>
-        <type>graveyard</type>
-        <x>-2633.16</x>
-        <z>-1378.95</z>
-      </place>
-      <place>
-        <name>Giant Beetles</name>
-        <type>graveyard</type>
-        <x>-1813.76</x>
-        <z>-424.38</z>
-      </place>
-      <place>
-        <name>Helm Graveyard</name>
-        <type>graveyard</type>
-        <x>2847.31</x>
-        <z>1202.88</z>
-      </place>
-      <place>
-        <name>Bandits' Camp</name>
-        <type>graveyard</type>
-        <x>2378.71</x>
-        <z>961.24</z>
-      </place>
-      <place>
-        <name>Eldeir Graveyard</name>
-        <type>graveyard</type>
-        <x>411.65</x>
-        <z>981.38</z>
-      </place>
-      <place>
-        <name>Spiders</name>
-        <type>graveyard</type>
-        <x>599.74</x>
-        <z>276.63</z>
-      </place>
-      <place>
-        <name>Bandits' Camp</name>
-        <type>graveyard</type>
-        <x>-342.57</x>
-        <z>392.23</z>
-      </place>
-      <place>
-        <name>Liches</name>
-        <type>graveyard</type>
-        <x>75.72</x>
-        <z>81.79</z>
-      </place>
-      <place>
-        <name>Hobgoblins</name>
-        <type>graveyard</type>
-        <x>1093.24</x>
-        <z>671.89</z>
-      </place>
-      <place>
-        <name>Rock Golems</name>
-        <type>graveyard</type>
-        <x>297.69</x>
-        <z>-659.76</z>
-      </place>
-      <place>
-        <name>Valus Graveyard</name>
-        <type>graveyard</type>
-        <x>763.62</x>
-        <z>-1211.16</z>
-      </place>
-      <place>
-        <name>Valus Cemetery</name>
-        <type>graveyard</type>
-        <x>197.49</x>
-        <z>-1280.14</z>
-      </place>
-      <place>
-        <name>Liches</name>
-        <type>graveyard</type>
-        <x>930.72</x>
-        <z>-2155.83</z>
-      </place>
-      <place>
-        <name>Pirates (Beached Ship)</name>
-        <type>graveyard</type>
-        <x>1765.51</x>
-        <z>-1684.72</z>
-      </place>
-      <place>
-        <name>Pirates (Pirate's Grotto)</name>
-        <type>graveyard</type>
-        <x>1711.51</x>
-        <z>-2368.95</z>
-      </place>
-      <place>
-        <name>Dire Wolves</name>
-        <type>graveyard</type>
-        <x>-323.95</x>
-        <z>-953.87</z>
-      </place>
-      <place>
-        <name>Orcs</name>
-        <type>graveyard</type>
-        <x>400.47</x>
-        <z>-1580</z>
-      </place>
-      <place>
-        <name>Trolls</name>
-        <type>graveyard</type>
-        <x>-837.28</x>
-        <z>-1778.13</z>
-      </place>
-      <place>
-        <name>Kobolds</name>
-        <type>graveyard</type>
-        <x>298.16</x>
-        <z>2294.22</z>
-      </place>
-      <place>
-        <name>Halls of Corruption</name>
-        <type>dungeon</type>
-        <x>669.92</x>
-        <z>606.2</z>
-      </place>
-      <place>
-        <name>Halls of Contempt</name>
-        <type>dungeon</type>
-        <x>2968.54</x>
-        <z>-500.82</z>
-      </place>
-      <place>
-        <name>Halls of Ruin</name>
-        <type>dungeon</type>
-        <x>-1177.02</x>
-        <z>-1738.07</z>
-      </place>
-      <place>
-        <name>Halls of Deception</name>
-        <type>dungeon</type>
-        <x>-2626.19</x>
-        <z>-9.05</z>
-      </place>
-      <place>
-        <name>Catacombs</name>
-        <type>dungeon</type>
-        <x>945.5</x>
-        <z>-2131</z>
-      </place>
-      <place>
-        <name>Dragon Awakening</name>
-        <type>dungeon</type>
-        <x>-2767.24</x>
-        <z>-840.14</z>
-      </place>
-      <place>
-        <name>Tree Awakening</name>
-        <type>dungeon</type>
-        <x>2519.73</x>
-        <z>-774.89</z>
-      </place>
-      <place>
-        <name>Cultist Awakening</name>
-        <type>dungeon</type>
-        <x>-1653.61</x>
-        <z>-883.02</z>
-      </place>
-      <place>
-        <name>Crab</name>
-        <type>point_of_interest</type>
-        <x>2137.97</x>
-        <z>1402.73</z>
-      </place>
-      <place>
-        <name>Crab</name>
-        <type>point_of_interest</type>
-        <x>2888.46</x>
-        <z>435.11</z>
-      </place>
-      <place>
-        <name>Dire Bear</name>
-        <type>point_of_interest</type>
-        <x>1756.2</x>
-        <z>1413.92</z>
-      </place>
-      <place>
-        <name>Dire Wolves</name>
-        <type>point_of_interest</type>
-        <x>-351.88</x>
-        <z>-953.87</z>
-      </place>
-      <place>
-        <name>Wyverns</name>
-        <type>point_of_interest</type>
-        <x>-2530.74</x>
-        <z>-773.02</z>
-      </place>
-      <place>
-        <name>Giant Scorpions</name>
-        <type>point_of_interest</type>
-        <x>-2661.09</x>
-        <z>-1378.95</z>
-      </place>
-      <place>
-        <name>Giant Beetles</name>
-        <type>point_of_interest</type>
-        <x>-1785.83</x>
-        <z>-424.38</z>
-      </place>
-      <place>
-        <name>Huntress</name>
-        <type>point_of_interest</type>
-        <x>2920.12</x>
-        <z>-1073.19</z>
-      </place>
-      <place>
-        <name>Grizzly Bear</name>
-        <type>point_of_interest</type>
-        <x>-870</x>
-        <z>-1764</z>
-      </place>
-      <place>
-        <name>Dread</name>
-        <type>point_of_interest</type>
-        <x>-2854</x>
-        <z>-1755</z>
-      </place>
-      <place>
-        <name>Ice Wyvern</name>
-        <type>point_of_interest</type>
-        <x>921</x>
-        <z>2153</z>
-      </place>
-    </NewCelador>
+    <NewCelador />
     <Perilous />
     <Ruin />
     <TwoTowers />
@@ -633,935 +38,934 @@
     <Founders />
     <Limbo />
     <Monolith />
-    <NewCelador>
-      <place>
-        <name>Britain</name>
-        <type>town</type>
-        <x>818.6324</x>
-        <z>-1176.867</z>
-      </place>
-      <place>
-        <name>Cove</name>
-        <type>town</type>
-        <x>551.1505</x>
-        <z>-193.9731</z>
-      </place>
-      <place>
-        <name>Occlo</name>
-        <type>town</type>
-        <x>-48.881</x>
-        <z>-1816.643</z>
-      </place>
-      <place>
-        <name>Magincia</name>
-        <type>town</type>
-        <x>2754.808</x>
-        <z>748.8397</z>
-      </place>
-      <place>
-        <name>Moonglow</name>
-        <type>town</type>
-        <x>299.6694</x>
-        <z>843.2551</z>
-      </place>
-      <place>
-        <name>Nujelm</name>
-        <type>town</type>
-        <x>-2337.99</x>
-        <z>-845.5579</z>
-      </place>
-      <place>
-        <name>Papua</name>
-        <type>town</type>
-        <x>2036.084</x>
-        <z>-97.17249</z>
-      </place>
-      <place>
-        <name>Yew</name>
-        <type>town</type>
-        <x>2194.012</x>
-        <z>-349.7809</z>
-      </place>
-      <place>
-        <name>Vesper</name>
-        <type>town</type>
-        <x>-2772.31</x>
-        <z>-2217.927</z>
-      </place>
-      <place>
-        <name>Riverside</name>
-        <type>town</type>
-        <x>585.6293</x>
-        <z>-728.2369</z>
-      </place>
-      <place>
-        <name>Buccaneers Den</name>
-        <type>town</type>
-        <x>1558.597</x>
-        <z>-2287.118</z>
-      </place>
-      <place>
-        <name>Brecca Mines</name>
-        <type>point_of_interest</type>
-        <x>386.0963</x>
-        <z>-1532.356</z>
-      </place>
-      <place>
-        <name>Bootstrap Crevice</name>
-        <type>point_of_interest</type>
-        <x>-1787.88</x>
-        <z>-2361.379</z>
-      </place>
-      <place>
-        <name>Rebel Camp</name>
-        <type>point_of_interest</type>
-        <x>-1416.86</x>
-        <z>-2199.044</z>
-      </place>
-      <place>
-        <name>Bake Kitsunes</name>
-        <type>point_of_interest</type>
-        <x>-1653.7</x>
-        <z>-1653.71</z>
-      </place>
-      <place>
-        <name>Dungeon Ruin</name>
-        <type>point_of_interest</type>
-        <x>-1159.41</x>
-        <z>-1753.272</z>
-      </place>
-      <place>
-        <name>Iris Cave</name>
-        <type>point_of_interest</type>
-        <x>-1188.16</x>
-        <z>-2081.551</z>
-      </place>
-      <place>
-        <name>Crossroads</name>
-        <type>point_of_interest</type>
-        <x>-659.046</x>
-        <z>-1617.435</z>
-      </place>
-      <place>
-        <name>Titans</name>
-        <type>point_of_interest</type>
-        <x>-859.92</x>
-        <z>-1029.082</z>
-      </place>
-      <place>
-        <name>Cu Sidhes</name>
-        <type>point_of_interest</type>
-        <x>-478.907</x>
-        <z>-851.0783</z>
-      </place>
-      <place>
-        <name>Waterfall Cave</name>
-        <type>point_of_interest</type>
-        <x>130.239</x>
-        <z>-653.883</z>
-      </place>
-      <place>
-        <name>Wind Entrance</name>
-        <type>dungeon</type>
-        <x>337</x>
-        <z>-752</z>
-      </place>
-      <place>
-        <name>Whelplings</name>
-        <type>point_of_interest</type>
-        <x>1015.62</x>
-        <z>-2154.428</z>
-      </place>
-      <place>
-        <name>Orc Warriors</name>
-        <type>point_of_interest</type>
-        <x>1258.699</x>
-        <z>-1623.751</z>
-      </place>
-      <place>
-        <name>Undead Zone</name>
-        <type>point_of_interest</type>
-        <x>270.6104</x>
-        <z>-1331.262</z>
-      </place>
-      <place>
-        <name>Spider MiniChamp</name>
-        <type>point_of_interest</type>
-        <x>256.2354</x>
-        <z>-1126.331</z>
-      </place>
-      <place>
-        <name>Riverside Cave</name>
-        <type>point_of_interest</type>
-        <x>676.5</x>
-        <z>-626.8826</z>
-      </place>
-      <place>
-        <name>Haunted Ruins</name>
-        <type>point_of_interest</type>
-        <x>55.03792</x>
-        <z>28.59806</z>
-      </place>
-      <place>
-        <name>Rambles Elementals</name>
-        <type>point_of_interest</type>
-        <x>-151.143</x>
-        <z>-242.3092</z>
-      </place>
-      <place>
-        <name>Jhalir Cave</name>
-        <type>point_of_interest</type>
-        <x>-1939.88</x>
-        <z>-1095.307</z>
-      </place>
-      <place>
-        <name>Ruins of the Artificer</name>
-        <type>point_of_interest</type>
-        <x>-1679.96</x>
-        <z>-858.3258</z>
-      </place>
-      <place>
-        <name>Red Portal</name>
-        <type>point_of_interest</type>
-        <x>-2783.69</x>
-        <z>221.7059</z>
-      </place>
-      <place>
-        <name>Sand Worm 1</name>
-        <type>point_of_interest</type>
-        <x>-2523.18</x>
-        <z>-739.0133</z>
-      </place>
-      <place>
-        <name>Sand Worm 2</name>
-        <type>point_of_interest</type>
-        <x>-2506.02</x>
-        <z>-44.38909</z>
-      </place>
-      <place>
-        <name>Sacred Isle</name>
-        <type>point_of_interest</type>
-        <x>-334.333</x>
-        <z>108.4022</z>
-      </place>
-      <place>
-        <name>Rune Library (Tables)</name>
-        <type>point_of_interest</type>
-        <x>2665.598</x>
-        <z>1024.881</z>
-      </place>
-      <place>
-        <name>Rune Library (Stonehenge)</name>
-        <type>point_of_interest</type>
-        <x>1599.253</x>
-        <z>1246.547</z>
-      </place>
-      <place>
-        <name>Nightmares</name>
-        <type>point_of_interest</type>
-        <x>2322.486</x>
-        <z>-1248.496</z>
-      </place>
-      <place>
-        <name>Whitetails</name>
-        <type>point_of_interest</type>
-        <x>1004.568</x>
-        <z>1715.439</z>
-      </place>
-      <place>
-        <name>Bandit Camp</name>
-        <type>point_of_interest</type>
-        <x>2373.19</x>
-        <z>989.8</z>
-      </place>
-      <place>
-        <name>Dragon Champ</name>
-        <type>point_of_interest</type>
-        <x>-2729.32</x>
-        <z>-807.9044</z>
-      </place>
-      <place>
-        <name>Fangorn</name>
-        <type>point_of_interest</type>
-        <x>2504.803</x>
-        <z>-761.0482</z>
-      </place>
-      <place>
-        <name>Undead Champ</name>
-        <type>point_of_interest</type>
-        <x>1758.427</x>
-        <z>1006.009</z>
-      </place>
-      <place>
-        <name>Spider Champ</name>
-        <type>point_of_interest</type>
-        <x>2877.358</x>
-        <z>-1261.674</z>
-      </place>
-      <place>
-        <name>Juka Champ</name>
-        <type>point_of_interest</type>
-        <x>-2813.59</x>
-        <z>76.65984</z>
-      </place>
-      <place>
-        <name>Dungeon Deception</name>
-        <type>dungeon</type>
-        <x>-2620.286</x>
-        <z>-67.51831</z>
-      </place>
-      <place>
-        <name>Teleporter to Pirate's Grotto</name>
-        <type>teleporter</type>
-        <x>55.33813</x>
-        <z>-1870.23</z>
-      </place>
-      <place>
-        <name>Magincia Farms</name>
-        <type>point_of_interest</type>
-        <x>2710.62</x>
-        <z>925.9937</z>
-      </place>
-      <place>
-        <name>Minoc Quarry</name>
-        <type>graveyard</type>
-        <x>-322.5779</x>
-        <z>1101.21</z>
-      </place>
-      <place>
-        <name>Grim's Cavern</name>
-        <type>point_of_interest</type>
-        <x>900.0659</x>
-        <z>490</z>
-      </place>
-      <place>
-        <name>Nujel'm Moongate</name>
-        <type>moongate</type>
-        <x>-2102.65</x>
-        <z>-700.0542</z>
-      </place>
-      <place>
-        <name>Britain Moongate</name>
-        <type>moongate</type>
-        <x>965.4438</x>
-        <z>-1284.71</z>
-      </place>
-      <place>
-        <name>Fisherman's Wharf</name>
-        <type>point_of_interest</type>
-        <x>-449.1941</x>
-        <z>98.37769</z>
-      </place>
-      <place>
-        <name>Yew Graveyard</name>
-        <type>graveyard</type>
-        <x>2077</x>
-        <z>-373</z>
-      </place>
-      <place>
-        <name>Housing Display</name>
-        <type>point_of_interest</type>
-        <x>-748.9761</x>
-        <z>-479.4622</z>
-      </place>
-      <place>
-        <name>Mer Beach</name>
-        <type>point_of_interest</type>
-        <x>2155.744</x>
-        <z>1391.994</z>
-      </place>
-      <place>
-        <name>Nosca Grove</name>
-        <type>point_of_interest</type>
-        <x>2323.324</x>
-        <z>-1349.95</z>
-      </place>
-      <place>
-        <name>Shrine of Chaos</name>
-        <type>shrine</type>
-        <x>1518.94</x>
-        <z>-2371.422</z>
-      </place>
-      <place>
-        <name>Moonglow Graveyard</name>
-        <type>graveyard</type>
-        <x>411.0498</x>
-        <z>930.2178</z>
-      </place>
-      <place>
-        <name>Magincia Moongate</name>
-        <type>moongate</type>
-        <x>2794</x>
-        <z>953</z>
-      </place>
-      <place>
-        <name>Ocllo Moongate</name>
-        <type>moongate</type>
-        <x>-102.8621</x>
-        <z>-2006.406</z>
-      </place>
-      <place>
-        <name>Calibration Point 1 - SW</name>
-        <type>UOAM</type>
-        <x>-1729.86</x>
-        <z>-2266.79</z>
-      </place>
-      <place>
-        <name>Calibration Point 2 - Brit</name>
-        <type>UOAM</type>
-        <x>852</x>
-        <z>-1163</z>
-      </place>
-      <place>
-        <name>Calibration Point 3 - NE</name>
-        <type>UOAM</type>
-        <x>2877.47</x>
-        <z>-1291.42</z>
-      </place>
-      <place>
-        <name>Spider Cave</name>
-        <type>point_of_interest</type>
-        <x>2085</x>
-        <z>470</z>
-      </place>
-      <place>
-        <name>Abandoned Shrine</name>
-        <type>point_of_interest</type>
-        <x>1456</x>
-        <z>1172</z>
-      </place>
-      <place>
-        <name>Moonglow Moongate</name>
-        <type>moongate</type>
-        <x>85.5</x>
-        <z>927.51</z>
-      </place>
-      <place>
-        <name>Faction Caravan Tower</name>
-        <type>point_of_interest</type>
-        <x>86.95</x>
-        <z>1276.28</z>
-      </place>
-      <place>
-        <name>Buccaneer Shipwreck</name>
-        <type>point_of_interest</type>
-        <x>1886.37</x>
-        <z>-1643.7</z>
-      </place>
-      <place>
-        <name>Imp Shrine</name>
-        <type>point_of_interest</type>
-        <x>1717.92</x>
-        <z>1133.89</z>
-      </place>
-      <place>
-        <name>Cave Trolls</name>
-        <type>point_of_interest</type>
-        <x>1816.44</x>
-        <z>1407.8</z>
-      </place>
-      <place>
-        <name>Arena</name>
-        <type>point_of_interest</type>
-        <x>1705.48</x>
-        <z>1440.44</z>
-      </place>
-      <place>
-        <name>Dire Bears</name>
-        <type>point_of_interest</type>
-        <x>1683.69</x>
-        <z>1381.54</z>
-      </place>
-      <place>
-        <name>Harpy Nest</name>
-        <type>point_of_interest</type>
-        <x>1396.18</x>
-        <z>-485.7</z>
-      </place>
-      <place>
-        <name>Wisp Grove</name>
-        <type>point_of_interest</type>
-        <x>1699.87</x>
-        <z>-155.77</z>
-      </place>
-      <place>
-        <name>Lumberjack Camp</name>
-        <type>carpenter</type>
-        <x>1911.28</x>
-        <z>52.47</z>
-      </place>
-      <place>
-        <name>Trolls and Reapers</name>
-        <type>point_of_interest</type>
-        <x>1290.12</x>
-        <z>352.49</z>
-      </place>
-      <place>
-        <name>Dagger Isle</name>
-        <type>island</type>
-        <x>1339.41</x>
-        <z>625.01</z>
-      </place>
-      <place>
-        <name>Spirit Isle</name>
-        <type>island</type>
-        <x>1178.83</x>
-        <z>135.44</z>
-      </place>
-      <place>
-        <name>Swamp Wyverns</name>
-        <type>point_of_interest</type>
-        <x>915.02</x>
-        <z>237.38</z>
-      </place>
-      <place>
-        <name>Spiders</name>
-        <type>point_of_interest</type>
-        <x>770.25</x>
-        <z>257.39</z>
-      </place>
-      <place>
-        <name>Dungeon Corruption</name>
-        <type>dungeon</type>
-        <x>674.31</x>
-        <z>601.46</z>
-      </place>
-      <place>
-        <name>Bandit Camp</name>
-        <type>point_of_interest</type>
-        <x>-274.44</x>
-        <z>357.7</z>
-      </place>
-      <place>
-        <name>Riverside Graveyard</name>
-        <type>graveyard</type>
-        <x>757</x>
-        <z>-726.05</z>
-      </place>
-      <place>
-        <name>Bandit Camp</name>
-        <type>point_of_interest</type>
-        <x>787.7</x>
-        <z>-770.86</z>
-      </place>
-      <place>
-        <name>Entrance to Misty Caverns</name>
-        <type>point_of_interest</type>
-        <x>472.16</x>
-        <z>-717.24</z>
-      </place>
-      <place>
-        <name>Misty Caverns</name>
-        <type>point_of_interest</type>
-        <x>289.88</x>
-        <z>-672.67</z>
-      </place>
-      <place>
-        <name>Magincia Graveyard</name>
-        <type>graveyard</type>
-        <x>2848</x>
-        <z>1203.91</z>
-      </place>
-      <place>
-        <name>Iron Peak Caverns East</name>
-        <type>point_of_interest</type>
-        <x>2860.9</x>
-        <z>1341.34</z>
-      </place>
-      <place>
-        <name>Mount Aris Orc Camp</name>
-        <type>point_of_interest</type>
-        <x>2542.5</x>
-        <z>301.96</z>
-      </place>
-      <place>
-        <name>Lich Lords</name>
-        <type>point_of_interest</type>
-        <x>2895.42</x>
-        <z>115.53</z>
-      </place>
-      <place>
-        <name>Dungeon Contempt</name>
-        <type>dungeon</type>
-        <x>2981.14</x>
-        <z>-478.03</z>
-      </place>
-      <place>
-        <name>Vesper Moongate</name>
-        <type>moongate</type>
-        <x>-2657.64</x>
-        <z>-2078.47</z>
-      </place>
-      <place>
-        <name>Cove Moongate</name>
-        <type>moongate</type>
-        <x>651.52</x>
-        <z>-440.58</z>
-      </place>
-      <place>
-        <name>Teleporter to Occlo</name>
-        <type>teleporter</type>
-        <x>1680.26</x>
-        <z>-2405.54</z>
-      </place>
-      <place>
-        <name>Cave Trolls</name>
-        <type>point_of_interest</type>
-        <x>95.34</x>
-        <z>-1803.84</z>
-      </place>
-      <place>
-        <name>Occlo Farms</name>
-        <type>point_of_interest</type>
-        <x>-2.18</x>
-        <z>-1916.94</z>
-      </place>
-      <place>
-        <name>Papua Moongate</name>
-        <type>moongate</type>
-        <x>2180.49</x>
-        <z>-77.63</z>
-      </place>
-      <place>
-        <name>Vesper Farms</name>
-        <type>point_of_interest</type>
-        <x>-2607.95</x>
-        <z>-2168.28</z>
-      </place>
-      <place>
-        <name>Elemental Cave</name>
-        <type>point_of_interest</type>
-        <x>1854</x>
-        <z>2235.94</z>
-      </place>
-      <place>
-        <name>Tree Champ</name>
-        <type>point_of_interest</type>
-        <x>1917.33</x>
-        <z>1706.61</z>
-      </place>
-      <place>
-        <name>Asper Town</name>
-        <type>town</type>
-        <x>1506.67</x>
-        <z>1727.94</z>
-      </place>
-      <place>
-        <name>Ancient Wyvern Champ</name>
-        <type>dungeon</type>
-        <x>1330.67</x>
-        <z>2095.94</z>
-      </place>
-      <place>
-        <name>Krampus Champ</name>
-        <type>point_of_interest</type>
-        <x>1335.33</x>
-        <z>1969.28</z>
-      </place>
-      <place>
-        <name>Fishing Vendor</name>
-        <type>fishermans_guild</type>
-        <x>1134.67</x>
-        <z>2257.94</z>
-      </place>
-      <place>
-        <name>Fishing Vendor</name>
-        <type>fishermans_guild</type>
-        <x>682</x>
-        <z>2307.94</z>
-      </place>
-      <place>
-        <name>Orc Cave</name>
-        <type>point_of_interest</type>
-        <x>298</x>
-        <z>2318.61</z>
-      </place>
-      <place>
-        <name>Orc Champ</name>
-        <type>point_of_interest</type>
-        <x>388.67</x>
-        <z>2399.94</z>
-      </place>
-      <place>
-        <name>Orc Town</name>
-        <type>town</type>
-        <x>185.33</x>
-        <z>2355.28</z>
-      </place>
-      <place>
-        <name>Fishing Vendor</name>
-        <type>fishermans_guild</type>
-        <x>-136.67</x>
-        <z>2171.28</z>
-      </place>
-      <place>
-        <name>Bear Champ</name>
-        <type>point_of_interest</type>
-        <x>-468</x>
-        <z>2106.61</z>
-      </place>
-      <place>
-        <name>Fishing Vendor</name>
-        <type>fishermans_guild</type>
-        <x>480</x>
-        <z>2053.94</z>
-      </place>
-      <place>
-        <name>Ghost Champ</name>
-        <type>point_of_interest</type>
-        <x>869.33</x>
-        <z>2135.28</z>
-      </place>
-      <place>
-        <name>Ice Fiend Champ</name>
-        <type>point_of_interest</type>
-        <x>776.67</x>
-        <z>2134.61</z>
-      </place>
-      <place>
-        <name>White Wyrm</name>
-        <type>point_of_interest</type>
-        <x>1597.33</x>
-        <z>1855.44</z>
-      </place>
-      <place>
-        <name>Faction Starter</name>
-        <type>fighters_guild</type>
-        <x>-259.88</x>
-        <z>2217.49</z>
-      </place>
-      <place>
-        <name>Faction Boss 1</name>
-        <type>point_of_interest</type>
-        <x>-315.24</x>
-        <z>2237.49</z>
-      </place>
-      <place>
-        <name>Faction Boss 3</name>
-        <type>point_of_interest</type>
-        <x>-410.24</x>
-        <z>2347.49</z>
-      </place>
-      <place>
-        <name>Faction Boss 2</name>
-        <type>point_of_interest</type>
-        <x>-399.88</x>
-        <z>2208.92</z>
-      </place>
-      <place>
-        <name>Faction Boss 2</name>
-        <type>point_of_interest</type>
-        <x>-348.09</x>
-        <z>2282.84</z>
-      </place>
-      <place>
-        <name>Faction Boss 2</name>
-        <type>point_of_interest</type>
-        <x>-253.24</x>
-        <z>2308.65</z>
-      </place>
-      <place>
-        <name>Snake Champ</name>
-        <type>point_of_interest</type>
-        <x>-417.9</x>
-        <z>1625.32</z>
-      </place>
-      <place>
-        <name>Valdheim Guard Outpost</name>
-        <type>town</type>
-        <x>-200.3</x>
-        <z>2132.46</z>
-      </place>
-      <place>
-        <name>Iron Peak Caverns West</name>
-        <type>point_of_interest</type>
-        <x>2702.61</x>
-        <z>1236.87</z>
-      </place>
-      <place>
-        <name>Magincia Mines</name>
-        <type>miners_guild</type>
-        <x>2630.79</x>
-        <z>712.32</z>
-      </place>
-      <place>
-        <name>Orc Camp</name>
-        <type>point_of_interest</type>
-        <x>-2463.64</x>
-        <z>-2242.22</z>
-      </place>
-      <place>
-        <name>Abandoned Camp</name>
-        <type>point_of_interest</type>
-        <x>-1373.33</x>
-        <z>-223.85</z>
-      </place>
-      <place>
-        <name>Fey Champ</name>
-        <type>point_of_interest</type>
-        <x>1935.56</x>
-        <z>-1339.41</z>
-      </place>
-      <place>
-        <name>Fire Beetle</name>
-        <type>point_of_interest</type>
-        <x>595.56</x>
-        <z>-1339.41</z>
-      </place>
-      <place>
-        <name>Beetle Champ</name>
-        <type>point_of_interest</type>
-        <x>536.67</x>
-        <z>-1329.41</z>
-      </place>
-      <place>
-        <name>Britain Graveyard</name>
-        <type>graveyard</type>
-        <x>768.65</x>
-        <z>-1226.87</z>
-      </place>
-    </NewCelador>
+    <NewCelador />
     <Perilous />
     <Ruin />
     <TwoTowers />
     <britanniamain>
       <place>
-        <name>Britain Graveyard</name>
-        <type>graveyard</type>
-        <x>-1368.1</x>
-        <z>745.49</z>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1367.78869628906</x>
+        <z>1468.50585937691</z>
       </place>
       <place>
-        <name>Britain</name>
-        <type>town</type>
-        <x>-1253.49</x>
-        <z>513.18</z>
+        <name>Pub</name>
+        <type>inn</type>
+        <x>-1050.47607421875</x>
+        <z>606.079101564041</z>
       </place>
       <place>
-        <name>Britain Moongate</name>
-        <type>moongate</type>
-        <x>-1404.46</x>
-        <z>91.99</z>
-      </place>
-      <place>
-        <name>Hedge Maze</name>
-        <type>point_of_interest</type>
-        <x>-1640.46</x>
-        <z>-200.01</z>
-      </place>
-      <place>
-        <name>Dungeon Despise</name>
+        <name>Wrong</name>
         <type>dungeon</type>
-        <x>-1439.89</x>
-        <z>1242.41</z>
-      </place>
-      <place>
-        <name>Cove</name>
-        <type>town</type>
-        <x>-269.89</x>
-        <z>1084.41</z>
-      </place>
-      <place>
-        <name>Cove Orc Fort</name>
-        <type>point_of_interest</type>
-        <x>-365.89</x>
-        <z>932.41</z>
-      </place>
-      <place>
-        <name>Dungeon Covetous</name>
-        <type>dungeon</type>
-        <x>48.11</x>
-        <z>1432.41</z>
-      </place>
-      <place>
-        <name>Chaos Shrine</name>
-        <type>shrine</type>
-        <x>-1235.89</x>
-        <z>1510.41</z>
-      </place>
-      <place>
-        <name>Yew</name>
-        <type>town</type>
-        <x>-2393.89</x>
-        <z>1356.41</z>
-      </place>
-      <place>
-        <name>Dungeon Shame</name>
-        <type>dungeon</type>
-        <x>-2417.89</x>
-        <z>616.41</z>
-      </place>
-      <place>
-        <name>Minoc</name>
-        <type>town</type>
-        <x>6.11</x>
-        <z>1972.41</z>
-      </place>
-      <place>
-        <name>Buccaneer's Den</name>
-        <type>town</type>
-        <x>282.11</x>
-        <z>-117.59</z>
-      </place>
-      <place>
-        <name>Cotton Fields</name>
-        <type>point_of_interest</type>
-        <x>-1544.81</x>
-        <z>435.92</z>
-      </place>
-      <place>
-        <name>Compassion Desert</name>
-        <type>point_of_interest</type>
-        <x>-657.81</x>
-        <z>1500.93</z>
+        <x>-525.274658203125</x>
+        <z>2299.67021942365</z>
       </place>
       <place>
         <name>Cove Graveyard</name>
         <type>graveyard</type>
-        <x>-28.72</x>
-        <z>1206.3</z>
+        <x>-29.7363281250003</x>
+        <z>1213.62304687679</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1950.5859375</x>
+        <z>1291.99218750182</z>
+      </place>
+      <place>
+        <name>Drakes</name>
+        <type>point_of_interest</type>
+        <x>-1829.9560546875</x>
+        <z>795.776367189122</z>
+      </place>
+      <place>
+        <name>Blacksmith</name>
+        <type>blacksmith</type>
+        <x>9.15527343749956</x>
+        <z>1878.66210937707</z>
+      </place>
+      <place>
+        <name>Cove</name>
+        <type>town</type>
+        <x>-269.0185546875</x>
+        <z>1072.99804687674</z>
+      </place>
+      <place>
+        <name>Tanner</name>
+        <type>tanner</type>
+        <x>-291.925048828125</x>
+        <z>1065.12451172049</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1792.3828125</x>
+        <z>820.312500001633</z>
+      </place>
+      <place>
+        <name>Architech</name>
+        <type>carpenter</type>
+        <x>60.2416992187496</x>
+        <z>1986.51123047088</z>
+      </place>
+      <place>
+        <name>Tavern</name>
+        <type>tavern</type>
+        <x>18.0541992187497</x>
+        <z>2078.97949218967</z>
+      </place>
+      <place>
+        <name>Bard</name>
+        <type>bard</type>
+        <x>-46.0510253906254</x>
+        <z>1889.2822265646</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1639.453125</x>
+        <z>272.460937501396</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1320.41015625</x>
+        <z>418.945312501461</z>
+      </place>
+      <place>
+        <name>Chaos</name>
+        <type>point_of_interest</type>
+        <x>-1201.7578125</x>
+        <z>1470.70312500191</z>
+      </place>
+      <place>
+        <name>Harpies</name>
+        <type>point_of_interest</type>
+        <x>-721.2158203125</x>
+        <z>2028.07617187714</z>
+      </place>
+      <place>
+        <name>Archer</name>
+        <type>bowyer</type>
+        <x>-2358.6181640625</x>
+        <z>1375.12207031437</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1829.296875</x>
+        <z>2106.44531250218</z>
+      </place>
+      <place>
+        <name>Black Bear</name>
+        <type>point_of_interest</type>
+        <x>-858.984375</x>
+        <z>2238.28125000224</z>
+      </place>
+      <place>
+        <name>Tailor</name>
+        <type>tailor</type>
+        <x>-1239.3310546875</x>
+        <z>477.905273438977</z>
+      </place>
+      <place>
+        <name>Tanner</name>
+        <type>tanner</type>
+        <x>-1130.89599609375</x>
+        <z>515.258789063996</z>
+      </place>
+      <place>
+        <name>Weaponsmith</name>
+        <type>weapons_guild</type>
+        <x>88.421630859389</x>
+        <z>1863.09814453331</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1359.9609375</x>
+        <z>999.023437501694</z>
+      </place>
+      <place>
+        <name>Treasure Hunter</name>
+        <type>traders_guild</type>
+        <x>-52.4780273437502</x>
+        <z>1977.90527343963</z>
+      </place>
+      <place>
+        <name>Mage</name>
+        <type>point_of_interest</type>
+        <x>-2262.3779296875</x>
+        <z>1224.6093750018</z>
+      </place>
+      <place>
+        <name>Cotton Fields</name>
+        <type>point_of_interest</type>
+        <x>-1599.90234375</x>
+        <z>530.273437501501</z>
+      </place>
+      <place>
+        <name>Fisherman</name>
+        <type>fishermans_guild</type>
+        <x>-1261.083984375</x>
+        <z>380.49316406394</z>
+      </place>
+      <place>
+        <name>Bard</name>
+        <type>bard</type>
+        <x>-1250.20751953125</x>
+        <z>643.798828126548</z>
+      </place>
+      <place>
+        <name>Tanner</name>
+        <type>tanner</type>
+        <x>-1282.50732421875</x>
+        <z>572.753906251526</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1536.62109375</x>
+        <z>849.609375001642</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-497.75390625</x>
+        <z>1570.31250000196</z>
+      </place>
+      <place>
+        <name>Minoc Mines</name>
+        <type>point_of_interest</type>
+        <x>169.3359375</x>
+        <z>1973.51074218963</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1006.640625</x>
+        <z>744.140625001594</z>
+      </place>
+      <place>
+        <name>Scorpion</name>
+        <type>point_of_interest</type>
+        <x>-640.13671875</x>
+        <z>1489.74609375192</z>
+      </place>
+      <place>
+        <name>Chef</name>
+        <type>cooks_guild</type>
+        <x>-2375.42724609375</x>
+        <z>1345.09277343935</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-806.25</x>
+        <z>911.132812501664</z>
+      </place>
+      <place>
+        <name>Provisioner</name>
+        <type>provisioner</type>
+        <x>84.3017578124998</x>
+        <z>1894.95849609583</z>
+      </place>
+      <place>
+        <name>Orc Fort</name>
+        <type>point_of_interest</type>
+        <x>-358.0078125</x>
+        <z>868.652343751648</z>
+      </place>
+      <place>
+        <name>Theater</name>
+        <type>theater</type>
+        <x>-1258.11767578125</x>
+        <z>599.853515626533</z>
+      </place>
+      <place>
+        <name>Boar</name>
+        <type>point_of_interest</type>
+        <x>-479.296875</x>
+        <z>1686.03515625201</z>
+      </place>
+      <place>
+        <name>Blacksmith</name>
+        <type>blacksmith</type>
+        <x>-1293.05419921875</x>
+        <z>649.658203126562</z>
+      </place>
+      <place>
+        <name>Inn (missing texture)</name>
+        <type>inn</type>
+        <x>-2397.18017578125</x>
+        <z>1463.74511718939</z>
+      </place>
+      <place>
+        <name>Provisioner</name>
+        <type>provisioner</type>
+        <x>-308.23974609375</x>
+        <z>1094.60449218925</z>
+      </place>
+      <place>
+        <name>Stables</name>
+        <type>stable</type>
+        <x>-1179.01611328125</x>
+        <z>654.052734376559</z>
+      </place>
+      <place>
+        <name>Mage</name>
+        <type>mage</type>
+        <x>-1210.3271484375</x>
+        <z>643.798828126548</z>
+      </place>
+      <place>
+        <name>Scribe</name>
+        <type>mage</type>
+        <x>-11.6088867187503</x>
+        <z>2043.45703125214</z>
+      </place>
+      <place>
+        <name>Monsters</name>
+        <type>point_of_interest</type>
+        <x>-839.208984375</x>
+        <z>1981.93359375211</z>
+      </place>
+      <place>
+        <name>Compassion</name>
+        <type>point_of_interest</type>
+        <x>-750.87890625</x>
+        <z>1488.28125000192</z>
+      </place>
+      <place>
+        <name>Covetous</name>
+        <type>dungeon</type>
+        <x>40.2113914489792</x>
+        <z>1428.01094055365</z>
+      </place>
+      <place>
+        <name>Brown Bear</name>
+        <type>point_of_interest</type>
+        <x>-915.673828125</x>
+        <z>2261.71875000224</z>
+      </place>
+      <place>
+        <name>Gypsy Camp</name>
+        <type>point_of_interest</type>
+        <x>90.2343749999996</x>
+        <z>1747.55859375202</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1283.49609375</x>
+        <z>-102.539062498764</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-712.646484375</x>
+        <z>859.863281251635</z>
+      </place>
+      <place>
+        <name>Britain Graveyard</name>
+        <type>graveyard</type>
+        <x>-1366.552734375</x>
+        <z>738.281250001598</z>
+      </place>
+      <place>
+        <name>Alligators</name>
+        <type>point_of_interest</type>
+        <x>-542.578125</x>
+        <z>1289.06250000182</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-133.88671875</x>
+        <z>1136.71875000176</z>
+      </place>
+      <place>
+        <name>Mt Kendall</name>
+        <type>point_of_interest</type>
+        <x>144.9462890625</x>
+        <z>1973.14453125213</z>
+      </place>
+      <place>
+        <name>Buccaneer's Den</name>
+        <type>town</type>
+        <x>295.8984375</x>
+        <z>-146.484374998782</z>
+      </place>
+      <place>
+        <name>Tinker</name>
+        <type>tinker</type>
+        <x>-1287.61596679688</x>
+        <z>517.822265626497</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-2108.7890625</x>
+        <z>685.546875001568</z>
+      </place>
+      <place>
+        <name>House Candidate</name>
+        <type>point_of_interest</type>
+        <x>-498.004595791626</x>
+        <z>993.477843900457</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1445.24230957031</x>
+        <z>1237.79296875181</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-988.18359375</x>
+        <z>1842.77343750206</z>
+      </place>
+      <place>
+        <name>Horse</name>
+        <type>point_of_interest</type>
+        <x>-889.306640625</x>
+        <z>2251.46484375223</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-551.47705078125</x>
+        <z>2271.60644531474</z>
+      </place>
+      <place>
+        <name>Bank</name>
+        <type>bank</type>
+        <x>-1288.76953125</x>
+        <z>479.736328126487</z>
+      </place>
+      <place>
+        <name>Archer</name>
+        <type>bowyer</type>
+        <x>-1258.11767578125</x>
+        <z>602.416992189032</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-1433.7890625</x>
+        <z>2129.88281250218</z>
       </place>
       <place>
         <name>Vesper Graveyard</name>
         <type>graveyard</type>
-        <x>354.69</x>
-        <z>1502.87</z>
+        <x>365.771484375</x>
+        <z>1497.07031250191</z>
       </place>
       <place>
-        <name>Minoc Moongate</name>
+        <name>Britain</name>
+        <type>town</type>
+        <x>-1106.8359375</x>
+        <z>503.906250001495</z>
+      </place>
+      <place>
+        <name>Yew Graveyard</name>
+        <type>graveyard</type>
+        <x>-2168.115234375</x>
+        <z>1183.59375000178</z>
+      </place>
+      <place>
+        <name>Fisherman</name>
+        <type>fishermans_guild</type>
+        <x>-257.1533203125</x>
+        <z>1111.45019531425</z>
+      </place>
+      <place>
+        <name>Stablemaster</name>
+        <type>stable</type>
+        <x>-303.790283203125</x>
+        <z>1140.19775390802</z>
+      </place>
+      <place>
+        <name>Bandit Camp</name>
+        <type>point_of_interest</type>
+        <x>-1520.80078125</x>
+        <z>108.398437501323</z>
+      </place>
+      <place>
+        <name>Tanner</name>
+        <type>tanner</type>
+        <x>-2424.20654296875</x>
+        <z>1345.09277343935</z>
+      </place>
+      <place>
+        <name>Bank</name>
+        <type>bank</type>
+        <x>-2280.17578125</x>
+        <z>1514.64843750193</z>
+      </place>
+      <place>
+        <name>Sheeps</name>
+        <type>point_of_interest</type>
+        <x>-2348.73046875</x>
+        <z>1200.43945312678</z>
+      </place>
+      <place>
+        <name>Lich Lord</name>
+        <type>point_of_interest</type>
+        <x>-1859.619140625</x>
+        <z>1650.87890625199</z>
+      </place>
+      <place>
+        <name>House Candidate</name>
+        <type>point_of_interest</type>
+        <x>-351.700992121314</x>
+        <z>1955.82796302169</z>
+      </place>
+      <place>
+        <name>Archers</name>
+        <type>bowyer</type>
+        <x>-1233.06884765625</x>
+        <z>611.572265626536</z>
+      </place>
+      <place>
+        <name>Despise</name>
+        <type>dungeon</type>
+        <x>-1448.35023880005</x>
+        <z>1229.99668121518</z>
+      </place>
+      <place>
+        <name>Woodworker</name>
+        <type>carpenter</type>
+        <x>68.8110351562496</x>
+        <z>1983.94775390837</z>
+      </place>
+      <place>
+        <name>Carpenter/Architect</name>
+        <type>carpenter</type>
+        <x>-2360.595703125</x>
+        <z>1319.09179687683</z>
+      </place>
+      <place>
+        <name>turkeys </name>
+        <type>point_of_interest</type>
+        <x>-1489.8193359375</x>
+        <z>566.162109376524</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-590.0390625</x>
+        <z>2395.01953125231</z>
+      </place>
+      <place>
+        <name>Healer</name>
+        <type>healer</type>
+        <x>305.456542968749</x>
+        <z>-87.8906249987561</z>
+      </place>
+      <place>
+        <name>Ice</name>
+        <type>dungeon</type>
+        <x>-584.971618652343</x>
+        <z>2469.38467025989</z>
+      </place>
+      <place>
+        <name>Buccaneer's Den Moongate</name>
         <type>moongate</type>
-        <x>295.26</x>
-        <z>1714.48</z>
+        <x>347.314453125</x>
+        <z>-206.542968748811</z>
+      </place>
+      <place>
+        <name>Hedge Maze</name>
+        <type>point_of_interest</type>
+        <x>-1643.408203125</x>
+        <z>-205.078124998811</z>
+      </place>
+      <place>
+        <name>Horse</name>
+        <type>point_of_interest</type>
+        <x>-2458.154296875</x>
+        <z>528.808593751509</z>
+      </place>
+      <place>
+        <name>House Candidate</name>
+        <type>point_of_interest</type>
+        <x>-272.439718018402</x>
+        <z>2129.98746864263</z>
+      </place>
+      <place>
+        <name>Mage</name>
+        <type>mage</type>
+        <x>-1084.09423828125</x>
+        <z>517.456054688996</z>
+      </place>
+      <place>
+        <name>Provisioner</name>
+        <type>provisioner</type>
+        <x>-1231.4208984375</x>
+        <z>505.187988282749</z>
       </place>
       <place>
         <name>Yew Moongate</name>
         <type>moongate</type>
-        <x>-2108.93</x>
-        <z>1646.75</z>
+        <x>-2110.107421875</x>
+        <z>1643.55468750197</z>
       </place>
       <place>
-        <name>Yew Crypts</name>
-        <type>graveyard</type>
-        <x>-1871.08</x>
-        <z>1675.1</z>
+        <name>Butcher</name>
+        <type>butcher</type>
+        <x>-2398.828125</x>
+        <z>1320.55664062683</z>
       </place>
       <place>
-        <name>Dungeon Wrong</name>
+        <name>Blacksmith</name>
+        <type>blacksmith</type>
+        <x>-310.711669921875</x>
+        <z>1125.73242187676</z>
+      </place>
+      <place>
+        <name>Baker</name>
+        <type>baker</type>
+        <x>-1203.7353515625</x>
+        <z>472.778320313987</z>
+      </place>
+      <place>
+        <name>Healer</name>
+        <type>healer</type>
+        <x>-1229.77294921875</x>
+        <z>571.28906250152</z>
+      </place>
+      <place>
+        <name>Smith</name>
+        <type>blacksmith</type>
+        <x>-2501.66015625</x>
+        <z>1375.48828125186</z>
+      </place>
+      <place>
+        <name>Carpenter/Architect</name>
+        <type>carpenter</type>
+        <x>-1281.5185546875</x>
+        <z>592.529296876534</z>
+      </place>
+      <place>
+        <name>Wargs</name>
+        <type>point_of_interest</type>
+        <x>-374.15771484375</x>
+        <z>924.682617189179</z>
+      </place>
+      <place>
+        <name>Destard</name>
         <type>dungeon</type>
-        <x>-525.65</x>
-        <z>2300.46</z>
+        <x>-1817.66853332519</x>
+        <z>798.820495607084</z>
       </place>
       <place>
-        <name>Dungeon Ice</name>
-        <type>dungeon</type>
-        <x>-586.65</x>
-        <z>2458.46</z>
+        <name>Inn</name>
+        <type>inn</type>
+        <x>-1201.42822265625</x>
+        <z>565.79589843902</z>
       </place>
       <place>
-        <name>Dungeon Destard</name>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-760.7666015625</x>
+        <z>2204.58984375222</z>
+      </place>
+      <place>
+        <name>Healer</name>
+        <type>healer</type>
+        <x>149.42958392979</x>
+        <z>1827.63677090612</z>
+      </place>
+      <place>
+        <name>Wandering healer</name>
+        <type>healer</type>
+        <x>-2380.37109375</x>
+        <z>559.570312501521</z>
+      </place>
+      <place>
+        <name>Orc Camp</name>
+        <type>point_of_interest</type>
+        <x>-2278.857421875</x>
+        <z>725.097656251587</z>
+      </place>
+      <place>
+        <name>Jeweler</name>
+        <type>jeweler</type>
+        <x>-1259.765625</x>
+        <z>479.37011718898</z>
+      </place>
+      <place>
+        <name>Pub</name>
+        <type>inn</type>
+        <x>-1286.1328125</x>
+        <z>433.95996093896</z>
+      </place>
+      <place>
+        <name>Thief</name>
+        <type>thieves_guild</type>
+        <x>-1188.57421875</x>
+        <z>591.430664064032</z>
+      </place>
+      <place>
+        <name>Minoc Moongate</name>
+        <type>moongate</type>
+        <x>297.8759765625</x>
+        <z>1716.796875002</z>
+      </place>
+      <place>
+        <name>Pub</name>
+        <type>inn</type>
+        <x>-1130.56640625</x>
+        <z>377.197265626441</z>
+      </place>
+      <place>
+        <name>Bank</name>
+        <type>bank</type>
+        <x>51.0131835937497</x>
+        <z>1891.47949218959</z>
+      </place>
+      <place>
+        <name>Buccaneer's Den Archway</name>
+        <type>moongate</type>
+        <x>322.265625</x>
+        <z>-84.2285156237605</z>
+      </place>
+      <place>
+        <name>Healer</name>
+        <type>healer</type>
+        <x>-2400.47607421875</x>
+        <z>1375.12207031437</z>
+      </place>
+      <place>
+        <name>Blacksmith</name>
+        <type>blacksmith</type>
+        <x>-1026.416015625</x>
+        <z>461.791992188973</z>
+      </place>
+      <place>
+        <name>Healer / Inn</name>
+        <type>healer</type>
+        <x>-272.64404296875</x>
+        <z>1046.26464843922</z>
+      </place>
+      <place>
+        <name>Minoc</name>
+        <type>town</type>
+        <x>0.585937499999911</x>
+        <z>1957.03125000211</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>208.88671875</x>
+        <z>1564.45312500195</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>298.53515625</x>
+        <z>1368.16406250186</z>
+      </place>
+      <place>
+        <name>Butcher</name>
+        <type>butcher</type>
+        <x>-31.8786621093752</x>
+        <z>2068.35937500216</z>
+      </place>
+      <place>
+        <name>Tinker</name>
+        <type>tinker</type>
+        <x>-252.5390625</x>
+        <z>1060.36376953299</z>
+      </place>
+      <place>
+        <name>Inn</name>
+        <type>inn</type>
+        <x>-2290.0634765625</x>
+        <z>1481.68945312691</z>
+      </place>
+      <place>
+        <name>Stables</name>
+        <type>stable</type>
+        <x>-1452.9052734375</x>
+        <z>376.098632813939</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>-2240.625</x>
+        <z>1573.24218750194</z>
+      </place>
+      <place>
+        <name>House Candidate</name>
+        <type>point_of_interest</type>
+        <x>-922.729508369541</x>
+        <z>1249.43320434643</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>50.6835937499996</x>
+        <z>1391.60156250187</z>
+      </place>
+      <place>
+        <name>Inn</name>
+        <type>inn</type>
+        <x>-1091.015625</x>
+        <z>588.134765626529</z>
+      </place>
+      <place>
+        <name>Mage</name>
+        <type>mage</type>
+        <x>-1208.67919921875</x>
+        <z>513.061523438995</z>
+      </place>
+      <place>
+        <name>Tailor</name>
+        <type>tailor</type>
+        <x>74.2492675781392</x>
+        <z>1924.80468750211</z>
+      </place>
+      <place>
+        <name>Bulls</name>
+        <type>point_of_interest</type>
+        <x>-1296.6796875</x>
+        <z>861.328125001646</z>
+      </place>
+      <place>
+        <name>Blacksmith</name>
+        <type>blacksmith</type>
+        <x>-1270.14770507813</x>
+        <z>526.245117189008</z>
+      </place>
+      <place>
+        <name>Justice</name>
+        <type>point_of_interest</type>
+        <x>-1448.291015625</x>
+        <z>1794.43359375204</z>
+      </place>
+      <place>
+        <name>Giant Spider</name>
+        <type>point_of_interest</type>
+        <x>-682.32421875</x>
+        <z>1524.16992187693</z>
+      </place>
+      <place>
+        <name>Swamp</name>
+        <type>point_of_interest</type>
+        <x>-539.2822265625</x>
+        <z>1324.21875000184</z>
+      </place>
+      <place>
+        <name>Fletch &amp; Arrow</name>
+        <type>fletcher</type>
+        <x>-53.3020019531252</x>
+        <z>1991.63818359589</z>
+      </place>
+      <place>
+        <name>Stable</name>
+        <type>stable</type>
+        <x>79.3579101562498</x>
+        <z>2111.93847656467</z>
+      </place>
+      <place>
+        <name>Panthers</name>
+        <type>point_of_interest</type>
+        <x>316.992187499999</x>
+        <z>1655.27343750197</z>
+      </place>
+      <place>
+        <name>Britain Moongate</name>
+        <type>moongate</type>
+        <x>-1398.193359375</x>
+        <z>86.4257812513189</z>
+      </place>
+      <place>
+        <name>Mage</name>
+        <type>mage</type>
+        <x>-1104.52880859375</x>
+        <z>455.932617188979</z>
+      </place>
+      <place>
+        <name>Shame</name>
         <type>dungeon</type>
-        <x>-1811.52</x>
-        <z>809.08</z>
+        <x>-2423.43406677246</x>
+        <z>605.987548829662</z>
+      </place>
+      <place>
+        <name>Pub</name>
+        <type>inn</type>
+        <x>-2535.9375</x>
+        <z>1287.59765625183</z>
+      </place>
+      <place>
+        <name>Jeweller</name>
+        <type>jeweler</type>
+        <x>-1006.97021484375</x>
+        <z>537.231445314012</z>
+      </place>
+      <place>
+        <name>Bank</name>
+        <type>bank</type>
+        <x>-1012.5732421875</x>
+        <z>581.176757814021</z>
+      </place>
+      <place>
+        <name>Bank</name>
+        <type>bank</type>
+        <x>-273.797607421875</x>
+        <z>1080.87158203299</z>
+      </place>
+      <place>
+        <name>Chef</name>
+        <type>cooks_guild</type>
+        <x>-1257.45849609375</x>
+        <z>434.326171876461</z>
+      </place>
+      <place>
+        <name>Cartographer/Shipwright</name>
+        <type>shipwright</type>
+        <x>-1301.62353515625</x>
+        <z>396.972656251443</z>
+      </place>
+      <place>
+        <name>Mage</name>
+        <type>mage</type>
+        <x>-282.366943359375</x>
+        <z>1099.914550783</z>
+      </place>
+      <place>
+        <name>Tinker</name>
+        <type>tinker</type>
+        <x>-14.5751953125002</x>
+        <z>2010.49804687714</z>
+      </place>
+      <place>
+        <name>Tailor</name>
+        <type>tailor</type>
+        <x>-50.8300781250002</x>
+        <z>1958.86230468961</z>
+      </place>
+      <place>
+        <name>Yew</name>
+        <type>town</type>
+        <x>-2409.375</x>
+        <z>1324.21875000184</z>
+      </place>
+      <place>
+        <name>Wandering Healer</name>
+        <type>healer</type>
+        <x>275.586331894678</x>
+        <z>1574.46292787986</z>
+      </place>
+      <place>
+        <name>Archway</name>
+        <type>moongate</type>
+        <x>190.4296875</x>
+        <z>1352.78320312686</z>
       </place>
     </britanniamain>
     <loudungeons />

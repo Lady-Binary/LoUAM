@@ -207,9 +207,9 @@ namespace LoUAM
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool trackPlayer) ? trackPlayer : true;
 
             // Map
-            AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", true).ToString(), out bool alwaysOnTop) ? alwaysOnTop : true;
+            AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", true).ToString(), out bool alwaysOnTop) ? alwaysOnTop : false;
             Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float brightness) ? brightness : 1;
-            NoBorder = bool.TryParse(LoUAMKey.GetValue("NoBorder", true).ToString(), out bool noBorder) ? noBorder : true;
+            NoBorder = bool.TryParse(LoUAMKey.GetValue("NoBorder", true).ToString(), out bool noBorder) ? noBorder : false;
         }
 
         public static void SaveSettings()

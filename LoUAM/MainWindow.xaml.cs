@@ -17,6 +17,7 @@ using System.Threading;
 using System.IO.Compression;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 
 namespace LoUAM
 {
@@ -1176,6 +1177,35 @@ namespace LoUAM
             }
         }
         #endregion Commands
+
+        // Helper method for dumping the map image to a file
+        public void DumpMap()
+        {
+            RenderTargetBitmap rtb = new RenderTargetBitmap((int)MainMap.TilesCanvas.RenderSize.Width,
+                (int)MainMap.TilesCanvas.RenderSize.Height, 96d, 96d, System.Windows.Media.PixelFormats.Default);
+            rtb.Render(MainMap.TilesCanvas);
+
+            // Create a render bitmap and push the surface to it
+            RenderTargetBitmap renderBitmap =
+              new RenderTargetBitmap(
+                (int)MainMap.TilesCanvas.Width * 2,
+                (int)MainMap.TilesCanvas.Height * 2,
+                96d,
+                96d,
+                PixelFormats.Pbgra32);
+            renderBitmap.Render(MainMap.TilesCanvas);
+
+            // Create a file stream for saving image
+            using (FileStream outStream = new FileStream("map.png", FileMode.Create))
+            {
+                // Use png encoder for our data
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                // push the rendered bitmap to it
+                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+                // save the data to the stream
+                encoder.Save(outStream);
+            }
+        }
     }
 
     public static class MainWindowCustomCommands

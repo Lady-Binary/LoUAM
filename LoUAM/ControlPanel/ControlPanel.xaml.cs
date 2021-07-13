@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -352,6 +353,34 @@ namespace LoUAM
 
             return LoadedPlaces;
         }
+    
+        private static Point LatLonToPoint(double Lat, double Lon)
+        {
+            // project first, taken from SphericalMercator, converts latlon to a point
+
+            double R = 6378137; // earth radius
+            double MAX_LATITUDE = 85.0511287798; // maximum latitude
+
+            double d = Math.PI / 180,
+                    max = MAX_LATITUDE,
+                    lat = Math.Max(Math.Min(max, Lat), -max),
+                    sin = Math.Sin(lat * d);
+
+            double point_x = R * Lon * d,
+                point_y = R * Math.Log((1 + sin) / (1 - sin)) / 2;
+
+            // then transform, taken from EPSG3395
+
+            double scale = 0.5 / (Math.PI * R);
+            double _a = scale, _b = 0.5, _c = -scale, _d = 0.5;
+
+            point_x = _a * point_x + _b;
+            point_y = _c * point_y + _d;
+
+            return new Point(point_x, point_y);
+        }
+
+
         public static List<Place> LoadPlacesFromLoACSV(string fileName)
         {
             // This is only a helper method we've used to import places from the following map
@@ -422,6 +451,161 @@ namespace LoUAM
                      ;
 
                 LoadedPlaces.Add(place);
+            }
+
+            return LoadedPlaces;
+        }
+        public static List<Place> LoadPlacesFromWorldMapJSON(string fileName)
+        {
+            // This is only a helper method we've used to import places from the following map
+            // https://map.legendsofultima.online/api/markers/get
+
+            List<Place> LoadedPlaces = new List<Place>();
+
+            using (StreamReader r = new StreamReader(fileName))
+            {
+                string json = r.ReadToEnd();
+                dynamic array = JsonConvert.DeserializeObject(json);
+                foreach (var item in array)
+                {
+                    string name = item.label.ToString();
+                    string type = item.category.ToString();
+
+                    var position = item.position as Newtonsoft.Json.Linq.JArray;
+                    double lat = double.Parse(position[0].ToString());
+                    double lon = double.Parse(position[1].ToString());
+
+                    PlaceIcon _icon = PlaceIcon.point_of_interest;
+
+                    if (type == "Cities")
+                        _icon = PlaceIcon.town;
+                    else if(type == "Dungeons")
+                        _icon = PlaceIcon.dungeon;
+                    else if (type == "Taming")
+                        _icon = PlaceIcon.point_of_interest;
+                    else if (type == "Graveyards")
+                        _icon = PlaceIcon.graveyard;
+                    else if (type == "Harvesting")
+                        _icon = PlaceIcon.point_of_interest;
+                    else if (type == "Points of Interest")
+                        _icon = PlaceIcon.point_of_interest;
+                    else if (type == "Player Vendors")
+                        _icon = PlaceIcon.point_of_interest;
+                    else if (type == "Moongates")
+                        _icon = PlaceIcon.moongate;
+                    else if (type == "Healers")
+                        _icon = PlaceIcon.healer;
+                    else if (type == "Moongates")
+                        _icon = PlaceIcon.moongate;
+                    else if (type == "NPC Vendors")
+                    {
+                        string _name = name.ToLower();
+                        if (_name.Contains("healer"))
+                            _icon = PlaceIcon.healer;
+                        else if (_name.Contains("tavern"))
+                            _icon = PlaceIcon.tavern;
+                        else if (_name.Contains("pub"))
+                            _icon = PlaceIcon.inn;
+                        else if (_name.Contains("blacksmith"))
+                            _icon = PlaceIcon.blacksmith;
+                        else if (_name.Contains("tanner"))
+                            _icon = PlaceIcon.tanner;
+                        else if (_name.Contains("tanner"))
+                            _icon = PlaceIcon.tanner;
+                        else if (_name.Contains("architech"))
+                            _icon = PlaceIcon.carpenter;
+                        else if (_name.Contains("bard"))
+                            _icon = PlaceIcon.bard;
+                        else if (_name.Contains("archer"))
+                            _icon = PlaceIcon.bowyer;
+                        else if (_name.Contains("tailor"))
+                            _icon = PlaceIcon.tailor;
+                        else if (_name.Contains("weaponsmith"))
+                            _icon = PlaceIcon.weapons_guild;
+                        else if (_name.Contains("treasure hunter"))
+                            _icon = PlaceIcon.traders_guild;
+                        else if (_name.Contains("fisherman"))
+                            _icon = PlaceIcon.fishermans_guild;
+                        else if (_name.Contains("chef"))
+                            _icon = PlaceIcon.cooks_guild;
+                        else if (_name.Contains("provisioner"))
+                            _icon = PlaceIcon.provisioner;
+                        else if (_name.Contains("theater"))
+                            _icon = PlaceIcon.theater;
+                        else if (_name.Contains("inn"))
+                            _icon = PlaceIcon.inn;
+                        else if (_name.Contains("stable"))
+                            _icon = PlaceIcon.stable;
+                        else if (_name.Contains("mage"))
+                            _icon = PlaceIcon.mage;
+                        else if (_name.Contains("scribe"))
+                            _icon = PlaceIcon.mage;
+                        else if (_name.Contains("tinker"))
+                            _icon = PlaceIcon.tinker;
+                        else if (_name.Contains("bank"))
+                            _icon = PlaceIcon.bank;
+                        else if (_name.Contains("woodworker"))
+                            _icon = PlaceIcon.carpenter;
+                        else if (_name.Contains("carpenter"))
+                            _icon = PlaceIcon.carpenter;
+                        else if (_name.Contains("butcher"))
+                            _icon = PlaceIcon.butcher;
+                        else if (_name.Contains("baker"))
+                            _icon = PlaceIcon.baker;
+                        else if (_name.Contains("smith"))
+                            _icon = PlaceIcon.blacksmith;
+                        else if (_name.Contains("jeweler"))
+                            _icon = PlaceIcon.jeweler;
+                        else if (_name.Contains("jeweller"))
+                            _icon = PlaceIcon.jeweler;
+                        else if (_name.Contains("thief"))
+                            _icon = PlaceIcon.thieves_guild;
+                        else if (_name.Contains("fletch"))
+                            _icon = PlaceIcon.fletcher;
+                        else if (_name.Contains("cartographer"))
+                            _icon = PlaceIcon.shipwright;
+                        else
+                            _icon = PlaceIcon.point_of_interest;
+                    }
+
+                    // First, we need to convert from LatLon to a pixel on the map
+
+                    // Let's calculate boundaries first, so that we can then scale it
+                    var sw = LatLonToPoint(0, 0); // South West coordinate
+                    var ne = LatLonToPoint(100, 200); // North East coordinate
+
+                    // Now let's get the actual point
+                    var point = LatLonToPoint(lat, lon);
+
+                    // Actual point scaled to the actual map image of 6144x6144
+                    var x = (point.X - sw.X) * (6144 / (ne.X - sw.X)) - (6144 / 2);
+                    var z = (point.Y - sw.Y) * (6144 / (ne.Y - sw.Y)) - (6144 / 2);
+
+                    // Finally, the map is bit scaled
+                    // PNG on that website is originally a 6000x6000 stretched to 6144x6144,
+                    // while our world is 6500x6500 and perfectly consistent with the world map
+                    ///
+                    // In order to perfectly overlap it with the world map,
+                    // The coords need to be scaled to 6000x6000 
+                    double XScale = 6000 / 6144.0;
+                    double YScale = 6000 / 6144.0;
+                    x = (x * XScale);
+                    z = (z * YScale);
+
+                    Place place = new Place(
+                        PlaceFileEnum.Common,
+                        PlaceServerEnum.LoU,
+                        PlaceRegionEnum.britanniamain,
+                        PlaceType.Place,
+                        Guid.NewGuid().ToString("N"),
+                        _icon,
+                        name,
+                        x,
+                        0,
+                        z);
+
+                    LoadedPlaces.Add(place);
+                }
             }
 
             return LoadedPlaces;

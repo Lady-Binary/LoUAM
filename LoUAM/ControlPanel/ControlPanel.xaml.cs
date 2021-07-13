@@ -44,6 +44,7 @@ namespace LoUAM
         // Map
         public static bool AlwaysOnTop = false;
         public static float Brightness = 1;
+        public static bool NoBorder = false;
 
         DispatcherTimer RefreshLinkStatusTimer;
         DispatcherTimer RefreshPlayersTimer;
@@ -203,11 +204,12 @@ namespace LoUAM
             Password = (string)LoUAMKey.GetValue("Password", "");
             Https = bool.TryParse(LoUAMKey.GetValue("Https", true).ToString(), out bool https) ? https : true;
 
-            TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool b) ? b : true;
+            TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool trackPlayer) ? trackPlayer : true;
 
             // Map
             AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", true).ToString(), out bool alwaysOnTop) ? alwaysOnTop : true;
             Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float brightness) ? brightness : 1;
+            NoBorder = bool.TryParse(LoUAMKey.GetValue("NoBorder", true).ToString(), out bool noBorder) ? noBorder : true;
         }
 
         public static void SaveSettings()
@@ -231,6 +233,7 @@ namespace LoUAM
             // Map
             LoUAMKey.SetValue("AlwaysOnTop", AlwaysOnTop);
             LoUAMKey.SetValue("Brightness", Brightness);
+            LoUAMKey.SetValue("NoBorder", NoBorder);
         }
 
         // I used this when I dumped the places from https://www.worldanvil.com/w/legends-of-ultima-legendsofultima/map/f830b718-06c1-42cf-a8ed-460269315023

@@ -59,6 +59,12 @@ namespace LoUAM
             RefreshStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             RefreshStatusTimer.IsEnabled = true;
 
+            this.AddHandler(
+                Window.MouseDownEvent,
+                new MouseButtonEventHandler(Window_MouseDown),
+                true);
+
+
             InitializeComponent();
 
             this.Title = "LoUAM - " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -108,8 +114,9 @@ namespace LoUAM
             ControlPanel.SavePlaces();
             UpdatePlaces();
 
-            AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
             RefreshAlwaysOnTop();
+            RefreshNoBorder();
+
             ChangeRegion(PlaceRegionEnum.Unknown);
             ChangeServer(PlaceServerEnum.Unknown);
 
@@ -223,7 +230,38 @@ namespace LoUAM
             }
 
             AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
+            this.Focus();
             this.Topmost = ControlPanel.AlwaysOnTop;
+        }
+
+        public delegate void RefreshNoBorderDelegate();
+        public void RefreshNoBorder()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshNoBorderDelegate(RefreshNoBorder));
+                return;
+            }
+
+
+            if (ControlPanel.NoBorder)
+            {
+                this.WindowStyle = WindowStyle.None;
+                this.ResizeMode = ResizeMode.NoResize;
+                this.MainMenu.Visibility = Visibility.Collapsed;
+                this.MainMap.CanScroll(false);
+                this.MainStatusDockPanel.Visibility = Visibility.Collapsed;
+                this.LinkStatusDockPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                this.WindowStyle = WindowStyle.SingleBorderWindow;
+                this.ResizeMode = ResizeMode.CanResize;
+                this.MainMenu.Visibility = Visibility.Visible;
+                this.MainMap.CanScroll(true);
+                this.MainStatusDockPanel.Visibility = Visibility.Visible;
+                this.LinkStatusDockPanel.Visibility = Visibility.Visible;
+            }
         }
 
         #region Timers
@@ -1204,6 +1242,44 @@ namespace LoUAM
                 encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
                 // save the data to the stream
                 encoder.Save(outStream);
+            }
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (ControlPanel.NoBorder)
+                if (e.ChangedButton == MouseButton.Left)
+                    if (e.ButtonState == MouseButtonState.Pressed)
+                    {
+                        this.DragMove();
+                        e.Handled = true;
+                        return;
+                    }
+
+            e.Handled = false;
+        }
+
+        private void MainMap_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (ControlPanel.NoBorder)
+            {
+                ControlPanel.NoBorder = false;
+                RefreshNoBorder();
+
+                ControlPanel.AlwaysOnTop = false;
+                RefreshAlwaysOnTop();
+
+                ControlPanel.SaveSettings();
+            }
+            else
+            {
+                ControlPanel.NoBorder = true;
+                RefreshNoBorder();
+
+                ControlPanel.AlwaysOnTop = true;
+                RefreshAlwaysOnTop();
+
+                ControlPanel.SaveSettings();
             }
         }
     }

@@ -28,6 +28,8 @@ namespace LoUAM
 
         public string MarkerPlaceId { get; set; } = "";
 
+        private bool canScroll = true;
+
         public Map()
         {
             InitializeComponent();
@@ -42,6 +44,23 @@ namespace LoUAM
             scrollViewer.MouseMove += OnMouseMove;
 
             slider.ValueChanged += OnSliderValueChanged;
+        }
+
+        public void CanScroll(bool value)
+        {
+            canScroll = value;
+            if (canScroll)
+            {
+                this.scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
+                this.scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+                this.slider.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                this.scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                this.slider.Visibility = Visibility.Collapsed;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -60,7 +79,8 @@ namespace LoUAM
         public Point LastCenterCoords
         {
             get { return _lastCenterCoords; }
-            set {
+            set
+            {
                 _lastCenterCoords = value;
                 MapCenterWorldCoordsLabel.Content = $"Map center world coords: {value.X:0.00},{value.Y:0.00}";
                 OnPropertyChanged("LastCenterCoords");
@@ -71,7 +91,8 @@ namespace LoUAM
         public Point LastMouseMoveCoords
         {
             get { return _lastMouseMoveCoords; }
-            private set {
+            private set
+            {
                 _lastMouseMoveCoords = value;
                 MouseWorldCoordsLabel.Content = $"Mouse world coords: {value.X:0.00},{value.Y:0.00}";
                 OnPropertyChanged("LastMouseMoveCoords");
@@ -118,6 +139,9 @@ namespace LoUAM
 
         void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (!canScroll)
+                return;
+
             var mousePos = e.GetPosition(scrollViewer);
             if (mousePos.X <= scrollViewer.ViewportWidth && mousePos.Y <
                 scrollViewer.ViewportHeight) //make sure we still can use the scrollbars
@@ -416,7 +440,7 @@ namespace LoUAM
             }
 
             markerLine.Stroke = System.Windows.Media.Brushes.White;
-            markerLine.StrokeThickness = 4; 
+            markerLine.StrokeThickness = 4;
             markerLine.X1 = currentPlayerPlace.X;
             markerLine.Y1 = currentPlayerPlace.Z;
             markerLine.X2 = markerPlace.X;

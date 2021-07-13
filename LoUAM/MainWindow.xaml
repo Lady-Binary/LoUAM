@@ -46,7 +46,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Menu Grid.Row="0" DockPanel.Dock="Top">
+        <Menu Grid.Row="0" DockPanel.Dock="Top" Name="MainMenu">
             <MenuItem Header="_File">
                 <MenuItem Header="_Exit" Command="Close" InputGestureText="Ctrl+X" />
             </MenuItem>
@@ -73,7 +73,7 @@
                 <MenuItem Header="_Players List..." Command="{x:Static local:MainWindowCustomCommands.PlayersListCommand}" InputGestureText="Ctrl+P" />
             </MenuItem>
         </Menu>
-        <local:Map x:Name="MainMap" Grid.Row="1">
+        <local:Map x:Name="MainMap" Grid.Row="1" MouseDoubleClick="MainMap_MouseDoubleClick">
             <local:Map.ContextMenu>
                 <ContextMenu>
                     <MenuItem
@@ -102,12 +102,12 @@
                 </ContextMenu>
             </local:Map.ContextMenu>
         </local:Map>
-        <DockPanel Grid.Row="2" >
+        <DockPanel Grid.Row="2" Name="MainStatusDockPanel" >
             <StatusBar>
                 <Label Name="MainStatusLabel">Legends of Aria Client not connected</Label>
             </StatusBar>
         </DockPanel>
-        <DockPanel Grid.Row="3" >
+        <DockPanel Grid.Row="3" Name="LinkStatusDockPanel" >
             <StatusBar>
                 <Label Name="LinkStatusLabel">LoUAM Link not connected.</Label>
             </StatusBar>

@@ -30,6 +30,8 @@ namespace LoUAM
 
         private bool canScroll = true;
 
+        private DateTime lastManualScroll;
+
         public Map()
         {
             InitializeComponent();
@@ -135,6 +137,8 @@ namespace LoUAM
 
                 var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
                 LastCenterCoords = scrollViewer.TranslatePoint(centerOfViewport, TilesCanvas);
+
+                lastManualScroll = DateTime.Now;
             }
         }
 
@@ -187,6 +191,8 @@ namespace LoUAM
         void OnSliderValueChanged(object sender,
             RoutedPropertyChangedEventArgs<double> e)
         {
+            lastManualScroll = DateTime.Now;
+
             // Update map scale
             scaleTransform.ScaleX = e.NewValue;
             scaleTransform.ScaleY = e.NewValue;
@@ -280,6 +286,12 @@ namespace LoUAM
 
         public void Center(double X, double Z)
         {
+            if (lastDragPoint != null)
+                return;
+
+            if ((DateTime.Now - lastManualScroll).TotalMilliseconds < 1000)
+                return;
+
             Point TargetScroll = TilesCanvas.TranslatePoint(new Point(X, Z), scrollViewer);
             Point ScrollCenter = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
 

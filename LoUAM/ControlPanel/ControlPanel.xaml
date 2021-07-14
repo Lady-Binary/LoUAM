@@ -85,7 +85,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <CheckBox Grid.Row="0" Margin="10" Name="AlwaysOnTopCheckbox" Checked="AlwaysOnTopCheckbox_Changed" Unchecked="AlwaysOnTopCheckbox_Changed">Always on top</CheckBox>
+                    <CheckBox Grid.Row="0" Margin="10" Name="TopMostCheckbox" Checked="TopMostCheckbox_Changed" Unchecked="TopMostCheckbox_Changed">Top-most</CheckBox>
                     <CheckBox Grid.Row="1" Margin="10" Name="TiltMapCheckbox" Checked="TiltMapCheckbox_Changed" Unchecked="TiltMapCheckbox_Changed">Tilt map</CheckBox>
                     <Label Grid.Row="2" Margin="10">Brightness:</Label>
                     <Slider Grid.Row="3" Margin="10" Name="BrightnessSlider" Minimum="0" Maximum="20" Value="1" ValueChanged="BrightnessSlider_ValueChanged"></Slider>

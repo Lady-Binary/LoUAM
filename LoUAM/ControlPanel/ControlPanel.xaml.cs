@@ -42,7 +42,7 @@ namespace LoUAM
         public static List<Place> Places = new List<Place>();
 
         // Map
-        public static bool AlwaysOnTop = false;
+        public static bool TopMost = false;
         public static bool TiltMap = false;
         public static float Brightness = 1;
         public static bool NoBorder = false;
@@ -77,7 +77,7 @@ namespace LoUAM
             HttpsCheckBox.IsChecked = Https;
 
             // Map
-            AlwaysOnTopCheckbox.IsChecked = AlwaysOnTop;
+            TopMostCheckbox.IsChecked = TopMost;
             TiltMapCheckbox.IsChecked = TiltMap;
             BrightnessSlider.Value = Brightness;
 
@@ -93,7 +93,7 @@ namespace LoUAM
             Https = HttpsCheckBox.IsChecked ?? true;
 
             // Map
-            AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
+            TopMost = TopMostCheckbox.IsChecked ?? false;
             TiltMap = TiltMapCheckbox.IsChecked ?? false;
             Brightness = (float)BrightnessSlider.Value;
 
@@ -210,8 +210,8 @@ namespace LoUAM
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool trackPlayer) ? trackPlayer : true;
 
             // Map
-            AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", false).ToString(), out bool alwaysOnTop) ? alwaysOnTop : false;
-            TiltMap = bool.TryParse(LoUAMKey.GetValue("TiltMap", false).ToString(), out bool titMap) ? titMap : false;
+            TopMost = bool.TryParse(LoUAMKey.GetValue("TopMost", false).ToString(), out bool topMost) ? topMost : false;
+            TiltMap = bool.TryParse(LoUAMKey.GetValue("TiltMap", false).ToString(), out bool tiltMap) ? tiltMap : false;
             Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float brightness) ? brightness : 1;
             NoBorder = bool.TryParse(LoUAMKey.GetValue("NoBorder", false).ToString(), out bool noBorder) ? noBorder : false;
         }
@@ -235,7 +235,7 @@ namespace LoUAM
             LoUAMKey.SetValue("TrackPlayer", TrackPlayer);
 
             // Map
-            LoUAMKey.SetValue("AlwaysOnTop", AlwaysOnTop);
+            LoUAMKey.SetValue("TopMost", TopMost);
             LoUAMKey.SetValue("TiltMap", TiltMap);
             LoUAMKey.SetValue("Brightness", Brightness);
             LoUAMKey.SetValue("NoBorder", NoBorder);
@@ -932,11 +932,11 @@ namespace LoUAM
             }
         }
 
-        private void AlwaysOnTopCheckbox_Changed(object sender, RoutedEventArgs e)
+        private void TopMostCheckbox_Changed(object sender, RoutedEventArgs e)
         {
-            AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
+            TopMost = TopMostCheckbox.IsChecked ?? false;
             MainWindow mainWindow = this.Owner as MainWindow;
-            if (mainWindow != null) mainWindow.RefreshAlwaysOnTop();
+            if (mainWindow != null) mainWindow.RefreshTopMost();
         }
 
         private void TiltMapCheckbox_Changed(object sender, RoutedEventArgs e)

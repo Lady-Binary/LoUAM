@@ -17,7 +17,7 @@
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CanExecute="CopyLocationCoordintesCommand_CanExecute" Executed="CopyLocationCoordintesCommand_Executed" />
         <!-- Map -->
-        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.AlwaysOnTopCommand}" CanExecute="AlwaysOnTopCommand_CanExecute" Executed="AlwaysOnTop_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TopMostCommand}" CanExecute="TopMostCommand_CanExecute" Executed="TopMost_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.TiltMapCommand}" CanExecute="TiltMapCommand_CanExecute" Executed="TiltMapCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" CanExecute="MapAdditionalSettingsCommand_CanExecute" Executed="MapAdditionalSettingsCommand_Executed" />
         <!-- Link -->
@@ -62,8 +62,8 @@
                 <MenuItem Header="Copy Location Coordinates..." Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+C" />
             </MenuItem>
             <MenuItem Header="_Map">
-                <MenuItem Name="AlwaysOnTopMenu" Header="_Always On Top" Command="{x:Static local:MainWindowCustomCommands.AlwaysOnTopCommand}" />
-                <MenuItem Name="TiltMapMenu" Header="_Tilt Map" Command="{x:Static local:MainWindowCustomCommands.TiltMapCommand}" />
+                <MenuItem Name="TopMostMenu" Header="_Top-most" Command="{x:Static local:MainWindowCustomCommands.TopMostCommand}" />
+                <MenuItem Name="TiltMapMenu" Header="_Tilt Map" Command="{x:Static local:MainWindowCustomCommands.TiltMapCommand}" InputGestureText="Ctrl+T" />
                 <MenuItem Header="_Additional settings..." Command="{x:Static local:MainWindowCustomCommands.MapAdditionalSettingsCommand}" InputGestureText="Ctrl+M" />
                 <Separator/>
                 <MenuItem Header="_Server" Name="ServerMenuItem">

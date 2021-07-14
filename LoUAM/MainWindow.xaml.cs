@@ -114,7 +114,7 @@ namespace LoUAM
             ControlPanel.SavePlaces();
             UpdatePlaces();
 
-            RefreshAlwaysOnTop();
+            RefreshTopMost();
             RefreshTiltMap();
             RefreshNoBorder();
 
@@ -221,18 +221,18 @@ namespace LoUAM
             UpdatePlaces();
         }
 
-        public delegate void RefreshAlwaysOnTopDelegate();
-        public void RefreshAlwaysOnTop()
+        public delegate void RefreshTopMostDelegate();
+        public void RefreshTopMost()
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(new RefreshAlwaysOnTopDelegate(RefreshAlwaysOnTop));
+                Dispatcher.Invoke(new RefreshTopMostDelegate(RefreshTopMost));
                 return;
             }
 
-            AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
+            TopMostMenu.IsChecked = ControlPanel.TopMost;
             this.Focus();
-            this.Topmost = ControlPanel.AlwaysOnTop;
+            this.Topmost = ControlPanel.TopMost;
         }
 
         public delegate void RefreshTiltMapDelegate();
@@ -1133,15 +1133,15 @@ namespace LoUAM
             ControlPanel.SaveSettings();
         }
 
-        private void AlwaysOnTopCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void TopMostCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
         }
-        private void AlwaysOnTop_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void TopMost_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel.AlwaysOnTop = !AlwaysOnTopMenu.IsChecked;
+            ControlPanel.TopMost = !TopMostMenu.IsChecked;
             ControlPanel.SaveSettings();
-            RefreshAlwaysOnTop();
+            RefreshTopMost();
         }
 
         private void TiltMapCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -1306,8 +1306,8 @@ namespace LoUAM
                 ControlPanel.NoBorder = false;
                 RefreshNoBorder();
 
-                ControlPanel.AlwaysOnTop = false;
-                RefreshAlwaysOnTop();
+                ControlPanel.TopMost = false;
+                RefreshTopMost();
 
                 ControlPanel.SaveSettings();
             }
@@ -1316,8 +1316,8 @@ namespace LoUAM
                 ControlPanel.NoBorder = true;
                 RefreshNoBorder();
 
-                ControlPanel.AlwaysOnTop = true;
-                RefreshAlwaysOnTop();
+                ControlPanel.TopMost = true;
+                RefreshTopMost();
 
                 ControlPanel.SaveSettings();
             }
@@ -1335,7 +1335,7 @@ namespace LoUAM
         // Map
         public static RoutedCommand MapAdditionalSettingsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand TiltMapCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand AlwaysOnTopCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand TopMostCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MapChangeServerCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MapChangeRegionCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();

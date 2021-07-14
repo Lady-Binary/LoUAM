@@ -43,6 +43,7 @@ namespace LoUAM
 
         // Map
         public static bool AlwaysOnTop = false;
+        public static bool TiltMap = false;
         public static float Brightness = 1;
         public static bool NoBorder = false;
 
@@ -77,6 +78,7 @@ namespace LoUAM
 
             // Map
             AlwaysOnTopCheckbox.IsChecked = AlwaysOnTop;
+            TiltMapCheckbox.IsChecked = TiltMap;
             BrightnessSlider.Value = Brightness;
 
             RefreshPlaces();
@@ -92,6 +94,7 @@ namespace LoUAM
 
             // Map
             AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
+            TiltMap = TiltMapCheckbox.IsChecked ?? false;
             Brightness = (float)BrightnessSlider.Value;
 
             SaveSettings();
@@ -207,9 +210,10 @@ namespace LoUAM
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool trackPlayer) ? trackPlayer : true;
 
             // Map
-            AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", true).ToString(), out bool alwaysOnTop) ? alwaysOnTop : false;
+            AlwaysOnTop = bool.TryParse(LoUAMKey.GetValue("AlwaysOnTop", false).ToString(), out bool alwaysOnTop) ? alwaysOnTop : false;
+            TiltMap = bool.TryParse(LoUAMKey.GetValue("TiltMap", false).ToString(), out bool titMap) ? titMap : false;
             Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float brightness) ? brightness : 1;
-            NoBorder = bool.TryParse(LoUAMKey.GetValue("NoBorder", true).ToString(), out bool noBorder) ? noBorder : false;
+            NoBorder = bool.TryParse(LoUAMKey.GetValue("NoBorder", false).ToString(), out bool noBorder) ? noBorder : false;
         }
 
         public static void SaveSettings()
@@ -232,6 +236,7 @@ namespace LoUAM
 
             // Map
             LoUAMKey.SetValue("AlwaysOnTop", AlwaysOnTop);
+            LoUAMKey.SetValue("TiltMap", TiltMap);
             LoUAMKey.SetValue("Brightness", Brightness);
             LoUAMKey.SetValue("NoBorder", NoBorder);
         }
@@ -932,6 +937,13 @@ namespace LoUAM
             AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
             MainWindow mainWindow = this.Owner as MainWindow;
             if (mainWindow != null) mainWindow.RefreshAlwaysOnTop();
+        }
+
+        private void TiltMapCheckbox_Changed(object sender, RoutedEventArgs e)
+        {
+            TiltMap = TiltMapCheckbox.IsChecked ?? false;
+            MainWindow mainWindow = this.Owner as MainWindow;
+            if (mainWindow != null) mainWindow.RefreshTiltMap();
         }
     }
 }

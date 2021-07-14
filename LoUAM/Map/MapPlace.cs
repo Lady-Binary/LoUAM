@@ -13,11 +13,9 @@ namespace LoUAM
         private const double DEFAULT_MARKER_WIDTH = 16;
         private const double DEFAULT_MARKER_HEIGHT = 16;
 
-        private ScaleTransform scaleTansform;
-        public ScaleTransform ScaleTransform { get => scaleTansform; set => scaleTansform = value; }
-
-        private TranslateTransform centerTransform;
-        public TranslateTransform TranslateTransform { get => centerTransform; set => centerTransform = value; }
+        public ScaleTransform scaleTransform { get; set; }
+        public TranslateTransform translateTransform { get; set; }
+        public RotateTransform rotateTransform { get; set; }
 
         private FrameworkElement placeElement;
 
@@ -52,21 +50,30 @@ namespace LoUAM
 
             // Center the place exactly on its coordinates,
             // and catch if/when the place resizes so that we re-center
-            TranslateTransform = new TranslateTransform
+            translateTransform = new TranslateTransform
             {
                 X = -this.ActualWidth / 2,
                 Y = -this.ActualHeight / 2
             };
-            transformGroup.Children.Add(TranslateTransform);
+            transformGroup.Children.Add(translateTransform);
             this.SizeChanged += MapPlace_SizeChanged;
 
             // And prepare a scale transform, can be used for example to keep aspect ratio
-            ScaleTransform = new ScaleTransform
+            scaleTransform = new ScaleTransform
             {
                 ScaleX = 1,
                 ScaleY = 1
             };
-            transformGroup.Children.Add(ScaleTransform);
+            transformGroup.Children.Add(scaleTransform);
+
+            // Prepare also a rotate transform, can be used when tilt is enabled
+            rotateTransform = new RotateTransform();
+            if (ControlPanel.TiltMap)
+                rotateTransform.Angle = 45;
+            else
+                rotateTransform.Angle = 0;
+
+            transformGroup.Children.Add(rotateTransform);
 
             this.RenderTransform = transformGroup;
 
@@ -124,8 +131,8 @@ namespace LoUAM
         private void MapPlace_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Re-center the place exactly on its coordinates
-            TranslateTransform.X = -this.ActualWidth / 2;
-            TranslateTransform.Y = -this.ActualHeight / 2;
+            translateTransform.X = -this.ActualWidth / 2;
+            translateTransform.Y = -this.ActualHeight / 2;
         }
 
         private Ellipse CreateBlinkingEllipse(Color color1, Color color2)

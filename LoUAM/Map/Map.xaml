@@ -28,6 +28,7 @@
                     <Grid.LayoutTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="scaleTransform"/>
+                            <RotateTransform Angle="0" />
                         </TransformGroup>
                     </Grid.LayoutTransform>
                     <Canvas Name="TilesCanvas" Width="3500" Height="3500" Grid.Column="1" Grid.Row="0">

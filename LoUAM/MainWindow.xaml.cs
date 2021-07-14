@@ -115,6 +115,7 @@ namespace LoUAM
             UpdatePlaces();
 
             RefreshAlwaysOnTop();
+            RefreshTiltMap();
             RefreshNoBorder();
 
             ChangeRegion(PlaceRegionEnum.Unknown);
@@ -232,6 +233,34 @@ namespace LoUAM
             AlwaysOnTopMenu.IsChecked = ControlPanel.AlwaysOnTop;
             this.Focus();
             this.Topmost = ControlPanel.AlwaysOnTop;
+        }
+
+        public delegate void RefreshTiltMapDelegate();
+        public void RefreshTiltMap()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshTiltMapDelegate(RefreshTiltMap));
+                return;
+            }
+
+            TiltMapMenu.IsChecked = ControlPanel.TiltMap;
+            TransformGroup transformGroup = MainMap.MapGrid.LayoutTransform as TransformGroup;
+            if (transformGroup != null)
+            {
+                foreach (var transform in transformGroup.Children)
+                {
+                    if (transform is RotateTransform)
+                    {
+                        RotateTransform rotateTransform = transform as RotateTransform;
+                        if (ControlPanel.TiltMap)
+                            rotateTransform.Angle = 45;
+                        else
+                            rotateTransform.Angle = 0;
+                    }
+                }
+            }
+            UpdatePlaces();
         }
 
         public delegate void RefreshNoBorderDelegate();
@@ -1115,6 +1144,17 @@ namespace LoUAM
             RefreshAlwaysOnTop();
         }
 
+        private void TiltMapCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void TiltMapCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel.TiltMap = !TiltMapMenu.IsChecked;
+            ControlPanel.SaveSettings();
+            RefreshTiltMap();
+        }
+
         private void MoveCursorHereCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1288,16 +1328,19 @@ namespace LoUAM
     {
         public static RoutedCommand ConnectToLoAClientCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand EditPlacesCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand MapAdditionalSettingsCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand MapChangeServerCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand MapChangeRegionCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand PlayersListCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand DropOrPickupMarkerCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand CopyLocationCoordintesCommand { get; set; } = new RoutedCommand();
-        public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();
+        // Map
+        public static RoutedCommand MapAdditionalSettingsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand TiltMapCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand AlwaysOnTopCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MapChangeServerCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand MapChangeRegionCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand TrackPlayerCommand { get; set; } = new RoutedCommand();
+        // Link Controls
+        public static RoutedCommand LinkControlsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand PlayersListCommand { get; set; } = new RoutedCommand();
     }
 }

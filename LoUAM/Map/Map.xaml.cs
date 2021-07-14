@@ -113,8 +113,9 @@ namespace LoUAM
             private set { _lastMouseRightButtonUpCoords = value; OnPropertyChanged("LastMouseRightButtonUpCoords"); }
         }
 
-        private Point? lastCenterPositionOnTarget;
+        private Point? lastWorldCoordinatesOnTarget;
         private Point? lastMousePositionOnTarget;
+
         private Point? lastDragPoint;
 
         void OnMouseMove(object sender, MouseEventArgs e)
@@ -154,7 +155,8 @@ namespace LoUAM
 
         void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            lastMousePositionOnTarget = Mouse.GetPosition(MapGrid);
+            lastWorldCoordinatesOnTarget = Mouse.GetPosition(TilesCanvas);
+            lastMousePositionOnTarget = Mouse.GetPosition(scrollViewer);
 
             if (e.Delta > 0)
             {
@@ -192,9 +194,15 @@ namespace LoUAM
             // But resize places so that they preserve their aspect and position
             RefreshPlaces(this.Places);
 
-            var centerOfViewport = new Point(scrollViewer.ViewportWidth / 2,
+            if (!lastMousePositionOnTarget.HasValue && !lastWorldCoordinatesOnTarget.HasValue)
+            {
+                // If it was not initiaded by a mouse wheel scroll. then let's store
+                // the world coordinate we have right now at the center of the viewport,
+                // so that we will try to restore that after zooming again at the center of the viewport
+                lastMousePositionOnTarget = new Point(scrollViewer.ViewportWidth / 2,
                                                 scrollViewer.ViewportHeight / 2);
-            lastCenterPositionOnTarget = scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
+                lastWorldCoordinatesOnTarget = scrollViewer.TranslatePoint(lastMousePositionOnTarget.Value, TilesCanvas);
+            }
         }
 
         void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -204,48 +212,22 @@ namespace LoUAM
 
             if (e.ExtentHeightChange != 0 || e.ExtentWidthChange != 0)
             {
-                Point? targetBefore = null;
-                Point? targetNow = null;
-
-                if (!lastMousePositionOnTarget.HasValue)
+                if (lastMousePositionOnTarget.HasValue && lastWorldCoordinatesOnTarget.HasValue)
                 {
-                    if (lastCenterPositionOnTarget.HasValue)
-                    {
-                        Point centerOfTargetNow =
-                              scrollViewer.TranslatePoint(centerOfViewport, MapGrid);
+                    // Let's try to restore the world coordinate we were having at the mouse target
+                    // (note, mouse target might be the center if the slider was used)
+                    Point TargetScroll = TilesCanvas.TranslatePoint(lastWorldCoordinatesOnTarget.Value, scrollViewer);
 
-                        targetBefore = lastCenterPositionOnTarget;
-                        targetNow = centerOfTargetNow;
-                    }
-                }
-                else
-                {
-                    targetBefore = lastMousePositionOnTarget;
-                    targetNow = Mouse.GetPosition(MapGrid);
+                    var horizontalScrollDelta = lastMousePositionOnTarget.Value.X - TargetScroll.X;
+                    var currentHorizontalOffset = scrollViewer.HorizontalOffset;
+                    scrollViewer.ScrollToHorizontalOffset(currentHorizontalOffset - horizontalScrollDelta);
+
+                    var verticalScrollDelta = lastMousePositionOnTarget.Value.Y - TargetScroll.Y;
+                    var currentVerticalOffset = scrollViewer.VerticalOffset;
+                    scrollViewer.ScrollToVerticalOffset(currentVerticalOffset - verticalScrollDelta);
 
                     lastMousePositionOnTarget = null;
-                }
-
-                if (targetBefore.HasValue)
-                {
-                    double dXInTargetPixels = targetNow.Value.X - targetBefore.Value.X;
-                    double dYInTargetPixels = targetNow.Value.Y - targetBefore.Value.Y;
-
-                    double multiplicatorX = e.ExtentWidth / MapGrid.ActualWidth;
-                    double multiplicatorY = e.ExtentHeight / MapGrid.ActualHeight;
-
-                    double newOffsetX = scrollViewer.HorizontalOffset -
-                                        dXInTargetPixels * multiplicatorX;
-                    double newOffsetY = scrollViewer.VerticalOffset -
-                                        dYInTargetPixels * multiplicatorY;
-
-                    if (double.IsNaN(newOffsetX) || double.IsNaN(newOffsetY))
-                    {
-                        return;
-                    }
-
-                    scrollViewer.ScrollToHorizontalOffset(newOffsetX);
-                    scrollViewer.ScrollToVerticalOffset(newOffsetY);
+                    lastWorldCoordinatesOnTarget = null;
                 }
             }
 
@@ -299,9 +281,16 @@ namespace LoUAM
                 mapPlace.BottomLabel = place.Label;
 
             // Always scale back so that it preserves aspect ratio
-            ScaleTransform scaleTransform = mapPlace.ScaleTransform;
+            ScaleTransform scaleTransform = mapPlace.scaleTransform;
             scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
             scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
+
+            // And we rotate back, if the map was tilted
+            RotateTransform rotateTransform = mapPlace.rotateTransform;
+            if (ControlPanel.TiltMap)
+                rotateTransform.Angle = 45;
+            else
+                rotateTransform.Angle = 0;
 
             // If we are updating the current player, we may need to update the marker line
             if (MarkerPlaceId != "" && place.Type == PlaceType.CurrentPlayer)
@@ -314,13 +303,16 @@ namespace LoUAM
 
         public void Center(double X, double Z)
         {
-            Point ScrollLocation = PlacesCanvas.TranslatePoint(new Point(X, Z), MapGrid);
+            Point TargetScroll = TilesCanvas.TranslatePoint(new Point(X, Z), scrollViewer);
+            Point ScrollCenter = new Point(scrollViewer.ViewportWidth / 2, scrollViewer.ViewportHeight / 2);
 
-            double offsetX = (ScrollLocation.X * scaleTransform.ScaleX - (scrollViewer.ViewportWidth / 2));
-            double offsetY = (ScrollLocation.Y * scaleTransform.ScaleY - (scrollViewer.ViewportHeight / 2));
+            var horizontalScrollDelta = ScrollCenter.X - TargetScroll.X;
+            var currentHorizontalOffset = scrollViewer.HorizontalOffset;
+            scrollViewer.ScrollToHorizontalOffset(currentHorizontalOffset - horizontalScrollDelta);
 
-            scrollViewer.ScrollToHorizontalOffset(offsetX);
-            scrollViewer.ScrollToVerticalOffset(offsetY);
+            var verticalScrollDelta = ScrollCenter.Y - TargetScroll.Y;
+            var currentVerticalOffset = scrollViewer.VerticalOffset;
+            scrollViewer.ScrollToVerticalOffset(currentVerticalOffset - verticalScrollDelta);
         }
 
         private void RefreshPlaces(Dictionary<PlaceType, Dictionary<string, Place>> places)

@@ -386,14 +386,20 @@ namespace LoUAM
         private Player GetCurrentPlayer()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
+            {
+                this.Title = "LoUAM - " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 return null;
+            }
 
             Player currentPlayer = null;
 
             RefreshClientStatus();
 
             if (ClientStatus == null)
+            {
+                this.Title = "LoUAM - " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 return null;
+            }
 
             if (new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds() - ClientStatus.TimeStamp <= 10000)
             {
@@ -427,11 +433,14 @@ namespace LoUAM
                     String CharName = rx.Replace(currentPlayer.DisplayName, "");
 
                     currentPlayer.DisplayName = CharName;
+                    this.Title = "LoUAM - " + Assembly.GetExecutingAssembly().GetName().Version.ToString() + " - " + currentPlayer.DisplayName;
                 }
             }
             else
             {
                 UpdateMainStatus(Colors.Red, $"Client {MainWindow.CurrentClientProcessId.ToString()} not responding!");
+                this.Title = "LoUAM - " + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                return null;
             }
 
             return currentPlayer;

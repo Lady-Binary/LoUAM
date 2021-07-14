@@ -43,6 +43,8 @@ namespace LoUAM
         public static List<Place> Places = new List<Place>();
 
         // Map
+        public static bool ShowLabels = false;
+        public static bool ShowIcons = false;
         public static bool TopMost = false;
         public static bool TiltMap = false;
         public static float Brightness = 1;
@@ -78,6 +80,8 @@ namespace LoUAM
             HttpsCheckBox.IsChecked = Https;
 
             // Map
+            ShowLabelsCheckBox.IsChecked = ShowLabels;
+            ShowIconsCheckBox.IsChecked = ShowIcons;
             TopMostCheckbox.IsChecked = TopMost;
             TiltMapCheckbox.IsChecked = TiltMap;
             BrightnessSlider.Value = Brightness;
@@ -94,6 +98,8 @@ namespace LoUAM
             Https = HttpsCheckBox.IsChecked ?? true;
 
             // Map
+            ShowLabels = ShowLabelsCheckBox.IsChecked ?? false;
+            ShowIcons = ShowIconsCheckBox.IsChecked ?? false;
             TopMost = TopMostCheckbox.IsChecked ?? false;
             TiltMap = TiltMapCheckbox.IsChecked ?? false;
             Brightness = (float)BrightnessSlider.Value;
@@ -217,6 +223,8 @@ namespace LoUAM
             TrackPlayerObjectId = ulong.TryParse(LoUAMKey.GetValue("TrackPlayerObjectId", 0).ToString(), out ulong trackPlayerObjectId) ? trackPlayerObjectId : 0;
 
             // Map
+            ShowLabels = bool.TryParse(LoUAMKey.GetValue("ShowLabels", true).ToString(), out bool showLabels) ? showLabels : true;
+            ShowIcons = bool.TryParse(LoUAMKey.GetValue("ShowIcons", true).ToString(), out bool showIcons) ? showIcons : true;
             TopMost = bool.TryParse(LoUAMKey.GetValue("TopMost", false).ToString(), out bool topMost) ? topMost : false;
             TiltMap = bool.TryParse(LoUAMKey.GetValue("TiltMap", false).ToString(), out bool tiltMap) ? tiltMap : false;
             Brightness = float.TryParse(LoUAMKey.GetValue("Brightness", 1.0f).ToString(), out float brightness) ? brightness : 1;
@@ -243,6 +251,8 @@ namespace LoUAM
             LoUAMKey.SetValue("TrackPlayerObjectId", TrackPlayerObjectId);
 
             // Map
+            LoUAMKey.SetValue("ShowLabels", ShowLabels);
+            LoUAMKey.SetValue("ShowIcons", ShowIcons);
             LoUAMKey.SetValue("TopMost", TopMost);
             LoUAMKey.SetValue("TiltMap", TiltMap);
             LoUAMKey.SetValue("Brightness", Brightness);
@@ -994,6 +1004,18 @@ namespace LoUAM
                     TheMainWindow.AddMarker(SelectedPlayer.ObjectId.ToString());
                 }
             }
+        }
+
+        private void ShowIconsCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            ShowIcons = ShowIconsCheckBox.IsChecked ?? false;
+            MainWindow mainWindow = this.Owner as MainWindow;
+        }
+
+        private void ShowLabelsCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            ShowLabels = ShowLabelsCheckBox.IsChecked ?? false;
+            MainWindow mainWindow = this.Owner as MainWindow;
         }
     }
 }

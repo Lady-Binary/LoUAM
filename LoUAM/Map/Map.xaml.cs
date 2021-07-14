@@ -250,19 +250,16 @@ namespace LoUAM
 
         private void AddPlace(Place place)
         {
-            MapPlace mapPlace = new MapPlace(place);
-            TransformGroup transformGroup = new TransformGroup();
-            Binding b = new Binding("scaleTransform");
-            //mapPlace.LayoutTransform = transformGroup;
-            mapPlace.SetBinding(MapPlace.LayoutTransformProperty, b);
-            mapPlace.Name = "Place_" + place.Id;
-            mapPlace.Tag = place.Type;
-            mapPlace.PreviewMouseWheel += OnPreviewMouseWheel;
+            MapPlace mapPlace = new MapPlace(this, place);
 
             PlacesCanvas.Children.Add(
                 mapPlace
                 );
+
             RefreshPlace(place, mapPlace);
+
+            // Hijack mousewheel event, handle even when the mouse is over a place
+            mapPlace.PreviewMouseWheel += OnPreviewMouseWheel;
         }
 
         private void RefreshPlace(Place place, MapPlace mapPlace)
@@ -270,27 +267,7 @@ namespace LoUAM
             if (place == null || mapPlace == null)
                 return;
 
-            // Update its position, if necessary
-            if (mapPlace.X != place.X)
-                mapPlace.X = place.X;
-            if (mapPlace.Z != place.Z)
-                mapPlace.Z = place.Z;
-
-            // Update its label, if necessary
-            if (mapPlace.BottomLabel != place.Label)
-                mapPlace.BottomLabel = place.Label;
-
-            // Always scale back so that it preserves aspect ratio
-            ScaleTransform scaleTransform = mapPlace.scaleTransform;
-            scaleTransform.ScaleX = 1 / this.scaleTransform.ScaleX;
-            scaleTransform.ScaleY = -1 / this.scaleTransform.ScaleY;
-
-            // And we rotate back, if the map was tilted
-            RotateTransform rotateTransform = mapPlace.rotateTransform;
-            if (ControlPanel.TiltMap)
-                rotateTransform.Angle = 45;
-            else
-                rotateTransform.Angle = 0;
+            mapPlace.Refresh(place);
 
             // If we are updating the current player, we may need to update the marker line
             if (MarkerPlaceId != "" && place.Type == PlaceType.CurrentPlayer)

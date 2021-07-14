@@ -114,6 +114,8 @@ namespace LoUAM
             ControlPanel.SavePlaces();
             UpdatePlaces();
 
+            RefreshShowIcons();
+            RefreshShowLabels();
             RefreshTopMost();
             RefreshTiltMap();
             RefreshNoBorder();
@@ -1282,6 +1284,52 @@ namespace LoUAM
             DropOrPickupMarkerMenuItem.IsChecked = false;
         }
 
+        public void RefreshShowLabels()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new Action(RefreshShowLabels));
+                return;
+            }
+
+            ShowHideLabelsMenu.IsChecked = ControlPanel.ShowLabels;
+            UpdatePlaces();
+        }
+        private void ShowHideLabelsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void ShowHideLabelsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel.ShowLabels = !ShowHideLabelsMenu.IsChecked;
+            ControlPanel.SaveSettings();
+
+            RefreshShowLabels();
+        }
+
+        public void RefreshShowIcons()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new Action(RefreshShowIcons));
+                return;
+            }
+
+            ShowHideIconsMenu.IsChecked = ControlPanel.ShowIcons;
+            UpdatePlaces();
+        }
+        private void ShowHideIconsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+        private void ShowHideIconsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ControlPanel.ShowIcons = !ShowHideIconsMenu.IsChecked;
+            ControlPanel.SaveSettings();
+
+            RefreshShowIcons();
+        }
+
         private void NewPlaceCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1386,6 +1434,9 @@ namespace LoUAM
         public static RoutedCommand EditPlacesCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand MoveCursorHereCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand DropOrPickupMarkerCommand { get; set; } = new RoutedCommand();
+        // Places
+        public static RoutedCommand ShowHideLabelsCommand { get; set; } = new RoutedCommand();
+        public static RoutedCommand ShowHideIconsCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand NewPlaceCommand { get; set; } = new RoutedCommand();
         public static RoutedCommand CopyLocationCoordintesCommand { get; set; } = new RoutedCommand();
         // Map

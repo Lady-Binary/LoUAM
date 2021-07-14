@@ -13,6 +13,8 @@
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeRegionCommand}" CanExecute="MapChangeRegionCommand_CanExecute" Executed="MapChangeRegionCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.MapChangeServerCommand}" CanExecute="MapChangeServerCommand_CanExecute" Executed="MapChangeServerCommand_Executed" />
         <!-- Places -->
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.ShowHideLabelsCommand}" CanExecute="ShowHideLabelsCommand_CanExecute" Executed="ShowHideLabelsCommand_Executed" />
+        <CommandBinding Command="{x:Static local:MainWindowCustomCommands.ShowHideIconsCommand}" CanExecute="ShowHideIconsCommand_CanExecute" Executed="ShowHideIconsCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CanExecute="NewPlaceCommand_CanExecute" Executed="NewPlaceCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" CanExecute="EditPlacesCommand_CanExecute" Executed="EditPlacesCommand_Executed" />
         <CommandBinding Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CanExecute="CopyLocationCoordintesCommand_CanExecute" Executed="CopyLocationCoordintesCommand_Executed" />
@@ -31,6 +33,8 @@
         <!-- File -->
         <KeyBinding Key="X" Modifiers="Control" Command="Close"/>
         <!-- Places -->
+        <KeyBinding Key="L" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.ShowHideLabelsCommand}" />
+        <KeyBinding Key="I" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.ShowHideIconsCommand}" />
         <KeyBinding Key="N" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" />
         <KeyBinding Key="E" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}"/>
         <KeyBinding Key="C" Modifiers="Control" Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" />
@@ -57,6 +61,8 @@
                 <MenuItem Name="TrackPlayerMenu" Header="_Track Player" Command="{x:Static local:MainWindowCustomCommands.TrackPlayerCommand}" />
             </MenuItem>
             <MenuItem Header="_Places">
+                <MenuItem Name="ShowHideLabelsMenu" Header="Show/Hide _Labels" Command="{x:Static local:MainWindowCustomCommands.ShowHideLabelsCommand}" InputGestureText="Ctrl+L" />
+                <MenuItem Name="ShowHideIconsMenu" Header="Show/Hide _Icons" Command="{x:Static local:MainWindowCustomCommands.ShowHideIconsCommand}" InputGestureText="Ctrl+I" />
                 <MenuItem Header="Add New Place..." Command="{x:Static local:MainWindowCustomCommands.NewPlaceCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+N" />
                 <MenuItem Header="_Edit Places..." Command="{x:Static local:MainWindowCustomCommands.EditPlacesCommand}" InputGestureText="Ctrl+E" />
                 <MenuItem Header="Copy Location Coordinates..." Command="{x:Static local:MainWindowCustomCommands.CopyLocationCoordintesCommand}" CommandParameter="{Binding LastCenterCoords, ElementName=MainMap}" InputGestureText="Ctrl+C" />

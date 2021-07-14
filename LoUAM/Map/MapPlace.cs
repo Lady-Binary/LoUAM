@@ -10,6 +10,8 @@ namespace LoUAM
 {
     public partial class MapPlace : System.Windows.Controls.Grid
     {
+        private Map ParentMap;
+
         private const double DEFAULT_MARKER_WIDTH = 16;
         private const double DEFAULT_MARKER_HEIGHT = 16;
 
@@ -17,35 +19,21 @@ namespace LoUAM
         public TranslateTransform translateTransform { get; set; }
         public RotateTransform rotateTransform { get; set; }
 
-        private FrameworkElement placeElement;
+        public FrameworkElement IconElement;
+        public TextBlock TopLabel;
 
-        private TextBlock topPlaceLabel;
-        public string TopLabel
-        {
-            get { return topPlaceLabel.Text; }
-            set { topPlaceLabel.Text = value; }
-        }
+        public TextBlock BottomLabel;
 
-        private TextBlock bottomPlaceLabel;
-        public string BottomLabel
+        public MapPlace(Map parentMap, Place place)
         {
-            get { return bottomPlaceLabel.Text; }
-            set { bottomPlaceLabel.Text = value; }
-        }
+            ParentMap = parentMap;
 
-        public double X
-        {
-            get { return Canvas.GetLeft(this); }
-            set { Canvas.SetLeft(this, value); }
-        }
-        public double Z
-        {
-            get { return Canvas.GetTop(this); }
-            set { Canvas.SetTop(this, value); }
-        }
+            Name = "Place_" + place.Id;
+            Tag = place.Type;
 
-        public MapPlace(Place place)
-        {
+            // Store a reference to the parent map
+
+            // Prepare all our transforms
             TransformGroup transformGroup = new TransformGroup();
 
             // Center the place exactly on its coordinates,
@@ -56,23 +44,13 @@ namespace LoUAM
                 Y = -this.ActualHeight / 2
             };
             transformGroup.Children.Add(translateTransform);
-            this.SizeChanged += MapPlace_SizeChanged;
 
             // And prepare a scale transform, can be used for example to keep aspect ratio
-            scaleTransform = new ScaleTransform
-            {
-                ScaleX = 1,
-                ScaleY = 1
-            };
+            scaleTransform = new ScaleTransform();
             transformGroup.Children.Add(scaleTransform);
 
             // Prepare also a rotate transform, can be used when tilt is enabled
             rotateTransform = new RotateTransform();
-            if (ControlPanel.TiltMap)
-                rotateTransform.Angle = 45;
-            else
-                rotateTransform.Angle = 0;
-
             transformGroup.Children.Add(rotateTransform);
 
             this.RenderTransform = transformGroup;
@@ -82,57 +60,85 @@ namespace LoUAM
             this.RowDefinitions.Add(new RowDefinition() { MinHeight = DEFAULT_MARKER_HEIGHT });
             this.RowDefinitions.Add(new RowDefinition() { MinHeight = 20 });
 
-            // Top label
-            this.topPlaceLabel = new TextBlock
+            // Prepare top label
+            this.TopLabel = new TextBlock
             {
                 Name = "TopLabel_" + place.Id,
-                Text = "",
                 FontSize = 12,
                 Foreground = Brushes.Yellow,
-                Tag = place.Type
+                Tag = place.Type,
             };
-            this.topPlaceLabel.SetValue(Grid.RowProperty, 0);
-            this.Children.Add(this.topPlaceLabel);
+            this.TopLabel.SetValue(Grid.RowProperty, 0);
+            this.Children.Add(this.TopLabel);
 
-            // Icon
+            // Prepare icon
             switch (place.Type)
             {
                 case PlaceType.CurrentPlayer:
-                    this.placeElement = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
+                    this.IconElement = CreateBlinkingEllipse(Colors.Black, Colors.Cyan);
                     break;
 
                 case PlaceType.OtherPlayer:
-                    this.placeElement = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
+                    this.IconElement = CreateBlinkingEllipse(Colors.Black, Colors.LightGreen);
                     break;
 
                 default:
-                    this.placeElement = new Image
+                    this.IconElement = new Image
                     {
                         Source = new BitmapImage(new Uri($"pack://application:,,,/LoUAM;component/Images/{(int)place.Icon}.png", UriKind.Absolute)),
                     };
                     break;
             }
-            placeElement.SetValue(Grid.RowProperty, 1);
-            this.Children.Add(this.placeElement);
+            IconElement.SetValue(Grid.RowProperty, 1);
+            this.Children.Add(this.IconElement);
 
-            // Bottom label
-            this.bottomPlaceLabel = new TextBlock
+            // Prepare bottom label
+            this.BottomLabel = new TextBlock
             {
                 Name = "BottomLabel_" + place.Id,
-                Text = place.Label,
                 FontSize = 12,
                 Foreground = Brushes.Yellow,
                 Tag = place.Type
             };
-            this.bottomPlaceLabel.SetValue(Grid.RowProperty, 2);
-            this.Children.Add(this.bottomPlaceLabel);
+            this.BottomLabel.SetValue(Grid.RowProperty, 2);
+            this.Children.Add(this.BottomLabel);
         }
 
-        private void MapPlace_SizeChanged(object sender, SizeChangedEventArgs e)
+        public void Refresh(Place place)
         {
+            // Center the place exactly on its coordinates,
+            // and catch if/when the place resizes so that we re-center
+            // Update its position, if necessary
+            if (Canvas.GetLeft(this) != place.X)
+                Canvas.SetLeft(this, place.X);
+            if (Canvas.GetTop(this) != place.Z)
+                Canvas.SetTop(this, place.Z);
+
+            // Always scale back with respect of the parent so that it preserves aspect ratio
+            this.scaleTransform.ScaleX = 1 / ParentMap.scaleTransform.ScaleX;
+            this.scaleTransform.ScaleY = -1 / ParentMap.scaleTransform.ScaleY;
+            //this.UpdateLayout();
+
             // Re-center the place exactly on its coordinates
             translateTransform.X = -this.ActualWidth / 2;
             translateTransform.Y = -this.ActualHeight / 2;
+
+            // Prepare also a rotate transform, can be used when tilt is enabled
+            if (ControlPanel.TiltMap)
+                rotateTransform.Angle = 45;
+            else
+                rotateTransform.Angle = 0;
+
+            // Top label
+            this.TopLabel.Text = "";
+            if (place.Type == PlaceType.Place) this.TopLabel.Visibility = ControlPanel.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
+
+            // Icon
+            if (place.Type == PlaceType.Place) this.IconElement.Visibility = ControlPanel.ShowIcons ? Visibility.Visible : Visibility.Collapsed;
+
+            // Bottom label
+            this.BottomLabel.Text = place.Label;
+            if (place.Type == PlaceType.Place) this.BottomLabel.Visibility = ControlPanel.ShowLabels ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private Ellipse CreateBlinkingEllipse(Color color1, Color color2)

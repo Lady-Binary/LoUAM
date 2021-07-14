@@ -52,26 +52,33 @@
             <TabItem Header="Players">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ListView Name="PlayersListView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
+                    <ListView Name="PlayersListView" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Grid.ColumnSpan="5" MouseDoubleClick="PlayersListView_MouseDoubleClick">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Name" Width="100" DisplayMemberBinding="{Binding DisplayName}" />
-                                <GridViewColumn Header="Panic!" Width="75" DisplayMemberBinding="{Binding Panic!}" />
-                                <GridViewColumn Header="Nearest Town" Width="75" DisplayMemberBinding="{Binding NearestTown}" />
-                                <GridViewColumn Header="X" Width="75" DisplayMemberBinding="{Binding X}" />
-                                <GridViewColumn Header="Z" Width="75" DisplayMemberBinding="{Binding Z}" />
-                                <GridViewColumn Header="Region" Width="75" DisplayMemberBinding="{Binding Region}" />
+                                <GridViewColumn Header="ObjectId"  Width="0" DisplayMemberBinding="{Binding ObjectId}" />
+                                <GridViewColumn Header="Name" Width="125" DisplayMemberBinding="{Binding DisplayName}" />
+                                <GridViewColumn Header="Panic!" Width="50" DisplayMemberBinding="{Binding Panic!}" />
+                                <GridViewColumn Header="Nearest Town" Width="50" DisplayMemberBinding="{Binding NearestTown}" />
+                                <GridViewColumn Header="X" Width="50" DisplayMemberBinding="{Binding X}" />
+                                <GridViewColumn Header="Z" Width="50" DisplayMemberBinding="{Binding Z}" />
+                                <GridViewColumn Header="Region" Width="100" DisplayMemberBinding="{Binding Region}" />
                             </GridView>
                         </ListView.View>
                     </ListView>
+                    <Button Grid.Row="3" Grid.Column="3" Margin="10" Name="MarkPlayerButton" Click="MarkPlayerButton_Click" >Mark</Button>
+                    <Button Grid.Row="3" Grid.Column="4" Margin="10" Name="TrackPlayerButton" Click="TrackPlayerButton_Click">Track</Button>
                 </Grid>
             </TabItem>
             <TabItem Header="Map">

@@ -615,7 +615,52 @@ namespace LoUAM
 
                 if (ControlPanel.TrackPlayer)
                 {
-                    MainMap.Center(currentPlayerPlace.X, currentPlayerPlace.Z);
+                    if (ControlPanel.TrackPlayerObjectId == 0 || ControlPanel.TrackPlayerObjectId == currentPlayer.ObjectId)
+                    {
+                        // Center on ourself
+                        MainMap.Center(currentPlayerPlace.X, currentPlayerPlace.Z);
+                    }
+                    else
+                    {
+                        // Center on some other player
+                        Player PlayerToTrack = null;
+                        if (MainWindow.TheLinkClient != null)
+                        {
+                            await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                            try
+                            {
+                                PlayerToTrack = MainWindow.TheLinkClient.OtherPlayers?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
+                            }
+                            finally
+                            {
+                                MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                            }
+                        }
+                        if (MainWindow.TheLinkServer != null)
+                        {
+                            await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+
+                            try
+                            {
+                                PlayerToTrack = MainWindow.TheLinkServer.OtherPlayers?.Values?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
+                            }
+                            finally
+                            {
+                                MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                            }
+                        }
+                        if (PlayerToTrack != null)
+                        {
+                            MainMap.Center(PlayerToTrack.X, PlayerToTrack.Z);
+                        }
+                        else
+                        {
+                            ControlPanel.TrackPlayer = false;
+                            ControlPanel.TrackPlayerObjectId = 0;
+                            ControlPanel.SaveSettings();
+                            RefreshTrackPlayer();
+                        }
+                    }
                 }
             }
             else
@@ -1122,6 +1167,16 @@ namespace LoUAM
             UpdatePlaces();
         }
 
+        public delegate void RefreshTrackPlayerDelegate();
+        public void RefreshTrackPlayer()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new RefreshTrackPlayerDelegate(RefreshTrackPlayer));
+                return;
+            }
+            TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
+        }
         private void TrackPlayerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
@@ -1129,8 +1184,9 @@ namespace LoUAM
         private void TrackPlayerCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             ControlPanel.TrackPlayer = !TrackPlayerMenu.IsChecked;
-            TrackPlayerMenu.IsChecked = ControlPanel.TrackPlayer;
+            ControlPanel.TrackPlayerObjectId = 0;
             ControlPanel.SaveSettings();
+            RefreshTrackPlayer();
         }
 
         private void TopMostCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)

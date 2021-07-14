@@ -37,6 +37,7 @@ namespace LoUAM
         public static string Password = "";
 
         public static bool TrackPlayer = true;
+        public static ulong TrackPlayerObjectId = 0;
 
         public static object PlacesLock = new object();
         public static List<Place> Places = new List<Place>();
@@ -169,7 +170,12 @@ namespace LoUAM
             }
             if (Players != null)
             {
+                Player SelectedPlayer = PlayersListView.SelectedItem as Player;
                 PlayersListView.ItemsSource = Players.Where(player => player != null).OrderBy(player => player.DisplayName);
+                if (SelectedPlayer != null)
+                {
+                    PlayersListView.SelectedItem = Players.Where(player => player != null && player.ObjectId == SelectedPlayer.ObjectId).FirstOrDefault();
+                }
             } else
             {
                 PlayersListView.ItemsSource = null;
@@ -208,6 +214,7 @@ namespace LoUAM
             Https = bool.TryParse(LoUAMKey.GetValue("Https", true).ToString(), out bool https) ? https : true;
 
             TrackPlayer = bool.TryParse(LoUAMKey.GetValue("TrackPlayer", true).ToString(), out bool trackPlayer) ? trackPlayer : true;
+            TrackPlayerObjectId = ulong.TryParse(LoUAMKey.GetValue("TrackPlayerObjectId", 0).ToString(), out ulong trackPlayerObjectId) ? trackPlayerObjectId : 0;
 
             // Map
             TopMost = bool.TryParse(LoUAMKey.GetValue("TopMost", false).ToString(), out bool topMost) ? topMost : false;
@@ -233,6 +240,7 @@ namespace LoUAM
             LoUAMKey.SetValue("Https", Https);
 
             LoUAMKey.SetValue("TrackPlayer", TrackPlayer);
+            LoUAMKey.SetValue("TrackPlayerObjectId", TrackPlayerObjectId);
 
             // Map
             LoUAMKey.SetValue("TopMost", TopMost);
@@ -944,6 +952,48 @@ namespace LoUAM
             TiltMap = TiltMapCheckbox.IsChecked ?? false;
             MainWindow mainWindow = this.Owner as MainWindow;
             if (mainWindow != null) mainWindow.RefreshTiltMap();
+        }
+
+        private void TrackPlayerButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (PlayersListView.SelectedItem is Player SelectedPlayer)
+            {
+                if (this.Owner is MainWindow TheMainWindow)
+                {
+                    // Track selected player
+                    ControlPanel.TrackPlayer = true;
+                    ControlPanel.TrackPlayerObjectId = SelectedPlayer.ObjectId;
+                    ControlPanel.SaveSettings();
+                    TheMainWindow.RefreshTrackPlayer();
+                }
+            }
+        }
+
+        private void PlayersListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (((FrameworkElement)e.OriginalSource).DataContext is Player SelectedPlayer)
+            {
+                if (this.Owner is MainWindow TheMainWindow)
+                {
+                    // Track selected player
+                    ControlPanel.TrackPlayer = true;
+                    ControlPanel.TrackPlayerObjectId = SelectedPlayer.ObjectId;
+                    ControlPanel.SaveSettings();
+                    TheMainWindow.RefreshTrackPlayer();
+                }
+            }
+        }
+
+        private void MarkPlayerButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (PlayersListView.SelectedItem is Player SelectedPlayer)
+            {
+                if (this.Owner is MainWindow TheMainWindow)
+                {
+                    // Mark selected player
+                    TheMainWindow.AddMarker(SelectedPlayer.ObjectId.ToString());
+                }
+            }
         }
     }
 }

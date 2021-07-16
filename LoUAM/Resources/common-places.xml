@@ -967,6 +967,30 @@
         <x>190.4296875</x>
         <z>1352.78320312686</z>
       </place>
+      <place>
+        <name>Cook</name>
+        <type>cooks_guild</type>
+        <x>-1258.447265625</x>
+        <z>573.486328126524</z>
+      </place>
+      <place>
+        <name>Cougar</name>
+        <type>point_of_interest</type>
+        <x>-546.533203125</x>
+        <z>1112.54882812675</z>
+      </place>
+      <place>
+        <name>Bone Weaver</name>
+        <type>point_of_interest</type>
+        <x>149.23095703125</x>
+        <z>1183.95996093928</z>
+      </place>
+      <place>
+        <name>Guard Post</name>
+        <type>point_of_interest</type>
+        <x>-237.70751953125</x>
+        <z>1427.49023437688</z>
+      </place>
     </britanniamain>
     <loudungeons />
   </LoU>

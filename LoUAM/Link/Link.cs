@@ -604,10 +604,13 @@ namespace LoUAM
                 {
                     try
                     {
-                        OtherPlayers = await this.RetrievePlayers();
-                        if (OtherPlayers != null)
+                        var RetrievedPlayers = await this.RetrievePlayers();
+                        if (RetrievedPlayers != null)
                         {
-                            OtherPlayers = OtherPlayers.ToList(); // .ToList() to force immediate execution
+                            OtherPlayers = RetrievedPlayers.ToList(); // .ToList() to force immediate execution
+                        } else
+                        {
+                            OtherPlayers.Clear();
                         }
                     }
                     catch (Exception ex)
@@ -622,15 +625,12 @@ namespace LoUAM
 
                     if (CurrentPlayer != null)
                     {
-                        if (OtherPlayers != null)
-                        {
-                            // Make sure our player is not duplicated in the "OtherPlayers" list too
-                            OtherPlayers = OtherPlayers
-                                .Where(player =>
-                                        player != null &&
-                                        player.ObjectId != CurrentPlayer.ObjectId
-                                ).ToList();  // .ToList() to force immediate execution
-                        }
+                        // Make sure our player is not duplicated in the "OtherPlayers" list too
+                        OtherPlayers = OtherPlayers
+                            .Where(player =>
+                                    player != null &&
+                                    player.ObjectId != CurrentPlayer.ObjectId
+                            ).ToList();  // .ToList() to force immediate execution
 
                         try
                         {

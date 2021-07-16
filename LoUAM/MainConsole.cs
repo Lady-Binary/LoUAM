@@ -45,7 +45,7 @@ Example:
             Console.WriteLine();
         }
 
-        public static void Start(string[] args)
+        public static async Task Start(string[] args)
         {
             bool Https = true;
             int Port = 4443;
@@ -139,7 +139,7 @@ Example:
 
                 Console.WriteLine("LoUAM Server started...");
                 Console.WriteLine("Press CTRL+C at any time to stop LoUAM Server.");
-                while (TheServer.IsRunning)
+                while (TheServer.ServerState == LinkServer.ServerStateEnum.Listening)
                     ;
                 Console.WriteLine("LoUAM Server stopped!");
             }

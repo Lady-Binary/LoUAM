@@ -113,7 +113,6 @@ namespace LoUAM
             updateTimer = new DispatcherTimer();
             updateTimer.Tick += TimerUpdate_TickAsync;
             updateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            updateTimer.Start();
         }
 
         public void ResetConnectionAttempts()
@@ -170,7 +169,8 @@ namespace LoUAM
 
             client = new HttpClient(handler)
             {
-                BaseAddress = new Uri(URI)
+                BaseAddress = new Uri(URI),
+                Timeout = TimeSpan.FromSeconds(5)
             };
 
             var username = "LoUAM";
@@ -191,6 +191,8 @@ namespace LoUAM
 
                 response.EnsureSuccessStatusCode();
                 ClientState = ClientStateEnum.Connected;
+
+                updateTimer.Start();
             }
             catch (Exception ex)
             {
@@ -202,12 +204,21 @@ namespace LoUAM
             }
         }
 
-        public void Disconnect()
+        public async Task Disconnect()
         {
-            this.updateTimer.IsEnabled = false;
             this.ClientState = ClientStateEnum.Disconnected;
+            this.updateTimer.Stop();
             this.client = null;
             this.handler = null;
+            await OtherPlayersSemaphoreSlim.WaitAsync();
+            try
+            {
+                this.OtherPlayers = null;
+            }
+            finally
+            {
+                OtherPlayersSemaphoreSlim.Release();
+            }
         }
 
         public async Task UpdatePlayer(Player Player)
@@ -237,8 +248,11 @@ namespace LoUAM
             }
             catch (Exception ex)
             {
-                Disconnect();
-                throw new CommunicationErrorException("Cannot submit player info.", ex);
+                if (ex.InnerException != null)
+                    ConnectionError = ex.InnerException.Message;
+                else
+                    ConnectionError = ex.Message;
+                ClientState = ClientStateEnum.ConnectionFailed;
             }
         }
 
@@ -274,8 +288,13 @@ namespace LoUAM
             }
             catch (Exception ex)
             {
-                Disconnect();
-                throw new CommunicationErrorException("Cannot retrieve other players info.", ex);
+                if (ex.InnerException != null)
+                    ConnectionError = ex.InnerException.Message;
+                else
+                    ConnectionError = ex.Message;
+                ClientState = ClientStateEnum.ConnectionFailed;
+
+                return null;
             }
         }
 
@@ -374,6 +393,5 @@ namespace LoUAM
 
             updateTimer.Start();
         }
-
     }
 }

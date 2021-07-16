@@ -30,7 +30,10 @@ namespace LoUAM
 
         //public static MainWindow TheMainWindow;
 
+        public static SemaphoreSlim TheLinkServerSemaphoreSlim = new SemaphoreSlim(1, 1);
         public static LinkServer TheLinkServer { get; set; }
+
+        public static SemaphoreSlim TheLinkClientSemaphoreSlim = new SemaphoreSlim(1, 1);
         public static LinkClient TheLinkClient { get; set; }
 
         public static int CurrentClientProcessId = -1;
@@ -383,7 +386,7 @@ namespace LoUAM
         //    return MockPlayer;
         //}
 
-        private Player GetCurrentPlayer()
+        private async Task<Player> GetCurrentPlayerAsync()
         {
             if (CurrentClientProcessId == -1 || ClientStatusMemoryMap == null)
             {
@@ -412,17 +415,27 @@ namespace LoUAM
                         .OrderBy(town => Math.Sqrt(Math.Pow((town.X - ClientStatus.CharacterInfo.CHARPOSX ?? 0), 2) + Math.Pow((town.Z - ClientStatus.CharacterInfo.CHARPOSZ ?? 0), 2)));
                     string nearestTown = towns.FirstOrDefault()?.Label ?? "";
 
-                    currentPlayer = new Player(
-                        ClientStatus.TimeStamp,
-                        ClientStatus.CharacterInfo.CHARID ?? 0,
-                        TheLinkClient != null || TheLinkServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
-                        ClientStatus.CharacterInfo.CHARPOSX ?? 0,
-                        ClientStatus.CharacterInfo.CHARPOSY ?? 0,
-                        ClientStatus.CharacterInfo.CHARPOSZ ?? 0,
-                        nearestTown,
-                        ClientStatus.CharacterInfo.REGION,
-                        ClientStatus.ClientInfo.SERVER
-                        );
+                    await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+                    await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
+                    try
+                    {
+                        currentPlayer = new Player(
+                            ClientStatus.TimeStamp,
+                            ClientStatus.CharacterInfo.CHARID ?? 0,
+                            TheLinkClient != null || TheLinkServer != null ? ControlPanel.MyName : ClientStatus.CharacterInfo.CHARNAME,
+                            ClientStatus.CharacterInfo.CHARPOSX ?? 0,
+                            ClientStatus.CharacterInfo.CHARPOSY ?? 0,
+                            ClientStatus.CharacterInfo.CHARPOSZ ?? 0,
+                            nearestTown,
+                            ClientStatus.CharacterInfo.REGION,
+                            ClientStatus.ClientInfo.SERVER
+                            );
+                    }
+                    finally
+                    {
+                        MainWindow.TheLinkClientSemaphoreSlim.Release();
+                        MainWindow.TheLinkServerSemaphoreSlim.Release();
+                    }
 
                     Regex rx = new Regex(@"\[(.*?)\]");
 
@@ -452,6 +465,14 @@ namespace LoUAM
                 return false;
 
             RefreshClientStatus();
+
+            if (ClientStatus.ClientInfo.LOUVER == null)
+            {
+                MessageBox.Show("This Legends of Aria client was not properly injected.\n" +
+                    "\n" +
+                    "Please close and restart both the Legends of Aria client and LoUAM and re-inject the client.");
+                return false;
+            }
 
             if (new Version(ClientStatus.ClientInfo.LOUVER) < new Version(MINIMUM_LOU_VERSION))
             {
@@ -555,7 +576,7 @@ namespace LoUAM
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Player currentPlayer = GetCurrentPlayer();
+            Player currentPlayer = await GetCurrentPlayerAsync();
 
             if (currentPlayer != null)
             {
@@ -566,30 +587,46 @@ namespace LoUAM
                 }
 
                 // Refresh the current player on link
-                if (TheLinkServer != null)
+                await TheLinkServerSemaphoreSlim.WaitAsync();
+                try
                 {
-                    await TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
-                    try
+                    if (TheLinkServer != null)
                     {
-                        TheLinkServer.CurrentPlayer = currentPlayer;
-                    }
-                    finally
-                    {
-                        TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                        await TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            TheLinkServer.CurrentPlayer = currentPlayer;
+                        }
+                        finally
+                        {
+                            TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                        }
                     }
                 }
-
-                if (TheLinkClient != null)
+                finally
                 {
-                    await TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
-                    try
+                    TheLinkServerSemaphoreSlim.Release();
+                }
+
+                await TheLinkClientSemaphoreSlim.WaitAsync();
+                try
+                {
+                    if (TheLinkClient != null)
                     {
-                        TheLinkClient.CurrentPlayer = currentPlayer;
+                        await TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            TheLinkClient.CurrentPlayer = currentPlayer;
+                        }
+                        finally
+                        {
+                            TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
+                        }
                     }
-                    finally
-                    {
-                        TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
-                    }
+                }
+                finally
+                {
+                    TheLinkClientSemaphoreSlim.Release();
                 }
 
                 if (CurrentServer != currentPlayer.Server)
@@ -635,30 +672,48 @@ namespace LoUAM
                     {
                         // Center on some other player
                         Player PlayerToTrack = null;
-                        if (MainWindow.TheLinkClient != null)
+
+                        await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+                        try
                         {
-                            await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
-                            try
+                            if (MainWindow.TheLinkClient != null)
                             {
-                                PlayerToTrack = MainWindow.TheLinkClient.OtherPlayers?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
-                            }
-                            finally
-                            {
-                                MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                                await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                                try
+                                {
+                                    PlayerToTrack = MainWindow.TheLinkClient.OtherPlayers?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
+                                }
+                                finally
+                                {
+                                    MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                                }
                             }
                         }
-                        if (MainWindow.TheLinkServer != null)
+                        finally
                         {
-                            await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+                            MainWindow.TheLinkClientSemaphoreSlim.Release();
+                        }
 
-                            try
+                        await TheLinkServerSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            if (TheLinkServer != null)
                             {
-                                PlayerToTrack = MainWindow.TheLinkServer.OtherPlayers?.Values?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
+                                await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+
+                                try
+                                {
+                                    PlayerToTrack = MainWindow.TheLinkServer.OtherPlayers?.Values?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
+                                }
+                                finally
+                                {
+                                    MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                                }
                             }
-                            finally
-                            {
-                                MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
-                            }
+                        }
+                        finally
+                        {
+                            TheLinkServerSemaphoreSlim.Release();
                         }
                         if (PlayerToTrack != null)
                         {
@@ -678,157 +733,189 @@ namespace LoUAM
             {
                 MainMap.RemoveAllPlacesOfType(PlaceType.CurrentPlayer);
                 // Refresh the current player on link
-                if (TheLinkServer != null)
+                await TheLinkServerSemaphoreSlim.WaitAsync();
+                try
                 {
-                    await TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
-                    try
+                    if (TheLinkServer != null)
                     {
-                        TheLinkServer.CurrentPlayer = null;
-                    }
-                    finally
-                    {
-                        TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                        await TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            TheLinkServer.CurrentPlayer = null;
+                        }
+                        finally
+                        {
+                            TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                        }
                     }
                 }
-                if (TheLinkClient != null)
+                finally
                 {
-                    await TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
-                    try
+                    TheLinkServerSemaphoreSlim.Release();
+                }
+                await TheLinkClientSemaphoreSlim.WaitAsync();
+                try
+                {
+                    if (TheLinkClient != null)
                     {
-                        TheLinkClient.CurrentPlayer = null;
+                        await TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            TheLinkClient.CurrentPlayer = null;
+                        }
+                        finally
+                        {
+                            TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
+                        }
                     }
-                    finally
-                    {
-                        TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
-                    }
+                }
+                finally
+                {
+                    TheLinkClientSemaphoreSlim.Release();
                 }
             }
         }
         private async Task RefreshLinkStatusAsync()
         {
-            if (TheLinkServer != null)
+            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
+            try
             {
-                switch (TheLinkServer.ServerState)
+                if (TheLinkServer != null)
                 {
-                    case LinkServer.ServerStateEnum.Idle:
-                        {
-                            UpdateLinkStatus(Colors.Black, $"LoUAM Link not connected.");
-                        }
-                        break;
-
-                    case LinkServer.ServerStateEnum.Listening:
-                        {
-                            UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
-                        }
-                        break;
-
-                    case LinkServer.ServerStateEnum.ListenFailed:
-                        {
-                            UpdateLinkStatus(Colors.Red, $"LoUAM Link Server on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")} failed: {TheLinkServer.ListenError}.");
-                        }
-                        break;
-                }
-
-                if (TheLinkServer.ServerState == LinkServer.ServerStateEnum.Listening)
-                {
-                    await TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
-                    try
+                    switch (TheLinkServer.ServerState)
                     {
-                        if (TheLinkServer.OtherPlayers != null)
-                        {
-                            IEnumerable<Player> OtherPlayers = TheLinkServer.OtherPlayers.Values;
-                            if (OtherPlayers != null)
+                        case LinkServer.ServerStateEnum.Idle:
                             {
-                                List<Place> OtherPlaces = OtherPlayers.Select(player =>
-                                        new Place(
-                                            PlaceFileEnum.None,
-                                            Place.URLToServer(player.Server),
-                                            player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum playerRegion) ? playerRegion : PlaceRegionEnum.Unknown,
-                                            PlaceType.OtherPlayer,
-                                            player.ObjectId.ToString(),
-                                            PlaceIcon.none,
-                                            player.DisplayName,
-                                            player.X,
-                                            player.Y,
-                                            player.Z
-                                            )
-                                        ).ToList();
+                                UpdateLinkStatus(Colors.Black, $"LoUAM Link not connected.");
+                            }
+                            break;
 
+                        case LinkServer.ServerStateEnum.Listening:
+                            {
+                                UpdateLinkStatus(Colors.Blue, $"LoUAM Link Server listening on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")}.");
+                            }
+                            break;
+
+                        case LinkServer.ServerStateEnum.ListenFailed:
+                            {
+                                UpdateLinkStatus(Colors.Red, $"LoUAM Link Server on {(ControlPanel.Https ? "HTTPS" : "HTTP")} port {ControlPanel.Port} with {(string.IsNullOrEmpty(ControlPanel.Password) ? "no password" : "password")} failed: {TheLinkServer.ListenError}.");
+                            }
+                            break;
+                    }
+
+                    if (TheLinkServer.ServerState == LinkServer.ServerStateEnum.Listening)
+                    {
+                        await TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            if (TheLinkServer.OtherPlayers != null)
+                            {
+                                IEnumerable<Player> OtherPlayers = TheLinkServer.OtherPlayers.Values;
+                                if (OtherPlayers != null)
+                                {
+                                    List<Place> OtherPlaces = OtherPlayers.Select(player =>
+                                            new Place(
+                                                PlaceFileEnum.None,
+                                                Place.URLToServer(player.Server),
+                                                player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum playerRegion) ? playerRegion : PlaceRegionEnum.Unknown,
+                                                PlaceType.OtherPlayer,
+                                                player.ObjectId.ToString(),
+                                                PlaceIcon.none,
+                                                player.DisplayName,
+                                                player.X,
+                                                player.Y,
+                                                player.Z
+                                                )
+                                            ).ToList();
+
+                                    MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                        }
+
+                    }
+
+                    return;
+                }
+            }
+            finally
+            {
+                MainWindow.TheLinkServerSemaphoreSlim.Release();
+            }
+
+            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+            try
+            {
+                if (TheLinkClient != null)
+                {
+                    switch (TheLinkClient.ClientState)
+                    {
+                        case LinkClient.ClientStateEnum.Disconnected:
+                            {
+                                if (TheLinkClient.ConnectionError != "")
+                                    UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {TheLinkClient.ConnectionError}");
+                                else
+                                    UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected.");
+                            }
+                            break;
+                        case LinkClient.ClientStateEnum.Connecting:
+                            {
+                                UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheLinkClient.ConnectionAttempts})...");
+                            }
+                            break;
+                        case LinkClient.ClientStateEnum.Connected:
+                            {
+                                UpdateLinkStatus(Colors.Green, $"LoUAM Link connected to {ControlPanel.Host} on port {ControlPanel.Port}");
+                            }
+                            break;
+                        case LinkClient.ClientStateEnum.ConnectionFailed:
+                            {
+                                UpdateLinkStatus(Colors.Red, $"LoUAM Link connection to {ControlPanel.Host} on port {ControlPanel.Port} failed: {TheLinkClient.ConnectionError}");
+                            }
+                            break;
+                    }
+
+                    if (TheLinkClient.ClientState == LinkClient.ClientStateEnum.Connected)
+                    {
+                        await TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                        try
+                        {
+                            if (TheLinkClient.OtherPlayers != null)
+                            {
+                                List<Place> OtherPlaces = TheLinkClient.OtherPlayers
+                                    .Where(player => player != null)
+                                    .Select(player => new Place(
+                                        PlaceFileEnum.None,
+                                        Place.URLToServer(player.Server),
+                                        (PlaceRegionEnum)Enum.Parse(typeof(PlaceRegionEnum), player.Region, true),
+                                        PlaceType.OtherPlayer,
+                                        player.ObjectId.ToString(),
+                                        PlaceIcon.none,
+                                        player.DisplayName,
+                                        player.X,
+                                        player.Y,
+                                        player.Z
+                                        )
+                                    ).ToList();
                                 MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
                             }
                         }
-                    }
-                    finally
-                    {
-                        TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                        finally
+                        {
+                            TheLinkClient.OtherPlayersSemaphoreSlim.Release();
+                        }
                     }
 
+                    return;
                 }
-
-                return;
             }
-
-            if (TheLinkClient != null)
+            finally
             {
-                switch (TheLinkClient.ClientState)
-                {
-                    case LinkClient.ClientStateEnum.Disconnected:
-                        {
-                            if (TheLinkClient.ConnectionError != "")
-                                UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected: {TheLinkClient.ConnectionError}");
-                            else
-                                UpdateLinkStatus(Colors.Red, $"LoUAM Link disconnected.");
-                        }
-                        break;
-                    case LinkClient.ClientStateEnum.Connecting:
-                        {
-                            UpdateLinkStatus(Colors.Orange, $"LoUAM Link connecting (attempt {TheLinkClient.ConnectionAttempts})...");
-                        }
-                        break;
-                    case LinkClient.ClientStateEnum.Connected:
-                        {
-                            UpdateLinkStatus(Colors.Green, $"LoUAM Link connected to {ControlPanel.Host} on port {ControlPanel.Port}");
-                        }
-                        break;
-                    case LinkClient.ClientStateEnum.ConnectionFailed:
-                        {
-                            UpdateLinkStatus(Colors.Red, $"LoUAM Link connection to {ControlPanel.Host} on port {ControlPanel.Port} failed: {TheLinkClient.ConnectionError}");
-                        }
-                        break;
-                }
-
-                if (TheLinkClient.ClientState == LinkClient.ClientStateEnum.Connected)
-                {
-                    await TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
-                    try
-                    {
-                        if (TheLinkClient.OtherPlayers != null)
-                        {
-                            List<Place> OtherPlaces = TheLinkClient.OtherPlayers
-                                .Where(player => player != null)
-                                .Select(player => new Place(
-                                    PlaceFileEnum.None,
-                                    Place.URLToServer(player.Server),
-                                    (PlaceRegionEnum)Enum.Parse(typeof(PlaceRegionEnum), player.Region, true),
-                                    PlaceType.OtherPlayer,
-                                    player.ObjectId.ToString(),
-                                    PlaceIcon.none,
-                                    player.DisplayName,
-                                    player.X,
-                                    player.Y,
-                                    player.Z
-                                    )
-                                ).ToList();
-                            MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
-                        }
-                    }
-                    finally
-                    {
-                        TheLinkClient.OtherPlayersSemaphoreSlim.Release();
-                    }
-                }
-
-                return;
+                MainWindow.TheLinkClientSemaphoreSlim.Release();
             }
 
             UpdateLinkStatus(Colors.Black, $"LoUAM Link not connected.");
@@ -1162,8 +1249,7 @@ namespace LoUAM
         {
             ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.LinkControl);
             controlPanel.Owner = this;
-            controlPanel.ShowDialog();
-            UpdatePlaces();
+            controlPanel.Show();
         }
 
         private void PlayersListCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)

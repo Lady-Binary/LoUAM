@@ -57,7 +57,7 @@ namespace LoUAM
         {
             InitializeComponent();
             RefreshLinkStatusTimer = new DispatcherTimer();
-            RefreshLinkStatusTimer.Tick += RefreshLinkStatusTimer_Tick;
+            RefreshLinkStatusTimer.Tick += RefreshLinkStatusTimer_TickAsync;
             RefreshLinkStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             RefreshLinkStatusTimer.Start();
             RefreshPlayersTimer = new DispatcherTimer();
@@ -105,9 +105,15 @@ namespace LoUAM
             Brightness = (float)BrightnessSlider.Value;
 
             SaveSettings();
+
+            MainWindow mainWindow = this.Owner as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.UpdatePlaces();
+            }
         }
 
-        private void RefreshLinkStatusTimer_Tick(object sender, EventArgs e)
+        private async void RefreshLinkStatusTimer_TickAsync(object sender, EventArgs e)
         {
             if (this.Owner as MainWindow != null)
             {
@@ -115,17 +121,27 @@ namespace LoUAM
                 LinkStatus.Content = mainWindow.LinkStatusLabel.Content;
                 LinkStatus.Foreground = mainWindow.LinkStatusLabel.Foreground;
             }
-            if (MainWindow.TheLinkServer != null || MainWindow.TheLinkClient != null)
+            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
+            try
             {
-                StartServer.IsEnabled = false;
-                LinkToServer.IsEnabled = false;
-                BreakConnection.IsEnabled = true;
+                if (MainWindow.TheLinkServer != null || MainWindow.TheLinkClient != null)
+                {
+                    StartServer.IsEnabled = false;
+                    LinkToServer.IsEnabled = false;
+                    BreakConnection.IsEnabled = true;
+                }
+                else
+                {
+                    StartServer.IsEnabled = true;
+                    LinkToServer.IsEnabled = true;
+                    BreakConnection.IsEnabled = false;
+                }
             }
-            else
+            finally
             {
-                StartServer.IsEnabled = true;
-                LinkToServer.IsEnabled = true;
-                BreakConnection.IsEnabled = false;
+                MainWindow.TheLinkClientSemaphoreSlim.Release();
+                MainWindow.TheLinkServerSemaphoreSlim.Release();
             }
         }
 
@@ -137,43 +153,61 @@ namespace LoUAM
                 return;
             }
             IEnumerable<Player> Players = null;
-            if (MainWindow.TheLinkClient != null)
+            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+            try
             {
-                await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
-                await MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
-
-                try
+                if (MainWindow.TheLinkClient != null)
                 {
-                    Players = MainWindow.TheLinkClient.OtherPlayers;
-                    if (MainWindow.TheLinkClient.CurrentPlayer != null)
+                    await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
+                    await MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+
+                    try
                     {
-                        Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkClient.CurrentPlayer, 1));
+                        Players = MainWindow.TheLinkClient.OtherPlayers;
+                        if (MainWindow.TheLinkClient.CurrentPlayer != null)
+                        {
+                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkClient.CurrentPlayer, 1));
+                        }
+                    }
+                    finally
+                    {
+                        MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
+                        MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
                     }
                 }
-                finally
-                {
-                    MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
-                    MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
-                }
             }
-            if (MainWindow.TheLinkServer != null)
+            finally
             {
-                await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
-                await MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+                MainWindow.TheLinkClientSemaphoreSlim.Release();
+            }
+            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
+            try
+            {
+                if (MainWindow.TheLinkServer != null)
+                {
+                    await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
+                    await MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
 
-                try
-                {
-                    Players = MainWindow.TheLinkServer.OtherPlayers.Values;
-                    if (MainWindow.TheLinkServer.CurrentPlayer != null)
+                    try
                     {
-                        Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkServer.CurrentPlayer, 1));
+                        Players = MainWindow.TheLinkServer.OtherPlayers.Values;
+                        if (MainWindow.TheLinkServer.CurrentPlayer != null)
+                        {
+                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkServer.CurrentPlayer, 1));
+                        }
                     }
-                } finally
-                {
-                    MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
-                    MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                    finally
+                    {
+                        MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
+                        MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
+                    }
                 }
             }
+            finally
+            {
+                MainWindow.TheLinkServerSemaphoreSlim.Release();
+            }
+
             if (Players != null)
             {
                 Player SelectedPlayer = PlayersListView.SelectedItem as Player;
@@ -730,49 +764,57 @@ namespace LoUAM
             var ip = await httpClient.GetStringAsync("https://api.ipify.org");
             HostTextBox.Text = ip;
 
-            if (MainWindow.TheLinkServer == null)
+            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
+            try
             {
-                if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
+                if (MainWindow.TheLinkServer == null)
                 {
-                    MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
-                    return;
-                }
-
-                if (String.IsNullOrEmpty(PortTextBox.Text))
-                {
-                    if (MessageBox.Show("No port set: server will be started on port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                    if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
                     {
+                        MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
                         return;
                     }
-                    PortTextBox.Text = "4443";
-                }
-                if (String.IsNullOrEmpty(PasswordTextBox.Text))
-                {
-                    if (MessageBox.Show("No password set: are you sure you want to start the server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+
+                    if (String.IsNullOrEmpty(PortTextBox.Text))
                     {
-                        return;
+                        if (MessageBox.Show("No port set: server will be started on port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                        {
+                            return;
+                        }
+                        PortTextBox.Text = "4443";
                     }
-                }
+                    if (String.IsNullOrEmpty(PasswordTextBox.Text))
+                    {
+                        if (MessageBox.Show("No password set: are you sure you want to start the server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                        {
+                            return;
+                        }
+                    }
 
-                StartServer.IsEnabled = false;
-                LinkToServer.IsEnabled = false;
-                BreakConnection.IsEnabled = true;
-
-                try
-                {
-                    MainWindow.TheLinkServer = new LinkServer(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                    await MainWindow.TheLinkServer.StartServer();
-                }
-                catch (Exception ex)
-                {
-                    StartServer.IsEnabled = true;
+                    StartServer.IsEnabled = false;
                     LinkToServer.IsEnabled = false;
-                    BreakConnection.IsEnabled = false;
+                    BreakConnection.IsEnabled = true;
+
+                    try
+                    {
+                        MainWindow.TheLinkServer = new LinkServer(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+                        MainWindow.TheLinkServer.StartServer();
+                    }
+                    catch (Exception ex)
+                    {
+                        StartServer.IsEnabled = true;
+                        LinkToServer.IsEnabled = false;
+                        BreakConnection.IsEnabled = false;
+                    }
+                }
+                else
+                {
+                    MessageBoxEx.Show(this, "Server already running?");
                 }
             }
-            else
+            finally
             {
-                MessageBoxEx.Show(this, "Server already running?");
+                MainWindow.TheLinkServerSemaphoreSlim.Release();
             }
         }
 
@@ -780,92 +822,111 @@ namespace LoUAM
         {
             SaveSettings();
 
-            if (MainWindow.TheLinkClient == null)
+            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+            try
             {
-                if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
+                if (MainWindow.TheLinkClient == null)
                 {
-                    MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
-                    return;
-                }
-                if (String.IsNullOrEmpty(HostTextBox.Text))
-                {
-                    MessageBox.Show("No host set.", "No host", MessageBoxButton.OK);
-                    return;
-                }
-                if (String.IsNullOrEmpty(PortTextBox.Text))
-                {
-                    if (MessageBox.Show("No port set: client will connect to port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                    if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
                     {
+                        MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
                         return;
                     }
-                    PortTextBox.Text = "4443";
-                }
-                if (String.IsNullOrEmpty(PasswordTextBox.Text))
-                {
-                    if (MessageBox.Show("No password set: are you sure you want to connect to a server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                    if (String.IsNullOrEmpty(HostTextBox.Text))
                     {
+                        MessageBox.Show("No host set.", "No host", MessageBoxButton.OK);
                         return;
                     }
-                }
-
-                StartServer.IsEnabled = false;
-                LinkToServer.IsEnabled = false;
-                BreakConnection.IsEnabled = true;
-
-                MainWindow TheMainWindow = (MainWindow)Owner;
-                try
-                {
-                    if (!TheMainWindow.MainStatusLabel.Content.ToString().StartsWith("LoUAM Link connecting"))
+                    if (String.IsNullOrEmpty(PortTextBox.Text))
                     {
-                        TheMainWindow.LinkStatusLabel.Foreground = new SolidColorBrush(Colors.Orange);
-                        TheMainWindow.LinkStatusLabel.Content = string.Format(
-                        "LoUAM Link connecting...");
+                        if (MessageBox.Show("No port set: client will connect to port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                        {
+                            return;
+                        }
+                        PortTextBox.Text = "4443";
                     }
-                    MainWindow.TheLinkClient = new LinkClient(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                    await MainWindow.TheLinkClient.ConnectAsync();
-                } catch (Exception ex)
-                {
-                    StartServer.IsEnabled = true;
+                    if (String.IsNullOrEmpty(PasswordTextBox.Text))
+                    {
+                        if (MessageBox.Show("No password set: are you sure you want to connect to a server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
+                        {
+                            return;
+                        }
+                    }
+
+                    StartServer.IsEnabled = false;
                     LinkToServer.IsEnabled = false;
-                    BreakConnection.IsEnabled = false;
-                    if (!TheMainWindow.MainStatusLabel.Content.ToString().StartsWith("LoUAM Link disconnected"))
+                    BreakConnection.IsEnabled = true;
+
+                    MainWindow TheMainWindow = (MainWindow)Owner;
+                    try
                     {
-                        TheMainWindow.LinkStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
-                        TheMainWindow.LinkStatusLabel.Content = string.Format(
-                        "LoUAM Link disconnected: {0}",
-                        ex.Message);
+                        if (!TheMainWindow.MainStatusLabel.Content.ToString().StartsWith("LoUAM Link connecting"))
+                        {
+                            TheMainWindow.LinkStatusLabel.Foreground = new SolidColorBrush(Colors.Orange);
+                            TheMainWindow.LinkStatusLabel.Content = string.Format(
+                            "LoUAM Link connecting...");
+                        }
+                        MainWindow.TheLinkClient = new LinkClient(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+                        await MainWindow.TheLinkClient.ConnectAsync();
                     }
+                    catch (Exception ex)
+                    {
+                        StartServer.IsEnabled = true;
+                        LinkToServer.IsEnabled = false;
+                        BreakConnection.IsEnabled = false;
+                        if (!TheMainWindow.MainStatusLabel.Content.ToString().StartsWith("LoUAM Link disconnected"))
+                        {
+                            TheMainWindow.LinkStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+                            TheMainWindow.LinkStatusLabel.Content = string.Format(
+                            "LoUAM Link disconnected: {0}",
+                            ex.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBoxEx.Show(this, "Client already connected?");
                 }
             }
-            else
+            finally
             {
-                MessageBoxEx.Show(this, "Client already connected?");
+                MainWindow.TheLinkClientSemaphoreSlim.Release();
             }
         }
 
-        private void BreakConnection_Click(object sender, RoutedEventArgs e)
+        private async void BreakConnection_Click(object sender, RoutedEventArgs e)
         {
-            if (MainWindow.TheLinkServer != null)
+            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
+            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
+            try
             {
-                MainWindow.TheLinkServer.StopServer();
-                MainWindow.TheLinkServer = null;
+                if (MainWindow.TheLinkServer != null)
+                {
+                    await MainWindow.TheLinkServer.StopServer();
+                    MainWindow.TheLinkServer = null;
 
-                StartServer.IsEnabled = true;
-                LinkToServer.IsEnabled = true;
-                BreakConnection.IsEnabled = false;
-            }
-            else if (MainWindow.TheLinkClient != null)
-            {
-                MainWindow.TheLinkClient.Disconnect();
-                MainWindow.TheLinkClient = null;
+                    StartServer.IsEnabled = true;
+                    LinkToServer.IsEnabled = true;
+                    BreakConnection.IsEnabled = false;
+                }
+                else if (MainWindow.TheLinkClient != null)
+                {
+                    await MainWindow.TheLinkClient.Disconnect();
+                    MainWindow.TheLinkClient = null;
 
-                StartServer.IsEnabled = true;
-                LinkToServer.IsEnabled = true;
-                BreakConnection.IsEnabled = false;
+                    StartServer.IsEnabled = true;
+                    LinkToServer.IsEnabled = true;
+                    BreakConnection.IsEnabled = false;
+                }
+                else
+                {
+                    MessageBoxEx.Show(this, "No server running, and not connected?");
+                }
             }
-            else
+            finally
             {
-                MessageBoxEx.Show(this, "No server running, and not connected?");
+                MainWindow.TheLinkServerSemaphoreSlim.Release();
+                MainWindow.TheLinkClientSemaphoreSlim.Release();
             }
         }
 

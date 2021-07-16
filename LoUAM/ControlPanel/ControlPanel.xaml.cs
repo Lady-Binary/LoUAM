@@ -57,7 +57,7 @@ namespace LoUAM
         {
             InitializeComponent();
             RefreshLinkStatusTimer = new DispatcherTimer();
-            RefreshLinkStatusTimer.Tick += RefreshLinkStatusTimer_TickAsync;
+            RefreshLinkStatusTimer.Tick += RefreshLinkStatusTimer_Tick;
             RefreshLinkStatusTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             RefreshLinkStatusTimer.Start();
             RefreshPlayersTimer = new DispatcherTimer();
@@ -113,36 +113,37 @@ namespace LoUAM
             }
         }
 
-        private async void RefreshLinkStatusTimer_TickAsync(object sender, EventArgs e)
+        private void RefreshLinkStatus()
         {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(new Action(RefreshLinkStatus));
+                return;
+            }
             if (this.Owner as MainWindow != null)
             {
                 MainWindow mainWindow = this.Owner as MainWindow;
-                LinkStatus.Content = mainWindow.LinkStatusLabel.Content;
+                LinkStatus.Text = mainWindow.LinkStatusLabel.Content.ToString();
                 LinkStatus.Foreground = mainWindow.LinkStatusLabel.Foreground;
             }
-            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
-            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
-            try
+
+            if (MainWindow.TheLink.State == Link.StateEnum.Idle)
             {
-                if (MainWindow.TheLinkServer != null || MainWindow.TheLinkClient != null)
-                {
-                    StartServer.IsEnabled = false;
-                    LinkToServer.IsEnabled = false;
-                    BreakConnection.IsEnabled = true;
-                }
-                else
-                {
-                    StartServer.IsEnabled = true;
-                    LinkToServer.IsEnabled = true;
-                    BreakConnection.IsEnabled = false;
-                }
+                StartServer.IsEnabled = true;
+                LinkToServer.IsEnabled = true;
+                BreakConnection.IsEnabled = false;
             }
-            finally
+            else
             {
-                MainWindow.TheLinkClientSemaphoreSlim.Release();
-                MainWindow.TheLinkServerSemaphoreSlim.Release();
+                StartServer.IsEnabled = false;
+                LinkToServer.IsEnabled = false;
+                BreakConnection.IsEnabled = true;
             }
+        }
+
+        private void RefreshLinkStatusTimer_Tick(object sender, EventArgs e)
+        {
+            RefreshLinkStatus();
         }
 
         private async System.Threading.Tasks.Task RefreshPlayersAsync()
@@ -152,65 +153,32 @@ namespace LoUAM
                 await Dispatcher.InvokeAsync(RefreshPlayersAsync);
                 return;
             }
-            IEnumerable<Player> Players = null;
-            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
-            try
-            {
-                if (MainWindow.TheLinkClient != null)
-                {
-                    await MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.WaitAsync();
-                    await MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.WaitAsync();
+            List<Player> Players = null;
 
-                    try
-                    {
-                        Players = MainWindow.TheLinkClient.OtherPlayers;
-                        if (MainWindow.TheLinkClient.CurrentPlayer != null)
-                        {
-                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkClient.CurrentPlayer, 1));
-                        }
-                    }
-                    finally
-                    {
-                        MainWindow.TheLinkClient.CurrentPlayerSemaphoreSlim.Release();
-                        MainWindow.TheLinkClient.OtherPlayersSemaphoreSlim.Release();
-                    }
-                }
-            }
-            finally
+            if (MainWindow.TheLink != null)
             {
-                MainWindow.TheLinkClientSemaphoreSlim.Release();
-            }
-            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
-            try
-            {
-                if (MainWindow.TheLinkServer != null)
+                await MainWindow.TheLink.CurrentPlayerSemaphoreSlim.WaitAsync();
+                await MainWindow.TheLink.OtherPlayersSemaphoreSlim.WaitAsync();
+                try
                 {
-                    await MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.WaitAsync();
-                    await MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.WaitAsync();
+                    if (MainWindow.TheLink.OtherPlayers != null)
+                        Players = MainWindow.TheLink.OtherPlayers;
+                    else
+                        Players = new List<Player>();
 
-                    try
-                    {
-                        Players = MainWindow.TheLinkServer.OtherPlayers.Values;
-                        if (MainWindow.TheLinkServer.CurrentPlayer != null)
-                        {
-                            Players = Players.Union(Enumerable.Repeat(MainWindow.TheLinkServer.CurrentPlayer, 1));
-                        }
-                    }
-                    finally
-                    {
-                        MainWindow.TheLinkServer.CurrentPlayerSemaphoreSlim.Release();
-                        MainWindow.TheLinkServer.OtherPlayersSemaphoreSlim.Release();
-                    }
+                    if (MainWindow.TheLink.CurrentPlayer != null)
+                        Players = Players.Union(Enumerable.Repeat(MainWindow.TheLink.CurrentPlayer, 1)).ToList();
                 }
-            }
-            finally
-            {
-                MainWindow.TheLinkServerSemaphoreSlim.Release();
+                finally
+                {
+                    MainWindow.TheLink.CurrentPlayerSemaphoreSlim.Release();
+                    MainWindow.TheLink.OtherPlayersSemaphoreSlim.Release();
+                }
             }
 
             if (Players != null)
             {
-                Player SelectedPlayer = PlayersListView.SelectedItem as Player;
+                var SelectedPlayer = PlayersListView.SelectedItem as Player;
                 PlayersListView.ItemsSource = Players.Where(player => player != null).OrderBy(player => player.DisplayName);
                 if (SelectedPlayer != null)
                 {
@@ -758,176 +726,138 @@ namespace LoUAM
 
         private async void StartServer_Click(object sender, RoutedEventArgs e)
         {
+            MyName = MyNameTextBox.Text;
+            Host = HostTextBox.Text;
+            Port = int.TryParse(PortTextBox.Text, out int i) ? i : 4443;
+            Password = PasswordTextBox.Text;
+            Https = HttpsCheckBox.IsChecked ?? true;
+
             SaveSettings();
 
             var httpClient = new HttpClient();
             var ip = await httpClient.GetStringAsync("https://api.ipify.org");
             HostTextBox.Text = ip;
 
-            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
-            try
+            if (MainWindow.TheLink.State != Link.StateEnum.Idle)
             {
-                if (MainWindow.TheLinkServer == null)
+                MessageBoxEx.Show(this, "Server already listening or client connected?");
+                return;
+            }
+
+            if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
+            {
+                MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(PortTextBox.Text))
+            {
+                if (MessageBox.Show("No port set: server will be started on port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
                 {
-                    if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
-                    {
-                        MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
-                        return;
-                    }
-
-                    if (String.IsNullOrEmpty(PortTextBox.Text))
-                    {
-                        if (MessageBox.Show("No port set: server will be started on port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
-                        {
-                            return;
-                        }
-                        PortTextBox.Text = "4443";
-                    }
-                    if (String.IsNullOrEmpty(PasswordTextBox.Text))
-                    {
-                        if (MessageBox.Show("No password set: are you sure you want to start the server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
-                        {
-                            return;
-                        }
-                    }
-
-                    StartServer.IsEnabled = false;
-                    LinkToServer.IsEnabled = false;
-                    BreakConnection.IsEnabled = true;
-
-                    try
-                    {
-                        MainWindow.TheLinkServer = new LinkServer(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                        MainWindow.TheLinkServer.StartServer();
-                    }
-                    catch (Exception ex)
-                    {
-                        StartServer.IsEnabled = true;
-                        LinkToServer.IsEnabled = false;
-                        BreakConnection.IsEnabled = false;
-                    }
+                    return;
                 }
-                else
+                PortTextBox.Text = "4443";
+            }
+            if (String.IsNullOrEmpty(PasswordTextBox.Text))
+            {
+                if (MessageBox.Show("No password set: are you sure you want to start the server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
                 {
-                    MessageBoxEx.Show(this, "Server already running?");
+                    return;
                 }
             }
-            finally
+
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                MainWindow.TheLinkServerSemaphoreSlim.Release();
-            }
+                Mouse.OverrideCursor = Cursors.Wait;
+            });
+
+            MainWindow.TheLink.StartServer(HttpsCheckBox.IsChecked ?? false, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+
+            RefreshLinkStatus();
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = null;
+            });
+
         }
 
         private async void LinkToServer_Click(object sender, RoutedEventArgs e)
         {
+            MyName = MyNameTextBox.Text;
+            Host = HostTextBox.Text;
+            Port = int.TryParse(PortTextBox.Text, out int i) ? i : 4443;
+            Password = PasswordTextBox.Text;
+            Https = HttpsCheckBox.IsChecked ?? true;
+
             SaveSettings();
 
-            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
-            try
+            if (MainWindow.TheLink.State != Link.StateEnum.Idle)
             {
-                if (MainWindow.TheLinkClient == null)
+                MessageBoxEx.Show(this, "Client already connected or server already listening?");
+                return;
+            }
+            if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
+            {
+                MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
+                return;
+            }
+            if (String.IsNullOrEmpty(HostTextBox.Text))
+            {
+                MessageBox.Show("No host set.", "No host", MessageBoxButton.OK);
+                return;
+            }
+            if (String.IsNullOrEmpty(PortTextBox.Text))
+            {
+                if (MessageBox.Show("No port set: client will connect to port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
                 {
-                    if (String.IsNullOrEmpty(MyNameTextBox.Text) || MyNameTextBox.Text == "(your name)")
-                    {
-                        MessageBox.Show("No name set: please enter a name so others will be able to identify you.", "No name", MessageBoxButton.OK);
-                        return;
-                    }
-                    if (String.IsNullOrEmpty(HostTextBox.Text))
-                    {
-                        MessageBox.Show("No host set.", "No host", MessageBoxButton.OK);
-                        return;
-                    }
-                    if (String.IsNullOrEmpty(PortTextBox.Text))
-                    {
-                        if (MessageBox.Show("No port set: client will connect to port 4443.", "No port", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
-                        {
-                            return;
-                        }
-                        PortTextBox.Text = "4443";
-                    }
-                    if (String.IsNullOrEmpty(PasswordTextBox.Text))
-                    {
-                        if (MessageBox.Show("No password set: are you sure you want to connect to a server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
-                        {
-                            return;
-                        }
-                    }
-
-                    StartServer.IsEnabled = false;
-                    LinkToServer.IsEnabled = false;
-                    BreakConnection.IsEnabled = true;
-
-                    MainWindow TheMainWindow = (MainWindow)Owner;
-                    try
-                    {
-                        if (!TheMainWindow.MainStatusLabel.Content.ToString().StartsWith("LoUAM Link connecting"))
-                        {
-                            TheMainWindow.LinkStatusLabel.Foreground = new SolidColorBrush(Colors.Orange);
-                            TheMainWindow.LinkStatusLabel.Content = string.Format(
-                            "LoUAM Link connecting...");
-                        }
-                        MainWindow.TheLinkClient = new LinkClient(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
-                        await MainWindow.TheLinkClient.ConnectAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        StartServer.IsEnabled = true;
-                        LinkToServer.IsEnabled = false;
-                        BreakConnection.IsEnabled = false;
-                        if (!TheMainWindow.MainStatusLabel.Content.ToString().StartsWith("LoUAM Link disconnected"))
-                        {
-                            TheMainWindow.LinkStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
-                            TheMainWindow.LinkStatusLabel.Content = string.Format(
-                            "LoUAM Link disconnected: {0}",
-                            ex.Message);
-                        }
-                    }
+                    return;
                 }
-                else
+                PortTextBox.Text = "4443";
+            }
+            if (String.IsNullOrEmpty(PasswordTextBox.Text))
+            {
+                if (MessageBox.Show("No password set: are you sure you want to connect to a server with no password?", "No password", MessageBoxButton.OKCancel) != MessageBoxResult.OK)
                 {
-                    MessageBoxEx.Show(this, "Client already connected?");
+                    return;
                 }
             }
-            finally
+
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                MainWindow.TheLinkClientSemaphoreSlim.Release();
-            }
+                Mouse.OverrideCursor = Cursors.Wait;
+            });
+
+            await MainWindow.TheLink.ConnectAsync(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
+
+            RefreshLinkStatus();
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = null;
+            });
+
         }
 
         private async void BreakConnection_Click(object sender, RoutedEventArgs e)
         {
-            await MainWindow.TheLinkServerSemaphoreSlim.WaitAsync();
-            await MainWindow.TheLinkClientSemaphoreSlim.WaitAsync();
-            try
+            if (MainWindow.TheLink.State == Link.StateEnum.ServerListening ||
+                MainWindow.TheLink.State == Link.StateEnum.ServerListenFailed)
             {
-                if (MainWindow.TheLinkServer != null)
-                {
-                    await MainWindow.TheLinkServer.StopServer();
-                    MainWindow.TheLinkServer = null;
-
-                    StartServer.IsEnabled = true;
-                    LinkToServer.IsEnabled = true;
-                    BreakConnection.IsEnabled = false;
-                }
-                else if (MainWindow.TheLinkClient != null)
-                {
-                    await MainWindow.TheLinkClient.Disconnect();
-                    MainWindow.TheLinkClient = null;
-
-                    StartServer.IsEnabled = true;
-                    LinkToServer.IsEnabled = true;
-                    BreakConnection.IsEnabled = false;
-                }
-                else
-                {
-                    MessageBoxEx.Show(this, "No server running, and not connected?");
-                }
+                await MainWindow.TheLink.StopServer();
             }
-            finally
+            else if (MainWindow.TheLink.State == Link.StateEnum.ClientConnecting ||
+                MainWindow.TheLink.State == Link.StateEnum.ClientConnected ||
+                MainWindow.TheLink.State == Link.StateEnum.ClientConnectionFailed ||
+                MainWindow.TheLink.State == Link.StateEnum.ClientDisconnected)
             {
-                MainWindow.TheLinkServerSemaphoreSlim.Release();
-                MainWindow.TheLinkClientSemaphoreSlim.Release();
+                await MainWindow.TheLink.Disconnect();
             }
+            else
+            {
+                MessageBoxEx.Show(this, "No server running, and client not connected?");
+            }
+            RefreshLinkStatus();
         }
 
         private void CopySettings_Click(object sender, RoutedEventArgs e)

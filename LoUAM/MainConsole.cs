@@ -16,7 +16,7 @@ namespace LoUAM
         [DllImport("Kernel32")]
         static extern void FreeConsole();
 
-        static LinkServer TheServer;
+        static Link TheLink;
 
         static void PrintUsage()
         {
@@ -134,12 +134,12 @@ Example:
                     arg++;
                 }
 
-                TheServer = new LinkServer(Https, Port, Password);
-                TheServer.StartServer();
+                TheLink = new Link(Https, Port, Password);
+                TheLink.StartServer();
 
                 Console.WriteLine("LoUAM Server started...");
                 Console.WriteLine("Press CTRL+C at any time to stop LoUAM Server.");
-                while (TheServer.ServerState == LinkServer.ServerStateEnum.Listening)
+                while (TheLink.State == Link.StateEnum.ServerListening)
                     ;
                 Console.WriteLine("LoUAM Server stopped!");
             }
@@ -149,10 +149,10 @@ Example:
             FreeConsole();
         }
 
-        static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs args)
+        static async void OnCancelKeyPress(object sender, ConsoleCancelEventArgs args)
         {
             Console.WriteLine("\nStopping LoUAM Server...");
-            TheServer.StopServer();
+            await TheLink.StopServer();
             args.Cancel = true;
         }
     }

@@ -402,7 +402,10 @@ namespace LoUAM
             Line markerLine = PlacesCanvas.Children?.OfType<Line>()?.FirstOrDefault();
 
             if (currentPlayerPlace == null || markerPlace == null)
+            {
+                if (markerLine != null) PlacesCanvas.Children.Remove(markerLine);
                 return;
+            }
 
             if (currentPlayerPlace.Server != currentServer ||
                 currentPlayerPlace.Region != currentRegion ||

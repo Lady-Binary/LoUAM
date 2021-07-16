@@ -134,7 +134,9 @@
                     <TextBox HorizontalAlignment="Left" Grid.Row="3" Grid.Column="1" Margin="10" Name="PasswordTextBox" Width="200px"></TextBox>
                     <Label Grid.Row="4" Grid.Column="0" Margin="10">Use HTTPS</Label>
                     <CheckBox Grid.Row="4" Grid.Column="1" Margin="10" Name="HttpsCheckBox" Width="100px" IsChecked="True" HorizontalAlignment="left" VerticalAlignment="Center" />
-                    <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="10" Name="LinkStatus" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Link Status:</Label>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Height="100" TextWrapping="Wrap" Margin="10" Name="LinkStatus" HorizontalAlignment="Center">
+                        Link Status:
+                    </TextBlock>
                 </Grid>
             </TabItem>
         </TabControl>

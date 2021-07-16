@@ -161,10 +161,7 @@ namespace LoUAM
                 await MainWindow.TheLink.OtherPlayersSemaphoreSlim.WaitAsync();
                 try
                 {
-                    if (MainWindow.TheLink.OtherPlayers != null)
-                        Players = MainWindow.TheLink.OtherPlayers;
-                    else
-                        Players = new List<Player>();
+                    Players = MainWindow.TheLink.OtherPlayers;
 
                     if (MainWindow.TheLink.CurrentPlayer != null)
                         Players = Players.Union(Enumerable.Repeat(MainWindow.TheLink.CurrentPlayer, 1)).ToList();

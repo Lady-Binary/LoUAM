@@ -631,7 +631,7 @@ namespace LoUAM
                         await MainWindow.TheLink.OtherPlayersSemaphoreSlim.WaitAsync();
                         try
                         {
-                            PlayerToTrack = MainWindow.TheLink.OtherPlayers?.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
+                            PlayerToTrack = MainWindow.TheLink.OtherPlayers.Where(player => player?.ObjectId == ControlPanel.TrackPlayerObjectId).FirstOrDefault();
                         }
                         finally
                         {
@@ -640,14 +640,6 @@ namespace LoUAM
                         if (PlayerToTrack != null)
                         {
                             MainMap.Center(PlayerToTrack.X, PlayerToTrack.Z);
-                        }
-                        else
-                        {
-                            // Player probably disconnected, let's stop tracking them
-                            ControlPanel.TrackPlayer = false;
-                            ControlPanel.TrackPlayerObjectId = 0;
-                            ControlPanel.SaveSettings();
-                            RefreshTrackPlayer();
                         }
                     }
                 }
@@ -720,33 +712,29 @@ namespace LoUAM
                     break;
             }
 
-            if (TheLink.State == Link.StateEnum.ClientConnected ||
-                TheLink.State == Link.StateEnum.ServerListening)
+            await TheLink.OtherPlayersSemaphoreSlim.WaitAsync();
+            try
             {
-                await TheLink.OtherPlayersSemaphoreSlim.WaitAsync();
-                try
-                {
-                    List<Place> OtherPlaces = TheLink.OtherPlayers
-                        .Where(player => player != null)
-                        .Select(player => new Place(
-                            PlaceFileEnum.None,
-                            player.Server != "" ? Place.URLToServer(player.Server) : PlaceServerEnum.Unknown,
-                            player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum placeRegion) ? placeRegion : PlaceRegionEnum.Unknown,
-                            PlaceType.OtherPlayer,
-                            player.ObjectId.ToString(),
-                            PlaceIcon.none,
-                            player.DisplayName,
-                            player.X,
-                            player.Y,
-                            player.Z
-                            )
-                        ).ToList();
-                    MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlaces);
-                }
-                finally
-                {
-                    TheLink.OtherPlayersSemaphoreSlim.Release();
-                }
+                List<Place> OtherPlayersPlaces = TheLink.OtherPlayers
+                    .Where(player => player != null)
+                    .Select(player => new Place(
+                        PlaceFileEnum.None,
+                        player.Server != "" ? Place.URLToServer(player.Server) : PlaceServerEnum.Unknown,
+                        player.Region != "" && Enum.TryParse<PlaceRegionEnum>(player.Region, out PlaceRegionEnum placeRegion) ? placeRegion : PlaceRegionEnum.Unknown,
+                        PlaceType.OtherPlayer,
+                        player.ObjectId.ToString(),
+                        PlaceIcon.none,
+                        player.DisplayName,
+                        player.X,
+                        player.Y,
+                        player.Z
+                        )
+                    ).ToList();
+                MainMap.UpdateAllPlacesOfType(PlaceType.OtherPlayer, OtherPlayersPlaces);
+            }
+            finally
+            {
+                TheLink.OtherPlayersSemaphoreSlim.Release();
             }
         }
         private async void RefreshStatusTimer_TickAsync(object sender, EventArgs e)

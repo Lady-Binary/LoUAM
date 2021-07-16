@@ -828,6 +828,7 @@ namespace LoUAM
                 Mouse.OverrideCursor = Cursors.Wait;
             });
 
+            MainWindow.TheLink.ResetConnectionAttempts();
             await MainWindow.TheLink.ConnectAsync(HttpsCheckBox.IsChecked ?? false, HostTextBox.Text, int.Parse(PortTextBox.Text), PasswordTextBox.Text);
 
             RefreshLinkStatus();
@@ -836,7 +837,6 @@ namespace LoUAM
             {
                 Mouse.OverrideCursor = null;
             });
-
         }
 
         private async void BreakConnection_Click(object sender, RoutedEventArgs e)

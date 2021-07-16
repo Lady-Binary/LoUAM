@@ -410,12 +410,6 @@
         <z>685.546875001568</z>
       </place>
       <place>
-        <name>House Candidate</name>
-        <type>point_of_interest</type>
-        <x>-498.004595791626</x>
-        <z>993.477843900457</z>
-      </place>
-      <place>
         <name>Wandering Healer</name>
         <type>healer</type>
         <x>-1445.24230957031</x>
@@ -518,12 +512,6 @@
         <z>1650.87890625199</z>
       </place>
       <place>
-        <name>House Candidate</name>
-        <type>point_of_interest</type>
-        <x>-351.700992121314</x>
-        <z>1955.82796302169</z>
-      </place>
-      <place>
         <name>Archers</name>
         <type>bowyer</type>
         <x>-1233.06884765625</x>
@@ -588,12 +576,6 @@
         <type>point_of_interest</type>
         <x>-2458.154296875</x>
         <z>528.808593751509</z>
-      </place>
-      <place>
-        <name>House Candidate</name>
-        <type>point_of_interest</type>
-        <x>-272.439718018402</x>
-        <z>2129.98746864263</z>
       </place>
       <place>
         <name>Mage</name>
@@ -798,12 +780,6 @@
         <type>healer</type>
         <x>-2240.625</x>
         <z>1573.24218750194</z>
-      </place>
-      <place>
-        <name>House Candidate</name>
-        <type>point_of_interest</type>
-        <x>-922.729508369541</x>
-        <z>1249.43320434643</z>
       </place>
       <place>
         <name>Wandering Healer</name>

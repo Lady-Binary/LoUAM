@@ -28,8 +28,6 @@ namespace LoUAM
     {
         public static string MINIMUM_LOU_VERSION = "1.3.0.0";
 
-        //public static MainWindow TheMainWindow;
-
         public static Link TheLink { get; set; }
 
         public static int CurrentClientProcessId = -1;
@@ -50,6 +48,8 @@ namespace LoUAM
         private string CurrentServer;
         private string CurrentRegion;
         DispatcherTimer RefreshStatusTimer;
+
+        private ControlPanel controlPanel;
 
         public MainWindow()
         {
@@ -85,6 +85,8 @@ namespace LoUAM
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            controlPanel = new ControlPanel { Owner = this };
+
             ControlPanel.LoadSettings();
             ControlPanel.SaveSettings();
 
@@ -1022,10 +1024,7 @@ namespace LoUAM
         }
         private void EditPlacesCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.Places);
-            controlPanel.Owner = this;
-            controlPanel.ShowDialog();
-            UpdatePlaces();
+            controlPanel.Show(ControlPanel.Tab.Places);
         }
 
         private void MapAdditionalSettingsCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -1034,10 +1033,7 @@ namespace LoUAM
         }
         private void MapAdditionalSettingsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.Map);
-            controlPanel.Owner = this;
-            controlPanel.ShowDialog();
-            UpdatePlaces();
+            controlPanel.Show(ControlPanel.Tab.Map);
         }
 
         private void MapChangeServerCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -1064,9 +1060,7 @@ namespace LoUAM
         }
         private void LinkControlsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.LinkControl);
-            controlPanel.Owner = this;
-            controlPanel.Show();
+            controlPanel.Show(ControlPanel.Tab.LinkControl);
         }
 
         private void PlayersListCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -1075,10 +1069,7 @@ namespace LoUAM
         }
         private void PlayersListCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ControlPanel controlPanel = new ControlPanel(ControlPanel.Tab.Players);
-            controlPanel.Owner = this;
-            controlPanel.ShowDialog();
-            UpdatePlaces();
+            controlPanel.Show(ControlPanel.Tab.Players);
         }
 
         public delegate void RefreshTrackPlayerDelegate();

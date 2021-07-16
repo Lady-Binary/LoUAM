@@ -71,6 +71,11 @@ namespace LoUAM
             ControlPanelTabControl.SelectedIndex = (int)TabIndex;
         }
 
+        public void Show(Tab TabIndex)
+        {
+            ControlPanelTabControl.SelectedIndex = (int)TabIndex;
+            base.Show();
+        }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             MyNameTextBox.Text = MyName;

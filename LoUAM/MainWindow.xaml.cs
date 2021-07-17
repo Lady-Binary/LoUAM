@@ -1024,6 +1024,10 @@ namespace LoUAM
         }
         private void EditPlacesCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            if (controlPanel == null || !controlPanel.IsLoaded)
+            {
+                controlPanel = new ControlPanel { Owner = this };
+            }
             controlPanel.Show(ControlPanel.Tab.Places);
         }
 
@@ -1033,6 +1037,10 @@ namespace LoUAM
         }
         private void MapAdditionalSettingsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            if (controlPanel == null || !controlPanel.IsLoaded)
+            {
+                controlPanel = new ControlPanel { Owner = this };
+            }
             controlPanel.Show(ControlPanel.Tab.Map);
         }
 
@@ -1060,6 +1068,10 @@ namespace LoUAM
         }
         private void LinkControlsCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            if (controlPanel == null || !controlPanel.IsLoaded)
+            {
+                controlPanel = new ControlPanel { Owner = this };
+            }
             controlPanel.Show(ControlPanel.Tab.LinkControl);
         }
 
@@ -1069,6 +1081,10 @@ namespace LoUAM
         }
         private void PlayersListCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            if (controlPanel == null || !controlPanel.IsLoaded)
+            {
+                controlPanel = new ControlPanel { Owner = this };
+            }
             controlPanel.Show(ControlPanel.Tab.Players);
         }
 

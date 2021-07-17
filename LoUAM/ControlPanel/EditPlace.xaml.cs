@@ -27,11 +27,11 @@ namespace LoUAM
             InitializeComponent();
         }
 
-        public EditPlace(MarkerServerEnum server, MarkerRegionEnum region, double x, double z) : this()
+        public EditPlace(PlaceServerEnum server, PlaceRegionEnum region, double x, double z) : this()
         {
             ServerComboBox.SelectedItem = server;
             RegionComboBox.SelectedItem = region;
-            FileComboBox.SelectedItem = MarkerFileEnum.Personal;
+            FileComboBox.SelectedItem = PlaceFileEnum.Personal;
             XTextBox.Text = x.ToString("0.00");
             ZTextBox.Text = z.ToString("0.00");
         }
@@ -39,34 +39,34 @@ namespace LoUAM
         public EditPlace(string Id) : this()
         {
             this.EditingId = Id;
-            Marker EditingMarker = ControlPanel.Places.First(Place => Place.Id == Id);
-            NameTextBox.Text = EditingMarker.Label;
-            TypeComboBox.SelectedItem = EditingMarker.Icon;
-            FileComboBox.SelectedItem = EditingMarker.File;
-            ServerComboBox.SelectedItem = EditingMarker.Server;
-            RegionComboBox.SelectedItem = EditingMarker.Region;
-            XTextBox.Text = EditingMarker.X.ToString();
-            ZTextBox.Text = EditingMarker.Z.ToString();
+            Place EditingPlace = ControlPanel.Places.First(Place => Place.Id == Id);
+            NameTextBox.Text = EditingPlace.Label;
+            TypeComboBox.SelectedItem = EditingPlace.Icon;
+            FileComboBox.SelectedItem = EditingPlace.File;
+            ServerComboBox.SelectedItem = EditingPlace.Server;
+            RegionComboBox.SelectedItem = EditingPlace.Region;
+            XTextBox.Text = EditingPlace.X.ToString();
+            ZTextBox.Text = EditingPlace.Z.ToString();
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            var icons = Enum.GetValues(typeof(MarkerIcon));
+            var icons = Enum.GetValues(typeof(PlaceIcon));
             foreach(var icon in icons)
             {
                 TypeComboBox.Items.Add(icon);
             }
-            var files = Enum.GetValues(typeof(MarkerFileEnum));
+            var files = Enum.GetValues(typeof(PlaceFileEnum));
             foreach (var file in files)
             {
                 FileComboBox.Items.Add(file);
             }
-            var servers = Enum.GetValues(typeof(MarkerServerEnum));
+            var servers = Enum.GetValues(typeof(PlaceServerEnum));
             foreach (var server in servers)
             {
                 ServerComboBox.Items.Add(server);
             }
-            var regions = Enum.GetValues(typeof(MarkerRegionEnum));
+            var regions = Enum.GetValues(typeof(PlaceRegionEnum));
             foreach (var region in regions)
             {
                 RegionComboBox.Items.Add(region);
@@ -104,7 +104,7 @@ namespace LoUAM
             {
                 NameTextBox.ClearValue(Button.BackgroundProperty);
             }
-            if (!Enum.TryParse(TypeComboBox.SelectedItem?.ToString() ?? "", out MarkerIcon Icon))
+            if (!Enum.TryParse(TypeComboBox.SelectedItem?.ToString() ?? "", out PlaceIcon Icon))
             {
                 ErrorMessageLabel.Content = "No type selected.";
                 ErrorMessageLabel.Visibility = Visibility.Visible;
@@ -115,7 +115,7 @@ namespace LoUAM
             {
                 TypeComboBox.ClearValue(Button.BackgroundProperty);
             }
-            //MarkerIcon Icon = (MarkerIcon)TypeComboBox.SelectedValue;
+            //PlaceIcon Icon = (PlaceIcon)TypeComboBox.SelectedValue;
             if (!double.TryParse(XTextBox.Text, out double X))
             {
                 ErrorMessageLabel.Content = "Invalid X coordinate.";
@@ -137,7 +137,7 @@ namespace LoUAM
             {
                 ZTextBox.ClearValue(Button.BackgroundProperty);
             }
-            if (!Enum.TryParse(ServerComboBox.SelectedItem?.ToString() ?? "", out MarkerServerEnum Server))
+            if (!Enum.TryParse(ServerComboBox.SelectedItem?.ToString() ?? "", out PlaceServerEnum Server))
             {
                 ErrorMessageLabel.Content = "No server selected.";
                 ErrorMessageLabel.Visibility = Visibility.Visible;
@@ -148,7 +148,7 @@ namespace LoUAM
             {
                 ServerComboBox.ClearValue(Button.BackgroundProperty);
             }
-            if (!Enum.TryParse(RegionComboBox.SelectedItem?.ToString() ?? "", out MarkerRegionEnum Region))
+            if (!Enum.TryParse(RegionComboBox.SelectedItem?.ToString() ?? "", out PlaceRegionEnum Region))
             {
                 ErrorMessageLabel.Content = "No region selected.";
                 ErrorMessageLabel.Visibility = Visibility.Visible;
@@ -159,7 +159,7 @@ namespace LoUAM
             {
                 RegionComboBox.ClearValue(Button.BackgroundProperty);
             }
-            if (!Enum.TryParse(FileComboBox.SelectedItem?.ToString() ?? "", out MarkerFileEnum File))
+            if (!Enum.TryParse(FileComboBox.SelectedItem?.ToString() ?? "", out PlaceFileEnum File))
             {
                 ErrorMessageLabel.Content = "No file selected.";
                 ErrorMessageLabel.Visibility = Visibility.Visible;
@@ -172,10 +172,10 @@ namespace LoUAM
             }
             if (EditingId == null)
             {
-                ControlPanel.Places.Add(new Marker(File, Server, Region, MarkerType.Place, Guid.NewGuid().ToString("N"), Icon, Label, X, 0, Z));
+                ControlPanel.Places.Add(new Place(File, Server, Region, PlaceType.Place, Guid.NewGuid().ToString("N"), Icon, Label, X, 0, Z));
             } else
             {
-                ControlPanel.Places[ControlPanel.Places.FindIndex(Place => Place.Id == EditingId)] = new Marker(File, Server, Region, MarkerType.Place, EditingId, Icon, Label, X, 0, Z);
+                ControlPanel.Places[ControlPanel.Places.FindIndex(Place => Place.Id == EditingId)] = new Place(File, Server, Region, PlaceType.Place, EditingId, Icon, Label, X, 0, Z);
             }
             ControlPanel.SavePlaces();
             Close();

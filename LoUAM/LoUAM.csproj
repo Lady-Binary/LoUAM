@@ -102,7 +102,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="EditPlace.xaml">
+    <Page Include="ControlPanel\EditPlace.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -110,7 +110,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="ControlPanel.xaml">
+    <Page Include="ControlPanel\ControlPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -122,34 +122,33 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Client.cs" />
-    <Compile Include="EditPlace.xaml.cs">
+    <Compile Include="Link\Link.cs" />
+    <Compile Include="ControlPanel\EditPlace.xaml.cs">
       <DependentUpon>EditPlace.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainConsole.cs" />
     <Compile Include="MapGenerator.xaml.cs">
       <DependentUpon>MapGenerator.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ControlPanel.xaml.cs">
+    <Compile Include="ControlPanel\ControlPanel.xaml.cs">
       <DependentUpon>ControlPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MapImage.cs" />
-    <Compile Include="MapMarker.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="Map\MapImage.cs" />
+    <Compile Include="Map\MapPlace.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Map.xaml">
+    <Page Include="Map\Map.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Map.xaml.cs">
+    <Compile Include="Map\Map.xaml.cs">
       <DependentUpon>Map.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Marker.cs" />
+    <Compile Include="Place.cs" />
     <Compile Include="MessageBoxEx.cs" />
     <Compile Include="MouseHook.cs" />
     <Compile Include="Player.cs" />
@@ -292,6 +291,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.4.2.1\build\Fody.targets" Condition="Exists('..\packages\Fody.4.2.1\build\Fody.targets')" />

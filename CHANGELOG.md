@@ -1,5 +1,27 @@
 # Changelog
 
+## LoA 1.4.1.0 - LoUAM 1.1.0.0 (17/07/2021)
+
+#### Bugfixes:
+
+- Improve Link Client & Server stability, fix a number of crashes [#41](https://github.com/Lady-Binary/LoUAM/issues/41)
+- Locations not displayed on locales using comma as the decimal separator (e.g. brazilian portuguese) [#40](https://github.com/Lady-Binary/LoUAM/issues/40)
+- Dragging the map while tracking is enabled should work [#32](https://github.com/Lady-Binary/LoUAM/issues/32)
+
+#### Enhancements:
+
+- Add current character name to the LoUAM window title [#44](https://github.com/Lady-Binary/LoUAM/issues/44)
+- Add ability to tilt map 45 degrees to reflect in game orientation [#43](https://github.com/Lady-Binary/LoUAM/issues/43)
+- Add ability to show and hide labels and icons [#39](https://github.com/Lady-Binary/LoUAM/issues/39)
+- Update common locations with the ones from online map [#38](https://github.com/Lady-Binary/LoUAM/issues/38)
+- Toggle with double-click between map only and full gui [#34](https://github.com/Lady-Binary/LoUAM/issues/34)
+- Add ability to place a marker and show direction to a place on the map [#30](https://github.com/Lady-Binary/LoUAM/issues/30)
+- Add ability to show list of connected players and track or mark them [#29](https://github.com/Lady-Binary/LoUAM/issues/29)
+- Add ability to right-click and copy coords from anywhere on the map [#28](https://github.com/Lady-Binary/LoUAM/issues/28)
+- Add option to have LoUAM Always On Top like in EasyLoU [#27](https://github.com/Lady-Binary/LoUAM/issues/27)
+
+---
+
 ## LoA 1.4.1.0 - LoUAM 1.0.0.2 (03/07/2021)
 
 #### Bugfixes:
